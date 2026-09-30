@@ -14,11 +14,7 @@
 /.zed
 /auth.json
 /node_modules
-# The manifest has to ship: @vite reads it from public/build and throws a
-# ViteException on every request without it. The hashed assets themselves are
-# served from the document root, so only the manifest is needed here.
-/public/build/*
-!/public/build/manifest.json
+/public/build
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage

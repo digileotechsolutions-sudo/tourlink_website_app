@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-Cj-3S-Vv.css",
+    "file": "assets/app-CjcycS8Q.css",
     "name": "app",
     "names": [
       "app.css"
@@ -9,9 +9,18 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-zD-kh-p6.js",
+    "file": "assets/app-BinQ5EPg.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/echo.js"
+    ]
+  },
+  "resources/js/echo.js": {
+    "file": "assets/echo-C8SwMXO1.js",
+    "name": "echo",
+    "src": "resources/js/echo.js",
+    "isDynamicEntry": true
   }
 }

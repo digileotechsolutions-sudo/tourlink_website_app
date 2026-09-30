@@ -35,11 +35,18 @@
                         <span class="hidden sm:inline">Notifications</span>
                         @if (isset($statistics) && $statistics['pendingVerification'] > 0)<span class="grid size-5 place-items-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-800">{{ min(99, $statistics['pendingVerification']) }}</span>@endif
                     </a>
-                    <div class="hidden items-center gap-2 border-l border-slate-200 pl-4 sm:flex">
-                        <span class="grid size-9 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-900">{{ str(auth()->user()->name)->substr(0, 1)->upper() }}</span>
-                        <span class="hidden max-w-36 truncate text-sm font-semibold text-slate-800 xl:block">{{ auth()->user()->name }}</span>
-                    </div>
-                    <form method="POST" action="{{ route('logout') }}" class="lg:hidden">@csrf<button type="submit" class="text-xs font-bold text-slate-600">Log out</button></form>
+                    <details class="relative shrink-0 border-l border-slate-200 pl-4">
+                        <summary class="flex cursor-pointer list-none items-center gap-2 rounded px-1 py-1 hover:bg-slate-100">
+                            <span class="grid size-9 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-900">{{ str(auth()->user()->name)->substr(0, 1)->upper() }}</span>
+                            <span class="hidden max-w-36 truncate text-sm font-semibold text-slate-800 xl:block">{{ auth()->user()->name }}</span>
+                        </summary>
+                        <div class="absolute right-0 top-12 z-40 grid w-56 gap-1 rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+                            <p class="truncate px-3 py-2 text-sm font-bold text-slate-800">{{ auth()->user()->name }}</p>
+                            <a class="rounded px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100" href="{{ route('admin.settings.index') }}">Settings</a>
+                            <a class="rounded px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100" href="{{ route('home') }}">Back to site</a>
+                            <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="w-full rounded px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100">Log out</button></form>
+                        </div>
+                    </details>
                 </div>
             </header>
             <main id="admin-main" class="min-w-0">
