@@ -3,7 +3,6 @@
 @section('content')
 <div class="auth-wrapper auth-compact-shell auth-forgot-shell">
     <section class="auth-card auth-compact-card" aria-labelledby="forgot-heading">
-        <a class="auth-login-logo" href="{{ route('home') }}" aria-label="TourLink home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></a>
         <header class="auth-compact-header"><p class="auth-login-eyebrow">Account recovery</p><h1 id="forgot-heading">Reset your password</h1><p>We’ll email you a secure link if the address is registered.</p></header>
         @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
         <form method="POST" action="{{ route('password.email') }}" data-auth-form data-auth-loading-label="Sending link...">@csrf

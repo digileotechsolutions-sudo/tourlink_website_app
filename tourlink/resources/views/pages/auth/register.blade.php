@@ -3,8 +3,7 @@
 @section('content')
 <div class="auth-wrapper auth-compact-shell auth-register-shell">
     <section class="auth-card auth-compact-card" aria-labelledby="register-heading">
-        <a class="auth-login-logo" href="{{ route('home') }}" aria-label="TourLink home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></a>
-        <header class="auth-compact-header"><p class="auth-login-eyebrow">Join TourLink</p><h1 id="register-heading">Create your account</h1><p>Start planning your next journey.</p></header>
+        <header class="auth-compact-header"><h1 id="register-heading">Create your account</h1><p>Start planning your next journey.</p></header>
         @if ($referrer)
             <p class="auth-referrer-note"><strong>{{ $referrer->name }}</strong> invited you. Your referral is credited after verification and approval.</p>
         @endif

@@ -3,9 +3,6 @@
 @section('content')
 <div class="auth-wrapper auth-login-shell">
     <section class="auth-login-card" aria-labelledby="login-heading">
-        <a class="auth-login-logo" href="{{ route('home') }}" aria-label="TourLink home">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
-        </a>
         <header class="auth-login-header">
             <p class="auth-login-eyebrow">TourLink account</p>
             <h1 id="login-heading">Welcome Back</h1>
