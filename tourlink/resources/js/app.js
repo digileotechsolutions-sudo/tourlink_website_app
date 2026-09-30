@@ -263,6 +263,7 @@ const pwaMessage = pwaStatus?.querySelector('[data-pwa-message]');
 const installButton = pwaStatus?.querySelector('[data-pwa-install]');
 const updateButton = pwaStatus?.querySelector('[data-pwa-update]');
 const onlineOnlyNotice = document.querySelector('[data-online-only-notice]');
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 let installPrompt = null;
 let pwaRegistration = null;
 
@@ -273,7 +274,13 @@ const setPwaStatus = (message, state) => {
 
     pwaMessage.textContent = message;
     pwaStatus.dataset.state = state;
+    const hasVisibleAction = [...pwaStatus.querySelectorAll('button')].some((button) => !button.hidden);
+    pwaStatus.hidden = message === '' && !hasVisibleAction;
 };
+
+if (installButton && !isStandalone) {
+    installButton.hidden = false;
+}
 
 const database = () => new Promise((resolve, reject) => {
     const request = indexedDB.open('tourlink-offline', 1);
@@ -345,7 +352,7 @@ window.addEventListener('online', () => {
     if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({ type: 'SYNC_OUTBOX' });
     } else {
-        setPwaStatus('Connected', 'online');
+        setPwaStatus('', 'online');
     }
 });
 
@@ -376,7 +383,7 @@ document.addEventListener('submit', async (event) => {
                     if (button) {
                         button.textContent = 'Saved';
                     }
-                    setPwaStatus('Connected', 'online');
+                    setPwaStatus('', 'online');
                     return;
                 }
 
@@ -460,6 +467,7 @@ installButton?.addEventListener('click', async () => {
     }
 
     if (!installPrompt) {
+        setPwaStatus('Use your browser menu to install TourLink.', 'online');
         return;
     }
 
@@ -469,9 +477,8 @@ installButton?.addEventListener('click', async () => {
     installButton.hidden = true;
 });
 
-const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !navigator.standalone;
-if (isIosDevice && installButton && !window.matchMedia('(display-mode: standalone)').matches) {
-    installButton.hidden = false;
+const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !isStandalone;
+if (isIosDevice && installButton) {
     installButton.dataset.manual = 'true';
 }
 
@@ -495,9 +502,9 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
 
     navigator.serviceWorker.addEventListener('message', ({ data }) => {
         if (data?.type === 'OUTBOX_SYNCED') {
-            setPwaStatus(data.syncedCount > 0 ? 'Pending actions synchronized.' : 'Connected', 'online');
+            setPwaStatus(data.syncedCount > 0 ? 'Pending actions synchronized.' : '', 'online');
         } else if (data?.type === 'OUTBOX_PENDING') {
-            setPwaStatus('Connected. Some actions are pending synchronization.', 'pending');
+            setPwaStatus('Some actions are waiting to sync.', 'pending');
         }
     });
 
@@ -539,5 +546,5 @@ if (!navigator.onLine) {
 }
 
 if ('serviceWorker' in navigator && window.isSecureContext) {
-    setPwaStatus(navigator.onLine ? 'Connected' : 'You are offline. Some features may be unavailable.', navigator.onLine ? 'online' : 'offline');
+    setPwaStatus(navigator.onLine ? '' : 'You are offline. Some features may be unavailable.', navigator.onLine ? 'online' : 'offline');
 }

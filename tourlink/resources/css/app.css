@@ -184,13 +184,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .auth-resend { border: 1px solid #cfe1d4; color: #216b42; background: #fff; }
 .auth-dev-code { margin: 8px 0 0; color: #8b6c27; font-size: 11px; }
 .pwa-status { position: fixed; right: 14px; bottom: 14px; z-index: 100; display: flex; max-width: min(560px, calc(100vw - 28px)); min-height: 42px; align-items: center; gap: 9px; padding: 6px 8px 6px 12px; border: 1px solid rgba(15, 23, 42, .12); border-radius: 20px; color: #31463a; background: rgba(255, 255, 255, .94); box-shadow: 0 8px 28px rgba(15, 23, 42, .12); backdrop-filter: blur(12px); font-size: 11px; }
-.pwa-status__dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: #23834c; }
-.pwa-status[data-state="offline"] .pwa-status__dot { background: #c24135; }
-.pwa-status[data-state="pending"] .pwa-status__dot, .pwa-status[data-state="syncing"] .pwa-status__dot, .pwa-status[data-state="update"] .pwa-status__dot { background: #d28a1e; }
 .pwa-status__message { min-width: 0; flex: 1 1 auto; line-height: 1.35; }
 .pwa-status button { min-height: 32px; flex: none; padding: 0 11px; border: 0; border-radius: 14px; color: #fff; background: #216b42; font-size: 11px; font-weight: 800; cursor: pointer; }
 .pwa-status button[data-pwa-update] { color: #233a2d; background: #f2c56b; }
 .pwa-status button[hidden] { display: none; }
+.pwa-status[hidden] { display: none; }
 body:has(.mobile-bottom-nav) .pwa-status { bottom: calc(84px + env(safe-area-inset-bottom)); }
 @media (max-width: 480px) { .pwa-status { right: 10px; bottom: 10px; left: 10px; max-width: none; gap: 7px; border-radius: 18px; font-size: 10px; } body:has(.mobile-bottom-nav) .pwa-status { bottom: calc(82px + env(safe-area-inset-bottom)); } .pwa-status button { min-height: 34px; padding-inline: 9px; } }
 body:has(.pwa-status) { padding-bottom: 64px; }
