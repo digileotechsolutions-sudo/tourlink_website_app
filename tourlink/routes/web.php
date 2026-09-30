@@ -37,6 +37,9 @@ Route::get('/trips/{trip:slug}', [TripController::class, 'show'])->name('trips.s
 Route::get('/vehicles', [VehicleController::class, 'index'])->middleware('pwa.public')->name('vehicles.index');
 Route::get('/vehicles/{vehicle:slug}', [VehicleController::class, 'show'])->name('vehicles.show');
 Route::get('/compare', [TravelerController::class, 'compare'])->name('compare');
+Route::get('/media/blog/{filename}', [BlogController::class, 'image'])
+    ->where('filename', '[A-Za-z0-9._-]+')
+    ->name('blog.image');
 Route::get('/journal', [BlogController::class, 'index'])->middleware('pwa.public')->name('blog.index');
 Route::get('/journal/{blogPost:slug}', [BlogController::class, 'show'])->middleware('pwa.public')->name('blog.show');
 

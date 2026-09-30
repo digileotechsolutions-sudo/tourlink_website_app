@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AdminContentController extends Controller
@@ -150,13 +151,19 @@ class AdminContentController extends Controller
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('blog_posts', 'slug')->ignore($post?->id)],
             'excerpt' => ['required', 'string', 'max:1000'],
             'body' => ['required', 'string', 'max:100000'],
-            'image' => ['nullable', 'image', 'max:5120'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
             'image_url' => ['nullable', 'required_without:image', 'url:http,https', 'max:2048'],
             'published' => ['required', 'boolean'],
         ]);
 
         if ($request->hasFile('image')) {
-            $data['image_url'] = Storage::disk('public')->url($request->file('image')->store('blog-images', 'public'));
+            $storedPath = $request->file('image')->store('blog-images', 'public');
+
+            if (! is_string($storedPath)) {
+                throw ValidationException::withMessages(['image' => 'The uploaded image could not be saved. Please try again.']);
+            }
+
+            $data['image_url'] = route('blog.image', ['filename' => basename($storedPath)], false);
         }
 
         unset($data['image']);

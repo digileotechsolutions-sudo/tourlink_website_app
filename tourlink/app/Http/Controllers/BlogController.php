@@ -3,11 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlogPost;
+use App\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BlogController extends Controller
 {
+    public function image(Request $request, string $filename): StreamedResponse
+    {
+        abort_unless(preg_match('/\A[a-z0-9][a-z0-9._-]*\.(?:jpe?g|png|webp|gif)\z/i', $filename) === 1, 404);
+
+        $imageUrl = route('blog.image', ['filename' => $filename], false);
+        $post = BlogPost::query()->where('image_url', $imageUrl)->first();
+
+        abort_unless($post && ($post->published || $request->user()?->role === Role::Admin), 404);
+
+        $path = 'blog-images/'.$filename;
+        abort_unless(Storage::disk('public')->exists($path), 404);
+
+        return Storage::disk('public')->response($path, null, [
+            'Cache-Control' => 'public, max-age=86400',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
     public function index(Request $request): View
     {
         $filters = $request->validate([

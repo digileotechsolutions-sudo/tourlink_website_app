@@ -29,7 +29,9 @@ class AdminBlogImageUploadTest extends TestCase
 
         $post = BlogPost::query()->firstOrFail();
 
-        $this->assertStringContainsString('/storage/blog-images/', $post->image_url);
+        $this->assertStringStartsWith('/media/blog/', $post->image_url);
         $this->assertCount(1, Storage::disk('public')->allFiles('blog-images'));
+
+        $this->actingAs($admin)->get($post->image_url)->assertOk();
     }
 }
