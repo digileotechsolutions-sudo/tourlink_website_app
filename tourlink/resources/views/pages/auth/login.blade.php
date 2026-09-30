@@ -12,7 +12,7 @@
             <p>Sign in to continue your journey.</p>
         </header>
         @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
-        <form method="POST" action="{{ route('login') }}" data-auth-form>@csrf
+        <form method="POST" action="{{ route('login') }}" data-auth-form data-auth-loading-label="Signing in...">@csrf
             <div class="auth-login-field">
                 <label for="email">Email address</label>
                 <div class="auth-login-control">
