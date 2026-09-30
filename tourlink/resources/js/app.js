@@ -461,13 +461,7 @@ window.addEventListener('beforeinstallprompt', (event) => {
 });
 
 installButton?.addEventListener('click', async () => {
-    if (installButton.dataset.manual === 'true') {
-        setPwaStatus('In Safari, open Share and choose Add to Home Screen.', 'online');
-        return;
-    }
-
     if (!installPrompt) {
-        setPwaStatus('Use your browser menu to install TourLink.', 'online');
         return;
     }
 
@@ -476,11 +470,6 @@ installButton?.addEventListener('click', async () => {
     installPrompt = null;
     installButton.hidden = true;
 });
-
-const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !isStandalone;
-if (isIosDevice && installButton) {
-    installButton.dataset.manual = 'true';
-}
 
 window.addEventListener('appinstalled', () => {
     installPrompt = null;

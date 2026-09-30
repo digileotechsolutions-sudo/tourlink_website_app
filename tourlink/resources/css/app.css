@@ -186,6 +186,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .pwa-status { position: fixed; right: 14px; bottom: 14px; z-index: 100; display: flex; max-width: min(560px, calc(100vw - 28px)); min-height: 42px; align-items: center; gap: 9px; padding: 6px 8px 6px 12px; border: 1px solid rgba(15, 23, 42, .12); border-radius: 20px; color: #31463a; background: rgba(255, 255, 255, .94); box-shadow: 0 8px 28px rgba(15, 23, 42, .12); backdrop-filter: blur(12px); font-size: 11px; }
 .pwa-status__message { min-width: 0; flex: 1 1 auto; line-height: 1.35; }
 .pwa-status button { min-height: 32px; flex: none; padding: 0 11px; border: 0; border-radius: 14px; color: #fff; background: #216b42; font-size: 11px; font-weight: 800; cursor: pointer; }
+.pwa-status button[data-pwa-install] { display: grid; width: 36px; height: 36px; min-height: 36px; place-items: center; padding: 0; border-radius: 50%; }
+.pwa-status button[data-pwa-install] svg { width: 18px; height: 18px; }
 .pwa-status button[data-pwa-update] { color: #233a2d; background: #f2c56b; }
 .pwa-status button[hidden] { display: none; }
 .pwa-status[hidden] { display: none; }
