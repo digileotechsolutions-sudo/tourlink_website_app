@@ -94,9 +94,9 @@ $steps = match ($layout) {
         'Reload the site afterwards.',
     ],
     'application inside the document root' => [
-        'The application was extracted inside public_html, but the front controller only looks beside the document root.',
-        'In cPanel File Manager, move the "tourlink" folder from inside public_html up into /home/havenedg.',
-        'Reload the site afterwards.',
+        'The application is inside the document root. The root index.php supports this layout, while .htaccess blocks direct access to the protected /tourlink folder.',
+        'Open the website routes from the domain root, for example /login. Do not use /tourlink/login; that legacy login URL redirects to /login.',
+        'If the domain-root /login still returns 403, check cPanel Errors for the exact request and hosting rule.',
     ],
     'unrecognised' => [
         'Extract the archive to /home/havenedg so that public_html and tourlink become two sibling folders there.',
@@ -129,7 +129,7 @@ $sections = [
     'What the server sees' => $checks,
     'What to do' => $steps,
     'Reference' => [
-        'Correct layout: /home/havenedg/public_html and /home/havenedg/tourlink are siblings, and the document root for this domain is public_html.',
+        'Supported layouts: /home/havenedg/public_html beside /home/havenedg/tourlink, or public_html/tourlink protected by its root .htaccess and front controller.',
         'This page reads folder names only. It never displays environment values or the absolute home path.',
     ],
 ];

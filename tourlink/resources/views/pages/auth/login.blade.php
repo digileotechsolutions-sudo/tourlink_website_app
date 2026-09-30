@@ -24,7 +24,7 @@
             <div class="auth-login-field">
                 <div class="auth-login-label-row"><label for="password">Password</label><a href="{{ route('password.request') }}">Forgot password?</a></div>
                 <div class="auth-login-control">
-                    <svg class="auth-login-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8" 10.5V7.8a4 4 0 0 1 8 0v2.7M12 14.5v2.5"/></svg>
+                    <svg class="auth-login-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7M12 14.5v2.5"/></svg>
                     <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required @error('password') aria-invalid="true" aria-describedby="login-password-error" @enderror>
                     <button class="auth-login-toggle" type="button" data-password-toggle="password" aria-label="Show password" title="Show password">
                         <svg data-password-eye viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg>
