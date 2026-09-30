@@ -11,7 +11,6 @@ use App\Models\VehicleOwnerProfile;
 use App\OtpChannel;
 use App\Role;
 use App\Services\Verification\AccountVerificationService;
-use App\Services\Verification\OtpDeliveryService;
 use App\Services\Verification\OtpService;
 use App\Services\Verification\PhoneNumberNormalizer;
 use App\VerificationLevel;
@@ -95,7 +94,6 @@ class AuthController extends Controller
         Request $request,
         PhoneNumberNormalizer $phoneNormalizer,
         OtpService $otpService,
-        OtpDeliveryService $delivery,
         AccountVerificationService $verification,
     ): mixed {
         $input = $request->validate([
@@ -164,11 +162,10 @@ class AuthController extends Controller
 
         try {
             foreach ($verification->deliverableChannels() as $channel) {
-                $code = $otpService->issue($user, $channel);
+                $code = $otpService->issueForRegistration($user, $channel);
                 $codes[$channel === OtpChannel::Email ? 'email' : 'phone'] = $code;
             }
 
-            $delivery->sendWelcome($user);
             $status = 'Verification codes sent to your '.$verification->describeChannels($verification->deliverableChannels()).'.';
         } catch (Throwable $exception) {
             report($exception);

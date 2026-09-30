@@ -109,10 +109,10 @@ class OtpDeliveryService
 
     public function sendVerificationCode(User $user, OtpChannel $channel, string $code): void
     {
-        $message = 'Your TourLink verification code is '.$code.'. It expires in 5 minutes.';
+        $message = 'Your '.config('app.name').' verification code is '.$code.'. It expires in '.OtpService::EXPIRY_MINUTES.' minutes.';
 
         if ($channel === OtpChannel::Email) {
-            $this->sendEmail($user->email, 'Your TourLink verification code', '<p>'.e($message).'</p>');
+            $this->sendEmail($user->email, 'Your '.config('app.name').' verification code', '<p>'.e($message).'</p>');
 
             return;
         }
@@ -124,33 +124,77 @@ class OtpDeliveryService
         $this->sendSms($user->phone, $message);
     }
 
-    public function sendWelcome(User $user): void
+    /**
+     * Confirms a verified email address. Once no verification steps remain the
+     * message also announces the wait for admin approval; while another channel
+     * is still outstanding that claim would be false, so it is left out.
+     */
+    public function sendEmailVerified(User $user, bool $awaitingApproval): void
     {
-        if ($this->canDeliver(OtpChannel::Email)) {
-            $this->sendEmail(
-                $user->email,
-                'Welcome to TourLink',
-                '<p>Hello '.e($user->name).',</p><p>Thank you for joining TourLink. Verify your email and phone to start exploring trusted journeys.</p>',
-            );
+        $site = e((string) config('app.name'));
+
+        $html = '<p>Hello '.e($user->name).',</p>'
+            .'<p>Congratulations! Your email address has been successfully verified.</p>';
+
+        if ($awaitingApproval) {
+            $html .= '<p>Your account with '.$site.' is now awaiting administrator approval. You will receive another email notification once your account has been approved.</p>'
+                .'<p>Thank you for your patience. We look forward to welcoming you!</p>';
         }
 
-        if ($user->phone && $this->canDeliver(OtpChannel::Phone)) {
-            $this->sendSms($user->phone, 'Hello '.$user->name.', welcome to TourLink. Complete verification to start exploring trusted journeys.');
-        }
+        $html .= '<p>Best regards,<br><strong>'.$site.' Team</strong></p>';
+
+        $this->sendEmail($user->email, 'Your '.config('app.name').' email address is verified', $html);
+    }
+
+    /**
+     * Greets a new member and carries their verification code in one message, so
+     * registration never arrives as a welcome email followed by a bare code.
+     */
+    public function sendRegistrationConfirmation(User $user, string $code): void
+    {
+        $site = e((string) config('app.name'));
+        $name = e($user->name);
+
+        $html = <<<HTML
+            <p>Hello {$name},</p>
+            <p>Thank you for creating an account with {$site}!</p>
+            <p>Your account has been successfully registered. To verify your email address, please use the One-Time Password (OTP) below:</p>
+            <p><strong>Your Verification Code: {$code}</strong></p>
+            <p>This code is valid for {OtpService::EXPIRY_MINUTES} minutes. For your security, please do not share this code with anyone.</p>
+            <p>Once your email address has been verified, your account will be submitted for administrator approval, if required.</p>
+            <p>Thank you for choosing {$site}!</p>
+            <p>Best regards,<br><strong>{$site} Team</strong></p>
+            HTML;
+
+        $this->sendEmail($user->email, 'Welcome to '.config('app.name').' - your verification code', $html);
     }
 
     public function sendAccountApproval(User $user, bool $approved, ?string $note = null): void
     {
-        $status = $approved ? 'approved' : 'not approved';
-        $noteHtml = $note ? '<p>Admin note: '.e($note).'</p>' : '';
-        $html = '<p>Hello '.e($user->name).',</p><p>Your TourLink account has been <strong>'.$status.'</strong>.</p>'.$noteHtml;
+        $site = e((string) config('app.name'));
+
+        if ($approved) {
+            $html = '<p>Hello '.e($user->name).',</p>'
+                .'<p>Great news! Your account with '.$site.' has been successfully approved.</p>'
+                .'<p>You can now log in using your registered email address and password to access your account and enjoy our services.</p>'
+                .($note ? '<p>Admin note: '.e($note).'</p>' : '')
+                .'<p>Thank you for joining '.$site.'. We are delighted to have you with us!</p>'
+                .'<p>Best regards,<br><strong>'.$site.' Team</strong></p>';
+            $subject = 'Your '.config('app.name').' account has been approved';
+        } else {
+            $html = '<p>Hello '.e($user->name).',</p>'
+                .'<p>Your '.$site.' account has <strong>not been approved</strong>.</p>'
+                .($note ? '<p>Admin note: '.e($note).'</p>' : '')
+                .'<p>Best regards,<br><strong>'.$site.' Team</strong></p>';
+            $subject = 'Your '.config('app.name').' account was not approved';
+        }
 
         if ($this->canDeliver(OtpChannel::Email)) {
-            $this->sendEmail($user->email, 'Your TourLink account was '.$status, $html);
+            $this->sendEmail($user->email, $subject, $html);
         }
 
         if ($user->phone && $this->canDeliver(OtpChannel::Phone)) {
-            $this->sendSms($user->phone, 'Hello '.$user->name.', your TourLink account was '.$status.'.');
+            $this->sendSms($user->phone, 'Hello '.$user->name.', your '.config('app.name').' account was '.($approved ? 'approved. You can now log in.' : 'not approved.'));
         }
     }
 

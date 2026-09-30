@@ -13,9 +13,37 @@ class OtpService
 {
     public const ACCOUNT_VERIFICATION_PURPOSE = 'account_verification';
 
+    public const EXPIRY_MINUTES = 5;
+
     public function __construct(private readonly OtpDeliveryService $delivery) {}
 
     public function issue(User $user, OtpChannel $channel): ?string
+    {
+        $code = $this->challenge($user, $channel);
+
+        $this->delivery->sendVerificationCode($user, $channel, $code);
+
+        return $this->delivery->developmentMode() ? $code : null;
+    }
+
+    /**
+     * First send for a brand-new account: the email channel gets the welcome
+     * copy that carries the code, so a new member is not greeted twice.
+     */
+    public function issueForRegistration(User $user, OtpChannel $channel): ?string
+    {
+        $code = $this->challenge($user, $channel);
+
+        if ($channel === OtpChannel::Email) {
+            $this->delivery->sendRegistrationConfirmation($user, $code);
+        } else {
+            $this->delivery->sendVerificationCode($user, $channel, $code);
+        }
+
+        return $this->delivery->developmentMode() ? $code : null;
+    }
+
+    private function challenge(User $user, OtpChannel $channel): string
     {
         if ($channel === OtpChannel::Phone && ! $user->phone) {
             throw new RuntimeException('A phone number is required for phone verification.');
@@ -35,14 +63,12 @@ class OtpService
                 'channel' => $channel,
                 'purpose' => self::ACCOUNT_VERIFICATION_PURPOSE,
                 'code_hash' => hash('sha256', $code),
-                'expires_at' => now()->addMinutes(5),
+                'expires_at' => now()->addMinutes(self::EXPIRY_MINUTES),
                 'attempts' => 0,
             ]);
         });
 
-        $this->delivery->sendVerificationCode($user, $channel, $code);
-
-        return $this->delivery->developmentMode() ? $code : null;
+        return $code;
     }
 
     public function verify(User $user, OtpChannel $channel, string $code): string

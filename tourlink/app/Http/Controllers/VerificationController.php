@@ -8,6 +8,7 @@ use App\Models\User;
 use App\OtpChannel;
 use App\Role;
 use App\Services\Verification\AccountVerificationService;
+use App\Services\Verification\OtpDeliveryService;
 use App\Services\Verification\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +27,7 @@ class VerificationController extends Controller
         return view('pages.auth.verification', compact('user', 'verificationMethods'));
     }
 
-    public function verify(Request $request, OtpService $otpService, AccountVerificationService $verification): mixed
+    public function verify(Request $request, OtpService $otpService, OtpDeliveryService $delivery, AccountVerificationService $verification): mixed
     {
         $input = $request->validate([
             'user_id' => ['required', 'string', 'exists:users,id'],
@@ -35,7 +36,8 @@ class VerificationController extends Controller
         ]);
 
         $user = User::query()->findOrFail($input['user_id']);
-        $result = $otpService->verify($user, OtpChannel::from($input['channel']), $input['code']);
+        $channel = OtpChannel::from($input['channel']);
+        $result = $otpService->verify($user, $channel, $input['code']);
 
         if ($result !== 'verified') {
             $message = match ($result) {
@@ -49,6 +51,17 @@ class VerificationController extends Controller
         }
 
         $user->refresh();
+
+        if ($channel === OtpChannel::Email) {
+            try {
+                $delivery->sendEmailVerified(
+                    $user,
+                    $verification->isFullyVerified($user) && $user->approval_status === AccountApprovalStatus::Pending
+                );
+            } catch (Throwable $exception) {
+                report($exception);
+            }
+        }
 
         if ($verification->isFullyVerified($user) && $user->approval_status === AccountApprovalStatus::Approved && $user->account_status === AccountStatus::Active) {
             Auth::login($user);
