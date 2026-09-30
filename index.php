@@ -45,12 +45,28 @@ $candidates = [
 ];
 
 $app = null;
+$appWithoutDependencies = null;
 
 foreach ($candidates as $candidate) {
-    if (is_file($candidate.'/vendor/autoload.php') && is_file($candidate.'/artisan')) {
+    if (! is_file($candidate.'/artisan')) {
+        continue;
+    }
+
+    if (is_file($candidate.'/vendor/autoload.php')) {
         $app = realpath($candidate) ?: $candidate;
         break;
     }
+
+    $appWithoutDependencies ??= realpath($candidate) ?: $candidate;
+}
+
+if ($app === null && $appWithoutDependencies !== null) {
+    $fail(
+        'TourLink is installed but its dependencies are missing.',
+        'The application was found, but there is no vendor folder in '.basename($appWithoutDependencies)
+        .'. Composer packages are not part of the uploaded archive, so run: cd ~/'.basename($appWithoutDependencies)
+        .' && /usr/local/bin/php composer.phar install --no-dev --optimize-autoloader',
+    );
 }
 
 if ($app === null) {
