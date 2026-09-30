@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@yield('title', 'Operator | TourLink')</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+<div class="flex min-h-screen">
+    <aside class="hidden w-64 shrink-0 flex-col bg-ink px-4 py-5 text-white lg:flex">
+        <a href="{{ route('operator.dashboard') }}" class="mb-7 flex items-center gap-3 px-3"><span class="grid size-10 place-items-center rounded bg-sun font-black text-ink">TL</span><span><strong class="block text-lg">TourLink</strong><small class="uppercase text-white/55">Operator portal</small></span></a>
+        <nav class="grid gap-1 text-sm font-semibold">
+            @foreach(['dashboard' => 'Overview', 'trips.index' => 'Trips', 'trips.create' => 'Create trip', 'bookings.index' => 'Bookings', 'customers' => 'Customers', 'vehicles' => 'Vehicles', 'messages' => 'Messages', 'reviews' => 'Reviews', 'earnings' => 'Earnings', 'payments' => 'Payments', 'verification' => 'Verification', 'analytics' => 'Analytics', 'profile' => 'Profile', 'settings' => 'Settings'] as $route => $label)
+                <a href="{{ in_array($route, ['customers', 'vehicles', 'messages', 'reviews', 'earnings', 'payments', 'verification', 'analytics', 'settings'], true) ? route('operator.section', ['section' => $route]) : route('operator.'.$route) }}" class="rounded px-3 py-2.5 text-white/75 hover:bg-white/10 hover:text-white">{{ $label }}</a>
+            @endforeach
+        </nav>
+        <div class="mt-auto border-t border-white/10 pt-4"><p class="truncate px-3 text-sm font-bold">{{ auth()->user()->name }}</p><p class="mb-3 px-3 text-xs text-white/55">Tour operator</p><form method="POST" action="{{ route('logout') }}">@csrf<button class="w-full rounded px-3 py-2 text-left text-sm font-semibold text-white/70 hover:bg-white/10">Log out</button></form></div>
+    </aside>
+    <main class="min-w-0 flex-1">
+        <header class="flex min-h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-8"><a href="{{ route('operator.dashboard') }}" class="font-black text-ink lg:hidden">TourLink</a><span class="text-sm font-semibold text-slate-500">{{ auth()->user()->operatorProfile?->company_name ?? 'Company profile' }}</span><div class="flex items-center gap-4"><a href="{{ route('operator.profile') }}" class="text-sm font-bold text-emerald-800">Profile</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="min-h-11 rounded border border-slate-300 px-3 text-xs font-bold text-slate-700">Log out</button></form></div></header>
+        @if(session('status'))<div class="mx-4 mt-5 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 sm:mx-8">{{ session('status') }}</div>@endif
+        @if($errors->any())<div class="mx-4 mt-5 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 sm:mx-8"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+        @yield('content')
+        <x-mobile-bottom-nav />
+    </main>
+</div>
+</body>
+</html>

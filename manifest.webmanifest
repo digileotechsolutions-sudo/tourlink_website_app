@@ -1,0 +1,12 @@
+{
+    "name": "TourLink",
+    "short_name": "TourLink",
+    "description": "Discover trusted trips, vehicles and travel experiences across Kenya.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#f8faf8",
+    "theme_color": "#063b00",
+    "orientation": "portrait-primary",
+    "icons": [{"src": "/favicon.ico", "sizes": "any", "type": "image/x-icon", "purpose": "any maskable"}]
+}

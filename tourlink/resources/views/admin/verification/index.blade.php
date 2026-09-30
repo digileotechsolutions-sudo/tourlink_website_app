@@ -1,0 +1,71 @@
+@extends('layouts.admin')
+
+@section('title', 'Verification requests | TourLink')
+
+@section('content')
+    <div class="mx-auto max-w-7xl px-5 py-10 sm:px-8">
+        <header class="border-b border-slate-200 pb-6">
+            <p class="text-xs font-bold uppercase tracking-wider text-emerald-800">Administration</p>
+            <h1 class="mt-2 text-3xl font-black text-slate-950">Verification requests</h1>
+            <p class="mt-2 text-sm text-slate-600">Review submitted documents and update the member’s verification level.</p>
+        </header>
+
+        @if (session('status'))
+            <p role="status" class="mt-5 border-l-4 border-emerald-700 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-950">{{ session('status') }}</p>
+        @endif
+        @if ($errors->any())
+            <div role="alert" class="mt-5 border-l-4 border-red-700 bg-red-50 px-4 py-3 text-sm text-red-950"><p class="font-bold">The review could not be saved.</p>@foreach ($errors->all() as $error)<p class="mt-1">{{ $error }}</p>@endforeach</div>
+        @endif
+
+        <form method="GET" class="mt-6 grid gap-3 border-b border-slate-200 pb-6 sm:grid-cols-[minmax(240px,1fr)_200px_auto_auto]">
+            <label class="sr-only" for="verification-search">Search applicants</label>
+            <input id="verification-search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Applicant name or email" class="min-h-11 rounded border border-slate-300 px-3 text-sm">
+            <label class="sr-only" for="verification-status">Request status</label>
+            <select id="verification-status" name="status" class="min-h-11 rounded border border-slate-300 bg-white px-3 text-sm">
+                <option value="">Pending and more information</option>
+                @foreach (\App\VerificationStatus::cases() as $status)
+                    <option value="{{ $status->value }}" @selected(($filters['status'] ?? '') === $status->value)>{{ str($status->value)->replace('_', ' ')->title() }}</option>
+                @endforeach
+            </select>
+            <button class="min-h-11 rounded border border-slate-300 px-4 text-sm font-bold text-slate-800 hover:bg-slate-50">Filter</button>
+            <a href="{{ route('admin.verification.index') }}" class="grid min-h-11 place-items-center text-sm font-semibold text-slate-600 hover:text-slate-950">Clear</a>
+        </form>
+
+        @forelse ($requests as $verificationRequest)
+            <article class="grid gap-5 border-b border-slate-200 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
+                <div>
+                    <div class="flex flex-wrap items-baseline justify-between gap-3">
+                        <h2 class="text-lg font-extrabold text-slate-950">{{ $verificationRequest->user?->name ?? 'Unknown applicant' }}</h2>
+                        <span class="text-xs font-bold uppercase text-slate-500">{{ str($verificationRequest->status->value)->replace('_', ' ')->title() }}</span>
+                    </div>
+                    <p class="mt-1 text-sm text-slate-600">{{ $verificationRequest->user?->email }} · {{ str($verificationRequest->user?->role?->value ?? 'UNKNOWN')->replace('_', ' ')->title() }}</p>
+                    <p class="mt-1 text-xs text-slate-500">{{ str($verificationRequest->type)->replace('_', ' ')->title() }} · Submitted {{ $verificationRequest->created_at?->format('Y-m-d H:i') }}</p>
+                    @if ($verificationRequest->documents)
+                        <details class="mt-3">
+                            <summary class="cursor-pointer text-sm font-bold text-emerald-800 hover:underline">View submitted documents</summary>
+                            <pre class="mt-2 max-h-64 max-w-2xl overflow-auto whitespace-pre-wrap rounded bg-slate-50 p-3 text-xs text-slate-700">{{ json_encode($verificationRequest->documents, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+                        </details>
+                    @else
+                        <p class="mt-3 text-xs text-slate-500">No documents attached.</p>
+                    @endif
+                    @if ($verificationRequest->notes)<p class="mt-3 whitespace-pre-wrap text-sm text-slate-700">{{ $verificationRequest->notes }}</p>@endif
+                </div>
+                <form method="POST" action="{{ route('admin.verification.update', $verificationRequest) }}" class="grid content-start gap-3">
+                    @csrf @method('PATCH')
+                    <label class="grid gap-1 text-sm font-semibold text-slate-700">Decision
+                        <select name="status" required class="min-h-11 rounded border border-slate-300 bg-white px-3 text-sm font-normal">
+                            <option value="APPROVED">Approve</option>
+                            <option value="REJECTED">Reject</option>
+                            <option value="MORE_INFO">Request more information</option>
+                        </select>
+                    </label>
+                    <label class="grid gap-1 text-sm font-semibold text-slate-700">Reviewer note<textarea name="notes" maxlength="2000" rows="3" class="rounded border border-slate-300 px-3 py-2 text-sm font-normal" placeholder="Include any action the applicant needs to take."></textarea></label>
+                    <button class="justify-self-start rounded bg-emerald-800 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-900">Save review</button>
+                </form>
+            </article>
+        @empty
+            <p class="py-10 text-sm text-slate-600">No verification requests match these filters.</p>
+        @endforelse
+        <div class="mt-6">{{ $requests->links() }}</div>
+    </div>
+@endsection
