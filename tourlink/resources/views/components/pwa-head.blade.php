@@ -1,0 +1,8 @@
+<meta name="theme-color" content="#063b00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TourLink">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icons/tourlink-192.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/tourlink-192.svg">

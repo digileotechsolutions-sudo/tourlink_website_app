@@ -19,6 +19,7 @@
 
             @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
             @if(session('referred_by'))<p class="auth-msg auth-msg-notice" role="status"><strong>{{ session('referred_by') }}</strong> referred you. Your referral is credited once your account is approved.</p>@endif
+            <p class="auth-msg auth-msg-notice pwa-online-only" data-online-only-notice hidden>Email OTP verification requires an internet connection. Please reconnect and retry.</p>
             @error('code')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
             @error('user_id')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
 
@@ -44,7 +45,7 @@
 
                     @unless($verification['verified'])
                         @if($verification['deliverable'])
-                            <form class="auth-verify-controls" method="POST" action="{{ route('verification.verify') }}" data-otp-form>
+                            <form class="auth-verify-controls" method="POST" action="{{ route('verification.verify') }}" data-otp-form data-online-only="otp">
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{ $user->id }}">
                                 <input type="hidden" name="channel" value="{{ $channel->value }}">
@@ -56,7 +57,7 @@
                                 </div>
                                 <button class="auth-btn auth-verify-button" type="submit"><span data-verify-label>Verify Account</span><span class="auth-loading-spinner" data-verify-spinner aria-hidden="true"></span></button>
                             </form>
-                            <form class="auth-resend-form" method="POST" action="{{ route('verification.resend') }}" data-resend-form data-resend-seconds="60">
+                            <form class="auth-resend-form" method="POST" action="{{ route('verification.resend') }}" data-resend-form data-resend-seconds="60" data-online-only="otp">
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{ $user->id }}">
                                 <input type="hidden" name="channel" value="{{ $channel->value }}">

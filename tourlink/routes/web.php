@@ -28,16 +28,17 @@ use App\Http\Controllers\TripController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\VehicleOwnerController;
 use App\Http\Controllers\VerificationController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', HomeController::class)->name('home');
-Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
+Route::get('/', HomeController::class)->middleware('pwa.public')->name('home');
+Route::get('/trips', [TripController::class, 'index'])->middleware('pwa.public')->name('trips.index');
 Route::get('/trips/{trip:slug}', [TripController::class, 'show'])->name('trips.show');
-Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+Route::get('/vehicles', [VehicleController::class, 'index'])->middleware('pwa.public')->name('vehicles.index');
 Route::get('/vehicles/{vehicle:slug}', [VehicleController::class, 'show'])->name('vehicles.show');
 Route::get('/compare', [TravelerController::class, 'compare'])->name('compare');
-Route::get('/journal', [BlogController::class, 'index'])->name('blog.index');
-Route::get('/journal/{blogPost:slug}', [BlogController::class, 'show'])->name('blog.show');
+Route::get('/journal', [BlogController::class, 'index'])->middleware('pwa.public')->name('blog.index');
+Route::get('/journal/{blogPost:slug}', [BlogController::class, 'show'])->middleware('pwa.public')->name('blog.show');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -60,6 +61,10 @@ Route::middleware('auth')->group(function (): void {
 });
 
 Route::middleware(['auth', 'account.access:TRAVELER'])->group(function (): void {
+    Route::get('/pwa/csrf', fn (Request $request) => response()->json([
+        'token' => csrf_token(),
+        'user_id' => $request->user()->id,
+    ])->header('Cache-Control', 'private, no-store, max-age=0')->header('Pragma', 'no-cache'))->name('pwa.csrf');
     Route::get('/dashboard', [TravelerController::class, 'dashboard'])->name('dashboard');
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::post('/bookings/trips', [BookingController::class, 'storeTrip'])->name('bookings.trips.store');
@@ -69,6 +74,7 @@ Route::middleware(['auth', 'account.access:TRAVELER'])->group(function (): void 
     Route::get('/traveler/profile', [TravelerController::class, 'profile'])->name('traveler.profile');
     Route::put('/traveler/profile', [TravelerController::class, 'updateProfile'])->name('traveler.profile.update');
     Route::get('/traveler/favorites', [TravelerController::class, 'favorites'])->name('traveler.favorites');
+    Route::post('/traveler/favorites/{trip:slug}/save', [TravelerController::class, 'saveFavorite'])->name('traveler.favorites.save');
     Route::post('/traveler/favorites/{trip}', [TravelerController::class, 'toggleFavorite'])->name('traveler.favorites.toggle');
     Route::get('/traveler/notifications', [TravelerController::class, 'notifications'])->name('traveler.notifications');
     Route::post('/traveler/notifications/read', [TravelerController::class, 'markNotificationsRead'])->name('traveler.notifications.read');

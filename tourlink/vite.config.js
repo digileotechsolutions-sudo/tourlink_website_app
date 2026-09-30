@@ -20,9 +20,15 @@ export default defineConfig({
             closeBundle() {
                 const publicBuild = resolve(appDirectory, 'public/build');
                 const documentRootBuild = resolve(appDirectory, '../build');
+                const documentRoot = resolve(appDirectory, '..');
 
                 mkdirSync(documentRootBuild, { recursive: true });
                 cpSync(publicBuild, documentRootBuild, { recursive: true, force: true });
+                cpSync(resolve(appDirectory, 'public/icons'), resolve(documentRoot, 'icons'), { recursive: true, force: true });
+
+                for (const file of ['manifest.json', 'manifest.webmanifest', 'sw.js', 'offline.html']) {
+                    cpSync(resolve(appDirectory, 'public', file), resolve(documentRoot, file));
+                }
             },
         },
     ],

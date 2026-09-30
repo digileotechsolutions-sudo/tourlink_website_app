@@ -12,6 +12,7 @@ use App\Models\Trip;
 use App\Services\Booking\BookingService;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -76,6 +77,30 @@ class TravelerController extends Controller
     public function favorites(Request $request): View
     {
         return view('traveler.favorites', ['favorites' => Favorite::query()->where('user_id', $request->user()->id)->with('trip.destination')->latest()->paginate(12)]);
+    }
+
+    public function saveFavorite(Request $request, Trip $trip): JsonResponse|RedirectResponse
+    {
+        abort_unless($trip->status === ListingStatus::Published && $trip->verification_status === VerificationStatus::Approved, 404);
+
+        $data = $request->validate([
+            'trip_id' => ['required', 'string', 'max:36'],
+            'expected_user_id' => ['required', 'string', 'max:36'],
+        ]);
+
+        abort_unless(hash_equals($trip->id, $data['trip_id']), 404);
+        abort_unless(hash_equals($request->user()->id, $data['expected_user_id']), 403);
+
+        Favorite::query()->firstOrCreate([
+            'user_id' => $request->user()->id,
+            'trip_id' => $trip->id,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true, 'saved' => true]);
+        }
+
+        return back()->with('status', 'Trip saved to favorites.');
     }
 
     public function toggleFavorite(Request $request, Trip $trip): RedirectResponse

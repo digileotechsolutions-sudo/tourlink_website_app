@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#063b00">
+    <x-pwa-head />
     <title>@yield('title', 'Sign in | TourLink')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -11,6 +11,7 @@
     <main class="login-page">
         @yield('content')
     </main>
+    <x-pwa-status />
 </body>
 </html>
 <div>

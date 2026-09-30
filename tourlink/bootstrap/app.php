@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureAccountAccess;
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\MarkPublicPwaPages;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'account.access' => EnsureAccountAccess::class,
             'admin' => EnsureAdmin::class,
+            'pwa.public' => MarkPublicPwaPages::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

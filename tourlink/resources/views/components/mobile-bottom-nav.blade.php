@@ -34,3 +34,4 @@
     @endforeach
 </nav>
 @endauth
+<x-pwa-status />

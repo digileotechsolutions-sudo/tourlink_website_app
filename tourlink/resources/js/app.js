@@ -13,9 +13,45 @@ document.addEventListener('click', (event) => {
 
     const reveal = input.type === 'password';
     input.type = reveal ? 'text' : 'password';
-    toggle.textContent = reveal ? 'Hide' : 'Show';
-    toggle.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
-    toggle.setAttribute('title', reveal ? 'Hide password' : 'Show password');
+    const label = toggle.querySelector('[data-password-toggle-label]');
+    const eye = toggle.querySelector('[data-password-eye]');
+    const eyeOff = toggle.querySelector('[data-password-eye-off]');
+    const nextLabel = reveal ? 'Hide password' : 'Show password';
+
+    if (label) {
+        label.textContent = nextLabel;
+        if (eye && eyeOff) {
+            eye.hidden = reveal;
+            eyeOff.hidden = !reveal;
+        }
+    } else {
+        toggle.textContent = reveal ? 'Hide' : 'Show';
+    }
+
+    toggle.setAttribute('aria-label', nextLabel);
+    toggle.setAttribute('title', nextLabel);
+});
+
+document.querySelectorAll('[data-auth-form]').forEach((form) => {
+    form.addEventListener('submit', () => {
+        if (!navigator.onLine) {
+            return;
+        }
+
+        const button = form.querySelector('[data-auth-submit]');
+        const label = button?.querySelector('[data-auth-submit-label]');
+
+        if (!button) {
+            return;
+        }
+
+        button.disabled = true;
+        button.classList.add('is-loading');
+        button.setAttribute('aria-busy', 'true');
+        if (label) {
+            label.textContent = 'Signing in...';
+        }
+    });
 });
 
 document.querySelectorAll('[data-password-strength]').forEach((indicator) => {
@@ -222,6 +258,286 @@ document.querySelectorAll('[data-resend-form]').forEach((form) => {
 
 import('./echo').catch(() => {});
 
+const pwaStatus = document.querySelector('[data-pwa-status]');
+const pwaMessage = pwaStatus?.querySelector('[data-pwa-message]');
+const installButton = pwaStatus?.querySelector('[data-pwa-install]');
+const updateButton = pwaStatus?.querySelector('[data-pwa-update]');
+const onlineOnlyNotice = document.querySelector('[data-online-only-notice]');
+let installPrompt = null;
+let pwaRegistration = null;
+
+const setPwaStatus = (message, state) => {
+    if (!pwaStatus || !pwaMessage) {
+        return;
+    }
+
+    pwaMessage.textContent = message;
+    pwaStatus.dataset.state = state;
+};
+
+const database = () => new Promise((resolve, reject) => {
+    const request = indexedDB.open('tourlink-offline', 1);
+
+    request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains('actions')) {
+            request.result.createObjectStore('actions', { keyPath: 'id' });
+        }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+});
+
+const queueFavorite = async (form) => {
+    const userId = form.dataset.userId;
+    const tripId = form.dataset.tripId;
+
+    if (!userId || !tripId) {
+        return false;
+    }
+
+    const store = await database();
+    const id = `favorite-${userId}-${tripId}`;
+
+    await new Promise((resolve, reject) => {
+        const transaction = store.transaction('actions', 'readwrite');
+        transaction.objectStore('actions').put({
+            id,
+            type: 'favorite-add',
+            userId,
+            tripId,
+            url: form.action,
+            createdAt: Date.now(),
+        });
+        transaction.oncomplete = resolve;
+        transaction.onerror = () => reject(transaction.error);
+    });
+
+    const button = form.querySelector('button[type="submit"]');
+    if (button) {
+        button.textContent = 'Pending synchronization';
+        button.disabled = true;
+    }
+    setPwaStatus('Pending synchronization', 'pending');
+
+    if ('serviceWorker' in navigator) {
+        const registration = pwaRegistration ?? await navigator.serviceWorker.ready.catch(() => null);
+        if (registration?.sync) {
+            await registration.sync.register('tourlink-outbox').catch(() => {});
+        }
+    }
+
+    return true;
+};
+
+window.addEventListener('offline', () => {
+    setPwaStatus('You are offline. Some features may be unavailable.', 'offline');
+    if (onlineOnlyNotice) {
+        onlineOnlyNotice.hidden = false;
+    }
+});
+
+window.addEventListener('online', () => {
+    setPwaStatus('Connection restored. Synchronizing...', 'syncing');
+    if (onlineOnlyNotice) {
+        onlineOnlyNotice.hidden = true;
+    }
+
+    if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SYNC_OUTBOX' });
+    } else {
+        setPwaStatus('Connected', 'online');
+    }
+});
+
+document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) {
+        return;
+    }
+
+    if (form.matches('[data-offline-favorite]')) {
+        event.preventDefault();
+
+        if (navigator.onLine) {
+            const button = form.querySelector('button[type="submit"]');
+            if (button) {
+                button.disabled = true;
+            }
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { Accept: 'application/json' },
+                    body: new FormData(form),
+                });
+
+                if (response.ok) {
+                    if (button) {
+                        button.textContent = 'Saved';
+                    }
+                    setPwaStatus('Connected', 'online');
+                    return;
+                }
+
+                if (response.status < 500) {
+                    if (button) {
+                        button.disabled = false;
+                    }
+                    setPwaStatus('This trip could not be saved. Please refresh and try again.', 'online');
+                    return;
+                }
+            } catch {
+                // The server endpoint is idempotent, so a retry is safe if the response was lost.
+            }
+        }
+
+        try {
+            if (await queueFavorite(form)) {
+                return;
+            }
+        } catch {
+            setPwaStatus('Could not save this action for synchronization.', 'offline');
+            return;
+        }
+    }
+
+    if (navigator.onLine || form.method.toLowerCase() === 'get') {
+        return;
+    }
+
+    event.preventDefault();
+    const path = new URL(form.action, location.href).pathname;
+    const message = path.includes('/verify')
+        ? 'Email OTP verification requires an internet connection. Please reconnect and retry.'
+        : path.includes('/payment') || path.includes('/mpesa')
+            ? 'You are currently offline. Please reconnect to the internet before making a payment.'
+            : 'You are offline. This action requires an internet connection.';
+
+    setPwaStatus(message, 'offline');
+    if (onlineOnlyNotice) {
+        onlineOnlyNotice.textContent = message;
+        onlineOnlyNotice.hidden = false;
+    }
+});
+
+window.addEventListener('tourlink:offline-payment', () => {
+    setPwaStatus('You are currently offline. Please reconnect to the internet before making a payment.', 'offline');
+});
+
+const nativeFetch = window.fetch.bind(window);
+window.fetch = (input, options) => {
+    const requestUrl = typeof input === 'string' ? input : input.url;
+    const paymentRequest = new URL(requestUrl, location.href).pathname === '/api/payments/mpesa/stk';
+    const paymentMessage = 'You are currently offline. Please reconnect to the internet before making a payment.';
+
+    if (paymentRequest && !navigator.onLine) {
+        setPwaStatus(paymentMessage, 'offline');
+        return Promise.reject(new Error(paymentMessage));
+    }
+
+    return nativeFetch(input, options).catch((error) => {
+        if (paymentRequest && error instanceof TypeError) {
+            setPwaStatus(paymentMessage, 'offline');
+            throw new Error(paymentMessage);
+        }
+        throw error;
+    });
+};
+
+window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    installPrompt = event;
+    if (installButton) {
+        installButton.hidden = false;
+    }
+});
+
+installButton?.addEventListener('click', async () => {
+    if (installButton.dataset.manual === 'true') {
+        setPwaStatus('In Safari, open Share and choose Add to Home Screen.', 'online');
+        return;
+    }
+
+    if (!installPrompt) {
+        return;
+    }
+
+    await installPrompt.prompt();
+    await installPrompt.userChoice;
+    installPrompt = null;
+    installButton.hidden = true;
+});
+
+const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !navigator.standalone;
+if (isIosDevice && installButton && !window.matchMedia('(display-mode: standalone)').matches) {
+    installButton.hidden = false;
+    installButton.dataset.manual = 'true';
+}
+
+window.addEventListener('appinstalled', () => {
+    installPrompt = null;
+    if (installButton) {
+        installButton.hidden = true;
+    }
+    setPwaStatus('TourLink installed', 'online');
+});
+
 if ('serviceWorker' in navigator && window.isSecureContext) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    let hadController = Boolean(navigator.serviceWorker.controller);
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (hadController) {
+            location.reload();
+        }
+        hadController = true;
+    });
+
+    navigator.serviceWorker.addEventListener('message', ({ data }) => {
+        if (data?.type === 'OUTBOX_SYNCED') {
+            setPwaStatus(data.syncedCount > 0 ? 'Pending actions synchronized.' : 'Connected', 'online');
+        } else if (data?.type === 'OUTBOX_PENDING') {
+            setPwaStatus('Connected. Some actions are pending synchronization.', 'pending');
+        }
+    });
+
+    navigator.serviceWorker.register('/sw.js').then((registration) => {
+        pwaRegistration = registration;
+        const revealUpdate = () => {
+            if (updateButton) {
+                updateButton.hidden = false;
+            }
+            setPwaStatus('A new TourLink version is ready.', 'update');
+        };
+
+        if (registration.waiting) {
+            revealUpdate();
+        }
+
+        registration.addEventListener('updatefound', () => {
+            const worker = registration.installing;
+            worker?.addEventListener('statechange', () => {
+                if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+                    revealUpdate();
+                }
+            });
+        });
+    }).catch(() => {});
+}
+
+updateButton?.addEventListener('click', () => {
+    pwaRegistration?.waiting?.postMessage({ type: 'SKIP_WAITING' });
+    updateButton.disabled = true;
+    setPwaStatus('Updating TourLink...', 'update');
+});
+
+if (!navigator.onLine) {
+    setPwaStatus('You are offline. Some features may be unavailable.', 'offline');
+    if (onlineOnlyNotice) {
+        onlineOnlyNotice.hidden = false;
+    }
+}
+
+if ('serviceWorker' in navigator && window.isSecureContext) {
+    setPwaStatus(navigator.onLine ? 'Connected' : 'You are offline. Some features may be unavailable.', navigator.onLine ? 'online' : 'offline');
 }

@@ -4,9 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="@yield('meta_description', 'Discover trips, hire verified vehicles and travel Kenya with confidence.')">
-    <meta name="theme-color" content="#063b00">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="/manifest.webmanifest">
+    <x-pwa-head />
     <title>@yield('title', 'TourLink | One Platform. Endless Journeys.')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
