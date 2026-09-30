@@ -20,6 +20,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -110,6 +111,8 @@ class AuthController extends Controller
         AccountVerificationService $verification,
         ReferralService $referrals,
     ): mixed {
+        Log::info('Registration pipeline: request received.');
+
         $input = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:80'],
             'email' => ['required', 'string', 'email', 'max:255'],
@@ -117,6 +120,7 @@ class AuthController extends Controller
             'password' => [...PasswordRules::withAccountContext(PasswordRules::rules(), $request), 'confirmed'],
             'role' => ['required', Rule::in([Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value])],
         ], PasswordRules::messages());
+        Log::info('Registration pipeline: validation completed.');
 
         $email = Str::lower(trim($input['email']));
 
@@ -125,6 +129,7 @@ class AuthController extends Controller
         } catch (InvalidArgumentException $exception) {
             throw ValidationException::withMessages(['phone' => $exception->getMessage()]);
         }
+        Log::info('Registration pipeline: phone normalized.');
 
         if ($verification->deliverableChannels() === []) {
             report(new RuntimeException('No OTP delivery channel is configured. Set Resend, Africa\'s Talking, or OTP_DELIVERY=log.'));
@@ -137,6 +142,7 @@ class AuthController extends Controller
             ->where('email', $email)
             ->orWhere('phone', $phone)
             ->exists();
+        Log::info('Registration pipeline: duplicate-account lookup completed.');
 
         if ($existingAccount) {
             return back()->withInput($request->except(['password', 'password_confirmation']))
@@ -144,21 +150,25 @@ class AuthController extends Controller
         }
 
         $user = $this->createAccountWithReferralCode($input, $email, $phone, $referrals);
+        Log::info('Registration pipeline: account and profile created.');
 
         // Consume the captured referrer once, then associate the relationship.
         // Reading it from the session rather than the request body is what stops
         // the referrer being chosen or swapped at submission time.
         $referral = $referrals->recordForNewUser($user, $referrals->pendingReferrer($request));
+        Log::info('Registration pipeline: referral processing completed.');
 
         $codes = [];
 
         try {
+            Log::info('Registration pipeline: OTP delivery started.');
             foreach ($verification->deliverableChannels() as $channel) {
                 $code = $otpService->issueForRegistration($user, $channel);
                 $codes[$channel === OtpChannel::Email ? 'email' : 'phone'] = $code;
             }
 
             $status = 'Verification codes sent to your '.$verification->describeChannels($verification->deliverableChannels()).'.';
+            Log::info('Registration pipeline: OTP delivery completed.');
         } catch (Throwable $exception) {
             report($exception);
             $status = 'Your account was created, but a verification message could not be delivered. Use resend to try again.';
