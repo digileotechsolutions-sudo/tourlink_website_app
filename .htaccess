@@ -9,6 +9,17 @@
     # once the site loads, then delete diagnostic.php from public_html.
     ErrorDocument 403 /diagnostic.php
 
+    # The application lives in public_html/tourlink, so the front controller can
+    # reach it, but the files inside it must never be served over HTTP. Without
+    # this, Apache hands out tourlink/.env and tourlink/storage/logs/laravel.log
+    # directly, because the front controller rule below skips real files.
+    RewriteRule ^tourlink(/.*)?$ - [F,L]
+
+    # Same protection for any other dotfile that ends up in the document root.
+    <FilesMatch "^\.">
+        Require all denied
+    </FilesMatch>
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
