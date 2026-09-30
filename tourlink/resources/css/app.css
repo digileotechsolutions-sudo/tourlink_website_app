@@ -50,7 +50,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
 
 .login-page { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 32px 20px; background: linear-gradient(125deg, #071f1b 0%, #15553f 48%, #e7f0e9 100%); background-size: 160% 160%; animation: auth-gradient-flow 18s ease-in-out infinite alternate; }
-.login-page:has(.auth-login-shell), .login-page:has(.auth-compact-shell) { background: #009a44; animation: none; }
+.login-page:has(.auth-login-shell), .login-page:has(.auth-compact-shell) { background: #fff; animation: none; }
 @keyframes auth-gradient-flow { from { background-position: 0% 45%; } to { background-position: 100% 55%; } }
 .auth-wrapper { width: 100%; max-width: 1060px; min-height: 660px; display: flex; align-items: stretch; overflow: hidden; border: 1px solid #dce8e0; border-radius: 24px; background: #fff; box-shadow: 0 24px 70px rgba(24, 55, 39, .12); animation: auth-enter 440ms cubic-bezier(.2, .75, .25, 1) both; }
 @keyframes auth-enter { from { opacity: 0; transform: translateY(12px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
