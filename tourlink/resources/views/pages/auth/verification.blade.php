@@ -18,6 +18,7 @@
             </header>
 
             @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
+            @if(session('referred_by'))<p class="auth-msg auth-msg-notice" role="status"><strong>{{ session('referred_by') }}</strong> referred you. Your referral is credited once your account is approved.</p>@endif
             @error('code')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
             @error('user_id')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
 

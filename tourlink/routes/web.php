@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminContentController;
 use App\Http\Controllers\AdminFinanceController;
 use App\Http\Controllers\AdminMessageController;
 use App\Http\Controllers\AdminModerationController;
+use App\Http\Controllers\AdminReferralController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminReviewController;
 use App\Http\Controllers\AdminSettingsController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MpesaPaymentController;
 use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\TravelerController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\VehicleController;
@@ -52,6 +54,10 @@ Route::get('/verify/{user}', [VerificationController::class, 'show'])->name('ver
 Route::post('/verify', [VerificationController::class, 'verify'])->middleware('throttle:auth-otp')->name('verification.verify');
 Route::post('/verify/resend', [VerificationController::class, 'resend'])->middleware('throttle:auth-otp')->name('verification.resend');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+Route::middleware('auth')->group(function (): void {
+    Route::get('/account/password', [PasswordController::class, 'changeForm'])->name('password.change');
+    Route::put('/account/password', [PasswordController::class, 'change'])->name('password.change.update');
+});
 
 Route::middleware(['auth', 'account.access:TRAVELER'])->group(function (): void {
     Route::get('/dashboard', [TravelerController::class, 'dashboard'])->name('dashboard');
@@ -104,6 +110,11 @@ Route::prefix('vehicle-owner')->name('vehicle-owner.')->middleware(['auth', 'acc
     Route::put('/profile', [VehicleOwnerController::class, 'updateProfile'])->name('profile.update');
     Route::post('/verification', [VehicleOwnerController::class, 'requestVerification'])->name('verification.store');
     Route::get('/{section}', [VehicleOwnerController::class, 'section'])->whereIn('section', ['earnings', 'ratings', 'messages', 'verification', 'settings'])->name('section');
+});
+
+// Shared across every account type, so no role prefix or redirect dance.
+Route::middleware(['auth', 'account.access'])->group(function (): void {
+    Route::get('/referrals', [ReferralController::class, 'index'])->name('referrals.index');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function (): void {
@@ -159,6 +170,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/messages', [AdminMessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{conversation}', [AdminMessageController::class, 'show'])->name('messages.show');
     Route::get('/audit', [AdminAuditController::class, 'index'])->name('audit.index');
+    Route::get('/referrals', [AdminReferralController::class, 'index'])->name('referrals.index');
+    Route::put('/referrals/settings', [AdminReferralController::class, 'updateSettings'])->name('referrals.settings');
+    Route::post('/referrals/{referral}/reward', [AdminReferralController::class, 'reward'])->name('referrals.reward');
     Route::get('/verification', [AdminVerificationController::class, 'index'])->name('verification.index');
     Route::patch('/verification/{verificationRequest}', [AdminVerificationController::class, 'update'])->name('verification.update');
     Route::get('/verification/{verificationRequest}/documents/{document}', [AdminVerificationController::class, 'document'])

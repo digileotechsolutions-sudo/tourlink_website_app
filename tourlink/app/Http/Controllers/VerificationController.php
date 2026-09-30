@@ -7,6 +7,7 @@ use App\AccountStatus;
 use App\Models\User;
 use App\OtpChannel;
 use App\Role;
+use App\Services\Referral\ReferralService;
 use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpDeliveryService;
 use App\Services\Verification\OtpService;
@@ -27,7 +28,7 @@ class VerificationController extends Controller
         return view('pages.auth.verification', compact('user', 'verificationMethods'));
     }
 
-    public function verify(Request $request, OtpService $otpService, OtpDeliveryService $delivery, AccountVerificationService $verification): mixed
+    public function verify(Request $request, OtpService $otpService, OtpDeliveryService $delivery, AccountVerificationService $verification, ReferralService $referrals): mixed
     {
         $input = $request->validate([
             'user_id' => ['required', 'string', 'exists:users,id'],
@@ -53,6 +54,9 @@ class VerificationController extends Controller
         $user->refresh();
 
         if ($channel === OtpChannel::Email) {
+            // The email is proven, so a referral for this account can progress.
+            $referrals->markVerified($user);
+
             try {
                 $delivery->sendEmailVerified(
                     $user,

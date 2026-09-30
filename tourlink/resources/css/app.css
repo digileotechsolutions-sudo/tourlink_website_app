@@ -70,6 +70,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .auth-field input:focus, .auth-field select:focus { outline: none; border-color: #247346; box-shadow: 0 0 0 4px rgba(36, 115, 70, .12); }
 .auth-field-password input { padding-right: 70px; }
 .auth-password-toggle { position: absolute; right: 10px; bottom: 8px; border: 0; padding: 6px 8px; color: #216b42; background: transparent; font-size: 11px; font-weight: 800; cursor: pointer; }
+.password-strength { margin: -7px 0 17px; }
+.password-strength__label { display: flex; justify-content: space-between; gap: 12px; color: #718279; font-size: 11px; }
+.password-strength__label strong { color: #b42318; }
+.password-strength__track { height: 5px; margin-top: 7px; overflow: hidden; border-radius: 99px; background: #e7ece8; }
+.password-strength__track span { display: block; width: 33%; height: 100%; border-radius: inherit; background: #b42318; transition: width .2s ease, background-color .2s ease; }
+.password-strength[data-strength="fair"] .password-strength__label strong { color: #a16207; }
+.password-strength[data-strength="fair"] .password-strength__track span { background: #d58b19; }
+.password-strength[data-strength="strong"] .password-strength__label strong { color: #216b42; }
+.password-strength[data-strength="strong"] .password-strength__track span { background: #216b42; }
 .auth-actions { display: grid; gap: 14px; margin-top: 24px; }
 .auth-form-check { display: flex; align-items: center; gap: 9px; color: #64748b; font-size: 13px; }
 .auth-form-check input { width: 17px; height: 17px; accent-color: #216b42; }

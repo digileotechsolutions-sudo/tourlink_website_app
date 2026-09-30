@@ -10,14 +10,16 @@ use App\Models\User;
 use App\Models\VehicleOwnerProfile;
 use App\OtpChannel;
 use App\Role;
+use App\Rules\PasswordRules;
+use App\Services\Referral\ReferralService;
 use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpService;
 use App\Services\Verification\PhoneNumberNormalizer;
 use App\VerificationLevel;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -33,14 +35,16 @@ class AuthController extends Controller
         return view('pages.auth.login');
     }
 
-    public function showRegistration(Request $request): View
+    public function showRegistration(Request $request, ReferralService $referrals): View
     {
         $role = $request->query('role');
         $initialRole = in_array($role, [Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value], true)
             ? $role
             : Role::Traveler->value;
 
-        return view('pages.auth.register', compact('initialRole'));
+        $referrer = $referrals->captureReferrer($request);
+
+        return view('pages.auth.register', compact('initialRole', 'referrer'));
     }
 
     public function login(Request $request, AccountVerificationService $verification): mixed
@@ -95,14 +99,15 @@ class AuthController extends Controller
         PhoneNumberNormalizer $phoneNormalizer,
         OtpService $otpService,
         AccountVerificationService $verification,
+        ReferralService $referrals,
     ): mixed {
         $input = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:80'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['required', 'string', 'min:8', 'max:30'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => [...PasswordRules::withAccountContext(PasswordRules::rules(), $request), 'confirmed'],
             'role' => ['required', Rule::in([Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value])],
-        ]);
+        ], PasswordRules::messages());
 
         $email = Str::lower(trim($input['email']));
 
@@ -129,34 +134,12 @@ class AuthController extends Controller
                 ->withErrors(['email' => 'An account with that email or phone number already exists.']);
         }
 
-        $user = DB::transaction(function () use ($input, $email, $phone): User {
-            $user = new User;
-            $user->fill([
-                'name' => $input['name'],
-                'email' => $email,
-                'phone' => $phone,
-                'password' => $input['password'],
-            ]);
-            $user->forceFill([
-                'role' => Role::from($input['role']),
-                'approval_status' => AccountApprovalStatus::Pending,
-                'account_status' => AccountStatus::Active,
-                'verification_level' => VerificationLevel::Basic,
-            ]);
-            $user->save();
+        $user = $this->createAccountWithReferralCode($input, $email, $phone, $referrals);
 
-            match (Role::from($input['role'])) {
-                Role::Traveler => $user->travelerProfile()->save(new TravelerProfile),
-                Role::Operator => $user->operatorProfile()->save(new OperatorProfile([
-                    'company_name' => $input['name'],
-                    'slug' => Str::slug($input['name']).'-'.Str::lower(Str::random(8)),
-                ])),
-                Role::VehicleOwner => $user->vehicleOwnerProfile()->save(new VehicleOwnerProfile),
-                Role::Admin => null,
-            };
-
-            return $user;
-        });
+        // Consume the captured referrer once, then associate the relationship.
+        // Reading it from the session rather than the request body is what stops
+        // the referrer being chosen or swapped at submission time.
+        $referral = $referrals->recordForNewUser($user, $referrals->pendingReferrer($request));
 
         $codes = [];
 
@@ -172,7 +155,9 @@ class AuthController extends Controller
             $status = 'Your account was created, but a verification message could not be delivered. Use resend to try again.';
         }
 
-        $redirect = redirect()->route('verification.notice', ['user' => $user->id])->with('status', $status);
+        $redirect = redirect()->route('verification.notice', ['user' => $user->id])
+            ->with('status', $status)
+            ->with('referred_by', $referral?->referrer?->name);
 
         if ($codes['email'] ?? null) {
             $redirect->with('dev_otp_email', $codes['email']);
@@ -199,6 +184,65 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+    }
+
+    /**
+     * Creates the account, and retries with a fresh referral code if two
+     * simultaneous registrations happen to generate the same one.
+     *
+     * @param  array<string, mixed>  $input
+     */
+    private function createAccountWithReferralCode(array $input, string $email, string $phone, ReferralService $referrals): User
+    {
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            try {
+                return DB::transaction(function () use ($input, $email, $phone, $referrals): User {
+                    $user = new User;
+                    $user->fill([
+                        'name' => $input['name'],
+                        'email' => $email,
+                        'phone' => $phone,
+                        'password' => $input['password'],
+                    ]);
+                    $user->forceFill([
+                        'role' => Role::from($input['role']),
+                        'approval_status' => AccountApprovalStatus::Pending,
+                        'account_status' => AccountStatus::Active,
+                        'verification_level' => VerificationLevel::Basic,
+                        // Assigned here so nobody can end up without a
+                        // shareable referral link after registering.
+                        'referral_code' => $referrals->generateUniqueCode(),
+                    ]);
+                    $user->save();
+
+                    match (Role::from($input['role'])) {
+                        Role::Traveler => $user->travelerProfile()->save(new TravelerProfile),
+                        Role::Operator => $user->operatorProfile()->save(new OperatorProfile([
+                            'company_name' => $input['name'],
+                            'slug' => Str::slug($input['name']).'-'.Str::lower(Str::random(8)),
+                        ])),
+                        Role::VehicleOwner => $user->vehicleOwnerProfile()->save(new VehicleOwnerProfile),
+                        Role::Admin => null,
+                    };
+
+                    return $user;
+                });
+            } catch (QueryException $exception) {
+                if (! $this->isReferralCodeCollision($exception) || $attempt === 2) {
+                    throw $exception;
+                }
+            }
+        }
+
+        throw new RuntimeException('Unable to create the account.');
+    }
+
+    private function isReferralCodeCollision(QueryException $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return str_contains($message, 'referral_code')
+            && (str_contains($message, 'Duplicate') || str_contains($message, 'duplicate') || str_contains($message, 'UNIQUE'));
     }
 
     private function dashboardUrl(User $user): string

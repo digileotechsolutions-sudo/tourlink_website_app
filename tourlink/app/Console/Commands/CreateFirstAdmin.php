@@ -6,6 +6,7 @@ use App\AccountApprovalStatus;
 use App\AccountStatus;
 use App\Models\User;
 use App\Role;
+use App\Rules\PasswordRules;
 use App\Services\Verification\PhoneNumberNormalizer;
 use App\VerificationLevel;
 use Illuminate\Console\Attributes\Description;
@@ -73,9 +74,10 @@ class CreateFirstAdmin extends Command
         $password = (string) $this->secret('Admin password (at least 12 characters)');
         $confirmation = (string) $this->secret('Confirm admin password');
 
+        $passwordRules = PasswordRules::withAccountContext(PasswordRules::rules(12), $name, $email, $phone);
         $passwordValidator = Validator::make(['password' => $password], [
-            'password' => ['required', 'string', 'min:12'],
-        ]);
+            'password' => $passwordRules,
+        ], PasswordRules::messages(12));
 
         if ($passwordValidator->fails()) {
             foreach ($passwordValidator->errors()->all() as $error) {

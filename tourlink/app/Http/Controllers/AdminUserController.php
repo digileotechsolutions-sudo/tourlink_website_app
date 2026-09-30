@@ -7,6 +7,7 @@ use App\AccountStatus;
 use App\Models\AdminLog;
 use App\Models\User;
 use App\Role;
+use App\Services\Referral\ReferralService;
 use App\Services\Verification\OtpDeliveryService;
 use App\VerificationLevel;
 use Illuminate\Database\Eloquent\Builder;
@@ -48,7 +49,7 @@ class AdminUserController extends Controller
         return view('admin.users.index', compact('users', 'filters'));
     }
 
-    public function update(Request $request, User $user, OtpDeliveryService $delivery): RedirectResponse
+    public function update(Request $request, User $user, OtpDeliveryService $delivery, ReferralService $referrals): RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:80'],
@@ -115,6 +116,14 @@ class AdminUserController extends Controller
         });
 
         if ($approvalChanged && in_array($data['approval_status'], [AccountApprovalStatus::Approved->value, AccountApprovalStatus::Rejected->value], true)) {
+            // Account approval is what makes a referral successful, so this is
+            // the single hook both admin approval paths share.
+            if ($data['approval_status'] === AccountApprovalStatus::Approved->value) {
+                $referrals->markApproved($user);
+            } else {
+                $referrals->markRejected($user);
+            }
+
             try {
                 $delivery->sendAccountApproval($user, $data['approval_status'] === AccountApprovalStatus::Approved->value, $data['approval_note'] ?? null);
             } catch (Throwable $exception) {

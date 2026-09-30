@@ -35,6 +35,7 @@
                         <span class="hidden sm:inline">Notifications</span>
                         @if (isset($statistics) && $statistics['pendingVerification'] > 0)<span class="grid size-5 place-items-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-800">{{ min(99, $statistics['pendingVerification']) }}</span>@endif
                     </a>
+                    <a href="{{ route('password.change') }}" class="inline-flex min-h-10 shrink-0 items-center rounded px-2 text-sm font-semibold text-slate-600 hover:bg-slate-100" aria-label="Change password">Password</a>
                     <div class="flex shrink-0 items-center gap-2 border-l border-slate-200 pl-4">
                         <span class="grid size-9 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-900">{{ str(auth()->user()->name)->substr(0, 1)->upper() }}</span>
                         <span class="hidden max-w-36 truncate text-sm font-semibold text-slate-800 xl:block">{{ auth()->user()->name }}</span>

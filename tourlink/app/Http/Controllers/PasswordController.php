@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\PasswordRules;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -13,6 +15,26 @@ class PasswordController extends Controller
     public function requestForm(): View
     {
         return view('pages.password.request');
+    }
+
+    public function changeForm(): View
+    {
+        return view('pages.password.change');
+    }
+
+    public function change(Request $request): RedirectResponse
+    {
+        $passwordRules = PasswordRules::withAccountContext(PasswordRules::rules(), $request->user());
+        $passwordRules[] = 'confirmed';
+
+        $input = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => $passwordRules,
+        ], PasswordRules::messages());
+
+        $request->user()->forceFill(['password' => $input['password']])->save();
+
+        return back()->with('status', 'Your password has been changed.');
     }
 
     public function sendResetLink(Request $request): mixed
@@ -34,17 +56,23 @@ class PasswordController extends Controller
 
     public function reset(Request $request): mixed
     {
+        $email = $request->input('email');
+        $email = is_string($email) && strlen($email) <= 255 ? Str::lower(trim($email)) : '';
+        $account = User::query()->where('email', $email)->first();
+        $passwordRules = PasswordRules::withAccountContext(PasswordRules::rules(), $account ?? $email);
+        $passwordRules[] = 'confirmed';
+
         $input = $request->validate([
             'token' => ['required', 'string'],
             'email' => ['required', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+            'password' => $passwordRules,
+        ], PasswordRules::messages());
 
         $status = Password::reset(
             [
                 'email' => Str::lower(trim($input['email'])),
                 'password' => $input['password'],
-                'password_confirmation' => $input['password_confirmation'],
+                'password_confirmation' => $request->input('password_confirmation'),
                 'token' => $input['token'],
             ],
             function (User $user, string $password): void {

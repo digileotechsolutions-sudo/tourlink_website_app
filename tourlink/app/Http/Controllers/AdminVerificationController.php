@@ -8,6 +8,7 @@ use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VerificationRequest;
+use App\Services\Referral\ReferralService;
 use App\VerificationLevel;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
@@ -43,7 +44,7 @@ class AdminVerificationController extends Controller
         return view('admin.verification.index', compact('requests', 'filters'));
     }
 
-    public function update(Request $request, VerificationRequest $verificationRequest): RedirectResponse
+    public function update(Request $request, VerificationRequest $verificationRequest, ReferralService $referrals): RedirectResponse
     {
         $data = $request->validate([
             'status' => ['required', Rule::in([
@@ -55,8 +56,10 @@ class AdminVerificationController extends Controller
         ]);
 
         $published = ['trips' => 0, 'vehicles' => 0];
+        $reviewedUserId = null;
+        $reviewStatus = VerificationStatus::from($data['status']);
 
-        DB::transaction(function () use ($request, $verificationRequest, $data, &$published): void {
+        DB::transaction(function () use ($request, $verificationRequest, $data, &$published, &$reviewedUserId, $reviewStatus): void {
             $verificationRequest = VerificationRequest::query()->lockForUpdate()->findOrFail($verificationRequest->id);
             $previousStatus = $verificationRequest->status->value;
             $status = VerificationStatus::from($data['status']);
@@ -67,6 +70,7 @@ class AdminVerificationController extends Controller
             ]);
 
             $user = $verificationRequest->user;
+            $reviewedUserId = $user->id;
 
             if ($status === VerificationStatus::Approved) {
                 if ($user->verification_level === VerificationLevel::Basic) {
@@ -96,6 +100,21 @@ class AdminVerificationController extends Controller
                 ],
             ]);
         });
+
+        // Outside the transaction so the reward write cannot extend the lock,
+        // and only when the account itself was approved. This is the second of
+        // the two admin approval paths that must move referrals forward.
+        if ($reviewedUserId !== null) {
+            $reviewedUser = User::query()->find($reviewedUserId);
+
+            if ($reviewedUser) {
+                if ($reviewStatus === VerificationStatus::Approved) {
+                    $referrals->markApproved($reviewedUser);
+                } elseif ($reviewStatus === VerificationStatus::Rejected) {
+                    $referrals->markRejected($reviewedUser);
+                }
+            }
+        }
 
         $publishedCount = array_sum($published);
 

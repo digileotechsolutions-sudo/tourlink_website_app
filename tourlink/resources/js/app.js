@@ -18,6 +18,40 @@ document.addEventListener('click', (event) => {
     toggle.setAttribute('title', reveal ? 'Hide password' : 'Show password');
 });
 
+document.querySelectorAll('[data-password-strength]').forEach((indicator) => {
+    const input = document.querySelector('[data-strength-input]');
+    const label = indicator.querySelector('[data-strength-label]');
+    const meter = indicator.querySelector('[data-strength-meter]');
+    const bar = indicator.querySelector('[data-strength-bar]');
+
+    if (!(input instanceof HTMLInputElement) || !label || !meter || !bar) {
+        return;
+    }
+
+    const updateStrength = () => {
+        const value = input.value;
+        const length = [...value].length;
+        const checks = [
+            length >= 8,
+            /[A-Z]/.test(value),
+            /[a-z]/.test(value),
+            /\d/.test(value),
+            /[^A-Za-z0-9\s]/.test(value),
+        ];
+        const score = checks.filter(Boolean).length;
+        const strength = score < 3 ? 'Weak' : score < 5 || length < 12 ? 'Fair' : 'Strong';
+        const progress = strength === 'Strong' ? 100 : strength === 'Fair' ? 66 : 33;
+
+        indicator.dataset.strength = strength.toLowerCase();
+        label.textContent = strength;
+        meter.setAttribute('aria-valuenow', String(progress));
+        bar.style.width = `${progress}%`;
+    };
+
+    input.addEventListener('input', updateStrength);
+    updateStrength();
+});
+
 document.querySelectorAll('[data-otp-form]').forEach((form) => {
     const digits = [...form.querySelectorAll('[data-otp-digit]')];
     const value = form.querySelector('[data-otp-value]');
@@ -79,6 +113,82 @@ document.querySelectorAll('[data-otp-form]').forEach((form) => {
             submit.disabled = true;
         }
     });
+});
+
+/**
+ * Referral sharing: copy buttons plus the Web Share API where it exists.
+ * Falls back to the clipboard so desktop browsers still work.
+ */
+
+const copyWithFallback = (value) => {
+    if (navigator.clipboard?.writeText) {
+        return navigator.clipboard.writeText(value);
+    }
+
+    const field = document.createElement('textarea');
+
+    field.value = value;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.opacity = '0';
+    document.body.appendChild(field);
+    field.select();
+    document.execCommand('copy');
+    document.body.removeChild(field);
+
+    return Promise.resolve();
+};
+
+document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-copy]');
+
+    if (!(button instanceof HTMLButtonElement)) {
+        return;
+    }
+
+    const original = button.textContent;
+    const label = button.dataset.copiedLabel ?? 'Copied';
+
+    copyWithFallback(button.dataset.copy)
+        .then(() => {
+            button.textContent = label;
+            window.setTimeout(() => {
+                button.textContent = original;
+            }, 2000);
+        })
+        .catch(() => {
+            button.textContent = 'Copy failed';
+            window.setTimeout(() => {
+                button.textContent = original;
+            }, 2000);
+        });
+});
+
+document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-share]');
+
+    if (!(button instanceof HTMLButtonElement)) {
+        return;
+    }
+
+    const link = document.querySelector('[data-referral-link]')?.textContent?.trim() ?? window.location.href;
+    const status = document.querySelector('[data-share-status]');
+
+    if (navigator.share) {
+        navigator.share({
+            title: button.dataset.shareTitle ?? 'TourLink',
+            text: button.dataset.shareText ?? '',
+            url: link,
+        }).catch(() => {});
+    } else if (status) {
+        copyWithFallback(link)
+            .then(() => {
+                status.textContent = 'Sharing is not supported here, so the link was copied instead.';
+            })
+            .catch(() => {
+                status.textContent = 'Copy the referral link above to share it.';
+            });
+    }
 });
 
 document.querySelectorAll('[data-resend-form]').forEach((form) => {

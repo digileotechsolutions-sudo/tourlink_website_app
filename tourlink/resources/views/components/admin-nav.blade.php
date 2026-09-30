@@ -11,6 +11,7 @@
         ['label' => 'Events', 'route' => 'admin.events.index', 'active' => 'admin.events.*'],
         ['label' => 'Blog', 'route' => 'admin.blog.index', 'active' => 'admin.blog.*'],
         ['label' => 'Reviews', 'route' => 'admin.reviews.index', 'active' => 'admin.reviews.*'],
+        ['label' => 'Referrals', 'route' => 'admin.referrals.index', 'active' => 'admin.referrals.*'],
         ['label' => 'Reports', 'route' => 'admin.reports.index', 'active' => 'admin.reports.*'],
         ['label' => 'Messages', 'route' => 'admin.messages.index', 'active' => 'admin.messages.*'],
         ['label' => 'Settings', 'route' => 'admin.settings.index', 'active' => 'admin.settings.*'],

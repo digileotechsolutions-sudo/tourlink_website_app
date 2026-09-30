@@ -3,6 +3,7 @@
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6 p-4 sm:p-8">
     <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">Vehicle-owner workspace</p><h1 class="mt-2 text-3xl font-black">{{ $title }}</h1><p class="mt-2 text-slate-600">{{ $description }}</p></div>
+    @if($type === 'settings')<a href="{{ route('password.change') }}" class="inline-flex min-h-11 items-center rounded border border-slate-300 bg-white px-4 text-sm font-bold text-emerald-800 hover:bg-emerald-50">Change password</a>@endif
     <div class="overflow-x-auto rounded border border-slate-200 bg-white"><table class="w-full min-w-[720px] text-left text-sm"><thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="p-4">Record</th><th class="p-4">Details</th><th class="p-4">Status</th><th class="p-4">Date</th></tr></thead><tbody class="divide-y divide-slate-100">
     @forelse($items as $item)
         <tr><td class="p-4 font-bold">{{ $item->name ?? $item->reference ?? 'Record' }}</td><td class="p-4 text-slate-600">

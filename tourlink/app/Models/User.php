@@ -103,6 +103,16 @@ class User extends Authenticatable
         return $this->hasMany(OtpChallenge::class);
     }
 
+    public function referralsMade(): HasMany
+    {
+        return $this->hasMany(Referral::class, 'referrer_id');
+    }
+
+    public function referral(): HasOne
+    {
+        return $this->hasOne(Referral::class, 'referred_user_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *
