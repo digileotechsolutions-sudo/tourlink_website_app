@@ -154,13 +154,14 @@ class OtpDeliveryService
     {
         $site = e((string) config('app.name'));
         $name = e($user->name);
+        $minutes = OtpService::EXPIRY_MINUTES;
 
         $html = <<<HTML
             <p>Hello {$name},</p>
             <p>Thank you for creating an account with {$site}!</p>
             <p>Your account has been successfully registered. To verify your email address, please use the One-Time Password (OTP) below:</p>
             <p><strong>Your Verification Code: {$code}</strong></p>
-            <p>This code is valid for {OtpService::EXPIRY_MINUTES} minutes. For your security, please do not share this code with anyone.</p>
+            <p>This code is valid for {$minutes} minutes. For your security, please do not share this code with anyone.</p>
             <p>Once your email address has been verified, your account will be submitted for administrator approval, if required.</p>
             <p>Thank you for choosing {$site}!</p>
             <p>Best regards,<br><strong>{$site} Team</strong></p>
