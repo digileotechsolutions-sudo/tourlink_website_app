@@ -7,6 +7,9 @@
         @if ($referrer)
             <p class="auth-referrer-note"><strong>{{ $referrer->name }}</strong> invited you to join TourLink. Your referral is credited after verification and approval.</p>
         @endif
+        @unless ($verificationAvailable)
+            <p class="auth-msg auth-msg-error" role="alert">Signup is temporarily unavailable because account verification delivery is not configured. Please contact TourLink support.</p>
+        @endunless
         <form method="POST" action="{{ route('register') }}" data-auth-form data-auth-loading-label="Creating account...">@csrf
             <div class="auth-field"><label for="name">Your name</label><input id="name" name="name" type="text" autocomplete="name" value="{{ old('name') }}" placeholder="Amina Musumba" required>@error('name')<span class="field-error">{{ $message }}</span>@enderror</div>
             <div class="auth-field"><label for="email">Email address</label><div class="auth-modern-control"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="m5 7 7 5 7-5"/></svg><input id="email" name="email" type="email" autocomplete="email" value="{{ old('email') }}" placeholder="you@example.com" required></div>@error('email')<span class="field-error">{{ $message }}</span>@enderror</div>

@@ -36,7 +36,7 @@ class AuthController extends Controller
         return view('pages.auth.login');
     }
 
-    public function showRegistration(Request $request, ReferralService $referrals): View
+    public function showRegistration(Request $request, ReferralService $referrals, AccountVerificationService $verification): View
     {
         $role = $request->query('role');
         $initialRole = in_array($role, [Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value], true)
@@ -44,8 +44,9 @@ class AuthController extends Controller
             : Role::Traveler->value;
 
         $referrer = $referrals->captureReferrer($request);
+        $verificationAvailable = $verification->deliverableChannels() !== [];
 
-        return view('pages.auth.register', compact('initialRole', 'referrer'));
+        return view('pages.auth.register', compact('initialRole', 'referrer', 'verificationAvailable'));
     }
 
     public function login(Request $request, AccountVerificationService $verification): mixed

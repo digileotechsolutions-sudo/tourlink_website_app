@@ -46,6 +46,15 @@ class PasswordPolicyTest extends TestCase
         $this->assertNotSame('Jungle@Trail29', $user->password);
     }
 
+    public function test_registration_page_explains_when_verification_delivery_is_unavailable(): void
+    {
+        config(['services.otp.delivery' => 'off']);
+
+        $this->get(route('register'))
+            ->assertOk()
+            ->assertSee('Signup is temporarily unavailable because account verification delivery is not configured.');
+    }
+
     public function test_registration_rejects_passwords_that_break_policy_or_match_account_identifiers(): void
     {
         $cases = [
