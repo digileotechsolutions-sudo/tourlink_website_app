@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\ListingStatus;
 use App\Models\AdminLog;
+use App\Models\Trip;
+use App\Models\User;
+use App\Models\Vehicle;
 use App\Models\VerificationRequest;
 use App\VerificationLevel;
 use App\VerificationStatus;
@@ -48,7 +52,9 @@ class AdminVerificationController extends Controller
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        DB::transaction(function () use ($request, $verificationRequest, $data): void {
+        $published = ['trips' => 0, 'vehicles' => 0];
+
+        DB::transaction(function () use ($request, $verificationRequest, $data, &$published): void {
             $verificationRequest = VerificationRequest::query()->lockForUpdate()->findOrFail($verificationRequest->id);
             $previousStatus = $verificationRequest->status->value;
             $status = VerificationStatus::from($data['status']);
@@ -59,8 +65,13 @@ class AdminVerificationController extends Controller
             ]);
 
             $user = $verificationRequest->user;
-            if ($status === VerificationStatus::Approved && $user->verification_level === VerificationLevel::Basic) {
-                $user->forceFill(['verification_level' => VerificationLevel::Verified])->save();
+
+            if ($status === VerificationStatus::Approved) {
+                if ($user->verification_level === VerificationLevel::Basic) {
+                    $user->forceFill(['verification_level' => VerificationLevel::Verified])->save();
+                }
+
+                $published = $this->publishPendingListings($user);
             }
 
             $user->appNotifications()->create([
@@ -79,10 +90,41 @@ class AdminVerificationController extends Controller
                     'previous_status' => $previousStatus,
                     'status' => $status->value,
                     'notes' => $data['notes'] ?? null,
+                    'published_listings' => $published,
                 ],
             ]);
         });
 
-        return back()->with('status', 'Verification request reviewed.');
+        $publishedCount = array_sum($published);
+
+        return back()->with('status', $publishedCount > 0
+            ? "Verification request reviewed. {$publishedCount} listing(s) are now live on the public pages."
+            : 'Verification request reviewed.');
+    }
+
+    /**
+     * Approving the account is the only approval a provider ever sees, so their
+     * listings have to follow it. Otherwise they stay PENDING and the public
+     * queries, which require PUBLISHED and APPROVED, keep hiding them.
+     *
+     * @return array{trips: int, vehicles: int}
+     */
+    private function publishPendingListings(User $user): array
+    {
+        $published = [
+            'verification_status' => VerificationStatus::Approved,
+            'status' => ListingStatus::Published,
+        ];
+
+        return [
+            'trips' => Trip::query()
+                ->where('operator_id', $user->id)
+                ->where('verification_status', VerificationStatus::Pending)
+                ->update($published),
+            'vehicles' => Vehicle::query()
+                ->where('owner_id', $user->id)
+                ->where('verification_status', VerificationStatus::Pending)
+                ->update($published),
+        ];
     }
 }

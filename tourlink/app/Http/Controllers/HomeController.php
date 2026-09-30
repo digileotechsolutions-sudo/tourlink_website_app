@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\AccountStatus;
 use App\BookingStatus;
 use App\ListingStatus;
+use App\Models\BlogPost;
 use App\Models\Booking;
 use App\Models\Destination;
 use App\Models\Review;
@@ -54,6 +55,12 @@ class HomeController extends Controller
             ->limit(3)
             ->get();
 
+        $latestPosts = BlogPost::query()
+            ->where('published', true)
+            ->latest('created_at')
+            ->limit(3)
+            ->get(['id', 'title', 'slug', 'excerpt', 'image_url', 'created_at']);
+
         $journeyCount = Booking::query()
             ->whereNotIn('status', [BookingStatus::Cancelled->value, BookingStatus::Refunded->value])
             ->count();
@@ -63,6 +70,6 @@ class HomeController extends Controller
             ->where('account_status', AccountStatus::Active->value)
             ->count();
 
-        return view('pages.home', compact('featuredTrips', 'destinations', 'vehicles', 'reviews', 'journeyCount', 'providerCount'));
+        return view('pages.home', compact('featuredTrips', 'destinations', 'vehicles', 'reviews', 'latestPosts', 'journeyCount', 'providerCount'));
     }
 }

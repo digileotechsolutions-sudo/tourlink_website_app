@@ -15,6 +15,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminVehicleController;
 use App\Http\Controllers\AdminVerificationController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MpesaPaymentController;
@@ -33,6 +34,8 @@ Route::get('/trips/{trip:slug}', [TripController::class, 'show'])->name('trips.s
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
 Route::get('/vehicles/{vehicle:slug}', [VehicleController::class, 'show'])->name('vehicles.show');
 Route::get('/compare', [TravelerController::class, 'compare'])->name('compare');
+Route::get('/journal', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/journal/{blogPost:slug}', [BlogController::class, 'show'])->name('blog.show');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
