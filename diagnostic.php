@@ -95,7 +95,7 @@ $steps = match ($layout) {
     ],
     'application inside the document root' => [
         'The application is inside the document root. The root index.php supports this layout, while .htaccess blocks direct access to the protected /tourlink folder.',
-        'Open the website routes from the domain root, for example /login. Do not use /tourlink/login; that legacy login URL redirects to /login.',
+        'Open the website routes from the domain root, for example /login or /register. Legacy /tourlink/login and /tourlink/register URLs redirect to the matching public route.',
         'If the domain-root /login still returns 403, check cPanel Errors for the exact request and hosting rule.',
     ],
     'unrecognised' => [

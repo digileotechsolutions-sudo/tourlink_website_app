@@ -10,9 +10,9 @@
     ErrorDocument 403 /diagnostic.php
 
     # Older links may include the application folder, but browser routes live
-    # at the document root. Redirect this public auth URL before denying direct
-    # access to the protected application directory below.
-    RewriteRule ^tourlink/login/?$ /login [R=302,L]
+    # at the document root. Redirect these public auth URLs before denying
+    # direct access to the protected application directory below.
+    RewriteRule ^tourlink/(login|register)/?$ /$1 [R=302,L]
 
     # The application lives in public_html/tourlink, so the front controller can
     # reach it, but the files inside it must never be served over HTTP. Without
