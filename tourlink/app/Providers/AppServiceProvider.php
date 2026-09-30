@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('auth-register', function (Request $request): Limit {
-            return Limit::perMinute(3)->by($request->ip());
+            return Limit::perMinute(10)->by($request->ip());
         });
 
         RateLimiter::for('auth-otp', function (Request $request): Limit {
