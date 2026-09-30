@@ -20,6 +20,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -90,8 +91,15 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
+        $dashboardUrl = $this->dashboardUrl($user);
 
-        return redirect()->intended($this->dashboardUrl($user));
+        if ($this->canVisitIntendedPath($user, $request->session()->get('url.intended'))) {
+            return redirect()->intended($dashboardUrl);
+        }
+
+        $request->session()->forget('url.intended');
+
+        return redirect()->to($dashboardUrl);
     }
 
     public function register(
@@ -260,5 +268,33 @@ class AuthController extends Controller
         }
 
         return $user->role === Role::Traveler || ! Route::has('dashboard') ? route('home') : route('dashboard');
+    }
+
+    private function canVisitIntendedPath(User $user, mixed $intendedUrl): bool
+    {
+        if (! is_string($intendedUrl)) {
+            return false;
+        }
+
+        $path = parse_url($intendedUrl, PHP_URL_PATH);
+
+        if (! is_string($path)) {
+            return false;
+        }
+
+        $rolePaths = match ($user->role) {
+            Role::Admin => ['/admin'],
+            Role::Operator => ['/operator'],
+            Role::VehicleOwner => ['/vehicle-owner'],
+            Role::Traveler => ['/dashboard', '/bookings', '/traveler'],
+        };
+
+        foreach ([...$rolePaths, '/account/password', '/referrals'] as $allowedPath) {
+            if ($path === $allowedPath || str_starts_with($path, rtrim($allowedPath, '/').'/')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
