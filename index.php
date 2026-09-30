@@ -136,5 +136,6 @@ require $app.'/vendor/autoload.php';
 
 /** @var Application $application */
 $application = require_once $app.'/bootstrap/app.php';
+$application->usePublicPath(__DIR__);
 
 $application->handleRequest(Request::capture());
