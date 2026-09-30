@@ -49,7 +49,7 @@ document.querySelectorAll('[data-auth-form]').forEach((form) => {
         button.classList.add('is-loading');
         button.setAttribute('aria-busy', 'true');
         if (label) {
-            label.textContent = 'Signing in...';
+            label.textContent = form.dataset.authLoadingLabel ?? 'Please wait...';
         }
     });
 });
