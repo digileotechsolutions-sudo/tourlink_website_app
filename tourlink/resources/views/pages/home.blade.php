@@ -24,7 +24,7 @@
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             @foreach($destinations as $destination)
                 <a class="group relative h-56 overflow-hidden rounded-2xl bg-ink {{ $loop->first ? 'sm:col-span-2 sm:row-span-2 sm:h-full sm:min-h-[464px]' : '' }}" href="{{ route('trips.index', ['destination' => $destination->slug]) }}">
-                    <img class="size-full object-cover transition duration-700 group-hover:scale-105" src="{{ $destination->image_url }}" alt="{{ $destination->name }}" loading="lazy"><span class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent"></span><span class="absolute bottom-4 left-4 text-white"><span class="block text-xl font-black">{{ $destination->name }}</span><span class="mt-1 block text-xs text-white/75">{{ $destination->trips_count }} trips</span></span>
+                    <img class="size-full object-cover transition duration-700 group-hover:scale-105" src="{{ $destination->image_url }}" alt="{{ $destination->name }}" loading="lazy"><span class="absolute inset-0 bg-ink/55"></span><span class="absolute bottom-4 left-4 text-white"><span class="block text-xl font-black">{{ $destination->name }}</span><span class="mt-1 block text-xs text-white/75">{{ $destination->trips_count }} trips</span></span>
                 </a>
             @endforeach
         </div>
@@ -44,7 +44,7 @@
 
 <section id="how-it-works" class="container-page grid items-center gap-12 py-20 sm:py-24 lg:grid-cols-[.9fr_1.1fr]">
     <div><p class="eyebrow mb-3">Travel, with more trust</p><h2 class="display text-4xl font-bold leading-tight sm:text-5xl">Every good journey starts with a little confidence.</h2><p class="mt-5 max-w-md text-sm leading-7 text-slate-500">Find trusted local providers, compare clear details and keep your journey in one place.</p><div class="mt-8 grid gap-5 sm:grid-cols-2"><div class="flex gap-3"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-lagoon/10 text-lagoon" aria-hidden="true">✓</span><div><h3 class="text-sm font-extrabold">Verified people</h3><p class="mt-1 text-xs leading-5 text-slate-500">Visible badges and honest reviews.</p></div></div><div class="flex gap-3"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-sun/20 text-ink" aria-hidden="true">♡</span><div><h3 class="text-sm font-extrabold">Human support</h3><p class="mt-1 text-xs leading-5 text-slate-500">Message providers about the details.</p></div></div></div></div>
-    <div class="relative min-h-[390px] overflow-hidden rounded-[28px] bg-ink"><img class="absolute inset-0 size-full object-cover opacity-85" src="https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&fit=crop&w=1200&q=85" alt="Kenyan safari landscape" loading="lazy"><div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-transparent"></div><p class="display absolute bottom-7 left-7 text-3xl font-bold text-white">One platform.<br><span class="text-sun">Endless journeys.</span></p></div>
+    <div class="relative min-h-[390px] overflow-hidden rounded-[28px] bg-ink"><img class="absolute inset-0 size-full object-cover opacity-85" src="https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&fit=crop&w=1200&q=85" alt="Kenyan safari landscape" loading="lazy"><div class="absolute inset-0 bg-ink/45"></div><p class="display absolute bottom-7 left-7 text-3xl font-bold text-white">One platform.<br><span class="text-sun">Endless journeys.</span></p></div>
 </section>
 
 @if($reviews->isNotEmpty())

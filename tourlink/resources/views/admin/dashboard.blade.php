@@ -3,7 +3,7 @@
 @section('title', 'Admin review | TourLink')
 
 @section('content')
-    <div class="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_top_right,_rgba(238,141,59,0.12),_transparent_28rem),#f8faf8] px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
+    <div class="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
         <div class="mx-auto max-w-[1600px]">
         <header class="flex flex-wrap items-end justify-between gap-5 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
             <div>
