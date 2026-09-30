@@ -65,7 +65,7 @@ if ($servedInsideDocumentRoot) {
 }
 
 $checks = [
-    'PHP '.PHP_VERSION.(PHP_VERSION_ID >= 80300 ? ' - ok (8.3 or newer)' : ' - too old, 8.3 or newer required'),
+    'PHP '.PHP_VERSION.(PHP_VERSION_ID >= 80401 ? ' - ok (8.4.1 or newer)' : ' - too old, 8.4.1 or newer required'),
     'index.php: '.(is_file($webRoot.'/index.php')
         ? (is_readable($webRoot.'/index.php') ? 'present and readable - ok' : 'present but NOT readable by the web server')
         : 'missing from the folder being served'),
@@ -117,7 +117,7 @@ if ($application !== null && ! is_file($application.'/.env')) {
 if ($steps === []) {
     $steps[] = 'The layout looks correct, so the 403 is coming from the server configuration rather than the files.';
     $steps[] = 'Open cPanel -> Errors for this domain, which records the exact reason, and confirm the document root is /home/havenedg/public_html.';
-    $steps[] = 'If a PHP version other than 8.3+ is selected for this domain, switch it in cPanel -> MultiPHP Manager.';
+    $steps[] = 'If a PHP version other than 8.4.1+ is selected for this domain, switch it in cPanel -> MultiPHP Manager.';
 }
 
 $sections = [
