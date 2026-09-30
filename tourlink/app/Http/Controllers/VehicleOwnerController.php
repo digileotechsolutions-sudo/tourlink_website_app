@@ -7,6 +7,7 @@ use App\ListingStatus;
 use App\Models\Booking;
 use App\Models\Destination;
 use App\Models\Review;
+use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleAvailability;
 use App\Models\VerificationRequest;
@@ -121,7 +122,12 @@ class VehicleOwnerController extends Controller
 
     public function profile(Request $request): View
     {
-        return view('vehicle-owner.profile', ['profile' => $request->user()->vehicleOwnerProfile()->firstOrCreate([], ['business_name' => $request->user()->name])]);
+        $owner = $request->user();
+
+        return view('vehicle-owner.profile', [
+            'profile' => $owner->vehicleOwnerProfile()->firstOrCreate([], ['business_name' => $owner->name]),
+            'verificationRequest' => $this->latestVerificationRequest($owner),
+        ]);
     }
 
     public function updateProfile(Request $request): RedirectResponse
@@ -134,9 +140,22 @@ class VehicleOwnerController extends Controller
 
     public function requestVerification(Request $request): RedirectResponse
     {
-        VerificationRequest::query()->updateOrCreate(['user_id' => $request->user()->id, 'type' => 'VEHICLE_OWNER'], ['status' => VerificationStatus::Pending, 'notes' => $request->input('notes')]);
+        $data = $request->validate([
+            'notes' => ['nullable', 'string', 'max:2000'],
+            'documents' => ['nullable', 'array'],
+            'documents.logbook' => ['nullable', 'file', 'mimes:pdf,jpeg,jpg,png', 'max:5120'],
+            'documents.kra_pin' => ['nullable', 'file', 'mimes:pdf,jpeg,jpg,png', 'max:5120'],
+        ]);
 
-        return back()->with('status', 'Verification request submitted.');
+        $verificationRequest = $this->latestVerificationRequest($request->user());
+        $documents = $this->storeVerificationDocuments($request, $verificationRequest->documents ?? []);
+
+        VerificationRequest::query()->updateOrCreate(
+            ['user_id' => $request->user()->id, 'type' => 'VEHICLE_OWNER'],
+            ['status' => VerificationStatus::Pending, 'notes' => $data['notes'] ?? null, 'documents' => $documents]
+        );
+
+        return back()->with('status', 'Verification request submitted with your logbook and KRA documents.');
     }
 
     public function bookings(Request $request): View
@@ -211,6 +230,65 @@ class VehicleOwnerController extends Controller
         }
 
         return array_slice($images, 0, 12);
+    }
+
+    private function latestVerificationRequest(User $user): VerificationRequest
+    {
+        return VerificationRequest::query()
+            ->where('user_id', $user->id)
+            ->where('type', 'VEHICLE_OWNER')
+            ->latest()
+            ->first() ?? new VerificationRequest(['type' => 'VEHICLE_OWNER']);
+    }
+
+    /**
+     * Compliance documents are private, so they live on the local disk rather
+     * than the public one and are served to admins through a guarded route.
+     *
+     * @param  array<int, array<string, mixed>>  $existing
+     * @return array<int, array<string, mixed>>
+     */
+    private function storeVerificationDocuments(Request $request, array $existing): array
+    {
+        $requirements = [
+            'logbook' => 'Vehicle logbook',
+            'kra_pin' => 'KRA PIN certificate',
+        ];
+
+        $documents = [];
+        foreach ($requirements as $key => $label) {
+            $previous = collect($existing)->firstWhere('key', $key);
+            $file = $request->file('documents.'.$key);
+
+            if (! $file) {
+                if (is_array($previous)) {
+                    $documents[] = $previous;
+                }
+
+                continue;
+            }
+
+            if (is_array($previous) && is_string($previous['path'] ?? null)) {
+                Storage::disk('local')->delete($previous['path']);
+            }
+
+            $path = $file->store('verification-documents/'.$key, 'local');
+
+            if (! is_string($path)) {
+                throw ValidationException::withMessages(['documents.'.$key => 'That document could not be stored. Please try again.']);
+            }
+
+            $documents[] = [
+                'key' => $key,
+                'label' => $label,
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ];
+        }
+
+        return $documents;
     }
 
     private function syncAvailability(Request $request, Vehicle $vehicle): void

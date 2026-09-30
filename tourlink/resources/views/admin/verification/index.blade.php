@@ -41,10 +41,20 @@
                     <p class="mt-1 text-sm text-slate-600">{{ $verificationRequest->user?->email }} · {{ str($verificationRequest->user?->role?->value ?? 'UNKNOWN')->replace('_', ' ')->title() }}</p>
                     <p class="mt-1 text-xs text-slate-500">{{ str($verificationRequest->type)->replace('_', ' ')->title() }} · Submitted {{ $verificationRequest->created_at?->format('Y-m-d H:i') }}</p>
                     @if ($verificationRequest->documents)
-                        <details class="mt-3">
-                            <summary class="cursor-pointer text-sm font-bold text-emerald-800 hover:underline">View submitted documents</summary>
-                            <pre class="mt-2 max-h-64 max-w-2xl overflow-auto whitespace-pre-wrap rounded bg-slate-50 p-3 text-xs text-slate-700">{{ json_encode($verificationRequest->documents, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
-                        </details>
+                        <div class="mt-3">
+                            <p class="text-sm font-bold text-slate-800">Submitted documents</p>
+                            <ul class="mt-2 grid gap-2">
+                                @foreach ($verificationRequest->documents as $document)
+                                    @php($label = $document['label'] ?? str($document['key'] ?? 'Document')->headline())
+                                    <li class="flex flex-wrap items-center justify-between gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2">
+                                        <span class="text-sm font-semibold text-slate-700">{{ $label }}@if (! empty($document['size'])) <span class="font-normal text-slate-500">({{ number_format($document['size'] / 1024, 0) }} KB)</span>@endif</span>
+                                        @if (Route::has('admin.verification.document'))
+                                            <a href="{{ route('admin.verification.document', [$verificationRequest, $document['key'] ?? '']) }}" target="_blank" rel="noopener" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100">Open</a>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
                     @else
                         <p class="mt-3 text-xs text-slate-500">No documents attached.</p>
                     @endif

@@ -14,8 +14,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminVerificationController extends Controller
 {
@@ -100,6 +102,26 @@ class AdminVerificationController extends Controller
         return back()->with('status', $publishedCount > 0
             ? "Verification request reviewed. {$publishedCount} listing(s) are now live on the public pages."
             : 'Verification request reviewed.');
+    }
+
+    /**
+     * Serve a compliance document to the reviewing admin. The files are private
+     * to the local disk, so this is the only path that can read them.
+     */
+    public function document(VerificationRequest $verificationRequest, string $document): StreamedResponse
+    {
+        $stored = collect($verificationRequest->documents ?? [])->firstWhere('key', $document);
+        $stored = is_array($stored) ? $stored : [];
+        $path = $stored['path'] ?? null;
+
+        abort_unless(is_string($path) && Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->response(
+            $path,
+            $stored['original_name'] ?? $document,
+            ['Content-Type' => $stored['mime_type'] ?? 'application/octet-stream'],
+            'inline'
+        );
     }
 
     /**
