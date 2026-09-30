@@ -409,7 +409,7 @@ document.addEventListener('submit', async (event) => {
         }
     }
 
-    if (navigator.onLine || form.method.toLowerCase() === 'get') {
+    if (navigator.onLine || form.method.toLowerCase() === 'get' || form.matches('[data-auth-form]')) {
         return;
     }
 
