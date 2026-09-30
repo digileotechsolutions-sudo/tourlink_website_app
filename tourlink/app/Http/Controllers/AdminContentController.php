@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -149,9 +150,16 @@ class AdminContentController extends Controller
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('blog_posts', 'slug')->ignore($post?->id)],
             'excerpt' => ['required', 'string', 'max:1000'],
             'body' => ['required', 'string', 'max:100000'],
-            'image_url' => ['required', 'url:http,https', 'max:2048'],
+            'image' => ['nullable', 'image', 'max:5120'],
+            'image_url' => ['nullable', 'required_without:image', 'url:http,https', 'max:2048'],
             'published' => ['required', 'boolean'],
         ]);
+
+        if ($request->hasFile('image')) {
+            $data['image_url'] = Storage::disk('public')->url($request->file('image')->store('blog-images', 'public'));
+        }
+
+        unset($data['image']);
         $data['slug'] = $this->slug(BlogPost::class, $data['slug'] ?: $data['title'], $post?->id);
 
         return $data;
