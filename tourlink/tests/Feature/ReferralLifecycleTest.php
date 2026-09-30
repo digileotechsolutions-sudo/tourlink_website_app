@@ -3,14 +3,18 @@
 namespace Tests\Feature;
 
 use App\AccountApprovalStatus;
+use App\Models\Referral;
 use App\Models\User;
 use App\ReferralRewardStatus;
 use App\ReferralStatus;
 use App\Services\Referral\ReferralService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ReferralLifecycleTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_email_verification_moves_the_referral_to_verified(): void
     {
         $this->setReferralSettings();
@@ -212,7 +216,7 @@ class ReferralLifecycleTest extends TestCase
     }
 
     /**
-     * @return array{0: \App\Models\Referral, 1: \App\Models\User}
+     * @return array{0: Referral, 1: User}
      */
     private function pendingReferral(): array
     {

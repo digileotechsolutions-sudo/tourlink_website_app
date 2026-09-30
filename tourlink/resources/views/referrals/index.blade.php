@@ -53,7 +53,7 @@
     @if ($rewards)
         <p class="rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             <strong>{{ $rewards['currency'] }} {{ number_format($rewards['amount']) }}</strong> per successful referral, issued once the account is
-            {{ $rewards['trigger'] === \App\ReferralStatus::Verified ? 'email verified' : 'approved by an administrator' }}@if ($rewards['requires_approval']) and an administrator releases the reward@endif.
+            {{ $rewards['trigger'] === \App\ReferralStatus::Verified ? 'email verified' : 'approved by an administrator' }}@if ($rewards['requires_approval']) and an administrator releases the reward @endif.
         </p>
     @else
         <p class="rounded border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">Referral tracking is active. Rewards are not being issued at the moment.</p>

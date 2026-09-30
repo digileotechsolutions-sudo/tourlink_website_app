@@ -42,7 +42,7 @@ final class NotDerivedFromAccount implements ValidationRule
             }
         }
 
-        $this->identifiers = static::prepare($candidates);
+        $this->identifiers = self::prepare($candidates);
     }
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -90,7 +90,18 @@ final class NotDerivedFromAccount implements ValidationRule
 
             if (strlen($identifier) >= self::MIN_IDENTIFIER_LENGTH) {
                 $identifiers[] = $identifier;
-                continue;
+            }
+
+            // A multi-word name is also broken into its parts so that
+            // "Amina#2026" is rejected for "Amina Kariuki".
+            $parts = preg_split('/\s+/', $value) ?: [];
+
+            foreach ($parts as $part) {
+                $normalisedPart = NotCommonPassword::normalise($part);
+
+                if (strlen($normalisedPart) >= self::MIN_IDENTIFIER_LENGTH) {
+                    $identifiers[] = $normalisedPart;
+                }
             }
 
             // An email address is also reduced to its local part so that

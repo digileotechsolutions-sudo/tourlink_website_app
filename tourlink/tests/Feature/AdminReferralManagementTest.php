@@ -7,10 +7,14 @@ use App\Models\User;
 use App\ReferralRewardStatus;
 use App\ReferralStatus;
 use App\Services\Referral\ReferralService;
+use App\Services\Referral\ReferralSettings;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AdminReferralManagementTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_admins_can_review_referrals(): void
     {
         $this->setReferralSettings();
@@ -18,7 +22,7 @@ class AdminReferralManagementTest extends TestCase
         $this->actingAs($this->admin())
             ->get(route('admin.referrals.index'))
             ->assertOk()
-            ->assertSee('Referrals &amp; rewards');
+            ->assertSee('Referrals &amp; rewards', false);
     }
 
     public function test_non_admins_cannot_reach_referral_management(): void
@@ -54,8 +58,8 @@ class AdminReferralManagementTest extends TestCase
         $this->assertDatabaseHas('settings', ['key' => 'referral.code_prefix', 'value' => 'KIM']);
         $this->assertDatabaseHas('settings', ['key' => 'referral.code_length', 'value' => '8']);
 
-        $this->assertSame('KIM', app(\App\Services\Referral\ReferralSettings::class)->codePrefix());
-        $this->assertSame(250, app(\App\Services\Referral\ReferralSettings::class)->rewardAmount());
+        $this->assertSame('KIM', app(ReferralSettings::class)->codePrefix());
+        $this->assertSame(250, app(ReferralSettings::class)->rewardAmount());
     }
 
     public function test_an_invalid_code_prefix_is_rejected(): void
@@ -97,6 +101,7 @@ class AdminReferralManagementTest extends TestCase
         [$referral] = $this->queuedReward();
 
         $this->actingAs($this->admin())
+            ->from(route('admin.referrals.index'))
             ->post(route('admin.referrals.reward', $referral), ['reward_status' => 'REJECTED'])
             ->assertRedirect(route('admin.referrals.index'));
 
@@ -139,15 +144,23 @@ class AdminReferralManagementTest extends TestCase
     {
         $this->setReferralSettings();
 
+        $admin = $this->admin();
         $referrer = $this->referrerUser();
-        app(ReferralService::class)->recordForNewUser(User::factory()->create(['referral_code' => 'TLP11111']), $referrer);
+        $referred = User::factory()->create(['referral_code' => 'TLP11111']);
+        $service = app(ReferralService::class);
+        $service->recordForNewUser($referred, $referrer);
 
-        $this->actingAs($this->admin())
+        // Advance the referral so it matches the Approved filter, the same way
+        // verification and approval hooks would during a real signup.
+        $service->markVerified($referred);
+        $service->markApproved($referred);
+
+        $this->actingAs($admin)
             ->get(route('admin.referrals.index', ['status' => ReferralStatus::Approved->value]))
             ->assertOk()
             ->assertDontSee('No referrals match these filters.');
 
-        $this->actingAs($this->admin())
+        $this->actingAs($admin)
             ->get(route('admin.referrals.index', ['search' => 'TLABC234']))
             ->assertOk()
             ->assertDontSee('No referrals match these filters.');

@@ -15,6 +15,12 @@ class AdminBlogImageUploadTest extends TestCase
 
     public function test_admin_can_create_a_blog_post_with_an_uploaded_cover_image(): void
     {
+        // UploadedFile::fake()->image() needs the GD extension, which some
+        // environments do not provide.
+        if (! extension_loaded('gd')) {
+            $this->markTestSkipped('The GD extension is required to fabricate test images.');
+        }
+
         Storage::fake('public');
         $admin = User::factory()->create(['role' => 'ADMIN']);
 

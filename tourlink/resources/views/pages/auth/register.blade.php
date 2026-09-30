@@ -5,7 +5,7 @@
     <section class="auth-card auth-compact-card" aria-labelledby="register-heading">
         <header class="auth-compact-header"><h1 id="register-heading">Create your account</h1><p>Start planning your next journey.</p></header>
         @if ($referrer)
-            <p class="auth-referrer-note"><strong>{{ $referrer->name }}</strong> invited you. Your referral is credited after verification and approval.</p>
+            <p class="auth-referrer-note"><strong>{{ $referrer->name }}</strong> invited you to join TourLink. Your referral is credited after verification and approval.</p>
         @endif
         <form method="POST" action="{{ route('register') }}" data-auth-form data-auth-loading-label="Creating account...">@csrf
             <div class="auth-field"><label for="name">Your name</label><input id="name" name="name" type="text" autocomplete="name" value="{{ old('name') }}" placeholder="Amina Musumba" required>@error('name')<span class="field-error">{{ $message }}</span>@enderror</div>

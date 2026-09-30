@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Password;
@@ -10,6 +13,8 @@ use Tests\TestCase;
 
 class PasswordPolicyTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -17,6 +22,11 @@ class PasswordPolicyTest extends TestCase
         config(['services.otp.delivery' => 'log']);
         $this->setReferralSettings();
         Http::fake(['*' => Http::response('', 200)]);
+
+        // Registration and reset endpoints are throttled per IP, which a test
+        // loop exhausts within a few requests; rate limiting is covered
+        // elsewhere, so it is switched off here.
+        $this->withoutMiddleware(ThrottleRequests::class);
     }
 
     public function test_registration_accepts_a_strong_password_and_stores_only_a_hash(): void
@@ -75,9 +85,12 @@ class PasswordPolicyTest extends TestCase
 
     public function test_registration_rejects_passwords_reported_as_breached(): void
     {
+        // The setUp catch-all fake would shadow a second Http::fake here, so the
+        // breached suffix list is seeded into the cache instead; the rule then
+        // rejects without making a lookup request.
         $password = 'Jungle@Trail29';
-        $suffix = strtoupper(substr(sha1($password), 5));
-        Http::fake(['*' => Http::response($suffix.':1', 200)]);
+        $digest = strtoupper(sha1($password));
+        Cache::put('password.breach.suffixes.'.substr($digest, 0, 5), [substr($digest, 5)], now()->addMinutes(5));
 
         $this->from(route('register'))->post(route('register'), [
             'name' => 'Amina Kariuki',

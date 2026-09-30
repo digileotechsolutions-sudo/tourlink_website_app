@@ -59,7 +59,7 @@ class AdminVerificationController extends Controller
         $reviewedUserId = null;
         $reviewStatus = VerificationStatus::from($data['status']);
 
-        DB::transaction(function () use ($request, $verificationRequest, $data, &$published, &$reviewedUserId, $reviewStatus): void {
+        DB::transaction(function () use ($request, $verificationRequest, $data, &$published, &$reviewedUserId): void {
             $verificationRequest = VerificationRequest::query()->lockForUpdate()->findOrFail($verificationRequest->id);
             $previousStatus = $verificationRequest->status->value;
             $status = VerificationStatus::from($data['status']);
@@ -82,7 +82,7 @@ class AdminVerificationController extends Controller
 
             $user->appNotifications()->create([
                 'title' => 'Verification request reviewed',
-                'body' => $data['notes'] ?: 'Your verification request was '.strtolower(str_replace('_', ' ', $status->value)).'.',
+                'body' => ($data['notes'] ?? null) ?: 'Your verification request was '.strtolower(str_replace('_', ' ', $status->value)).'.',
                 'type' => 'VERIFICATION',
             ]);
 

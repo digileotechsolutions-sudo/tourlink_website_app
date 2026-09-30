@@ -4,10 +4,10 @@ namespace App\Services\Referral;
 
 use App\AccountApprovalStatus;
 use App\AccountStatus;
-use App\ReferralRewardStatus;
-use App\ReferralStatus;
 use App\Models\Referral;
 use App\Models\User;
+use App\ReferralRewardStatus;
+use App\ReferralStatus;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -123,7 +123,16 @@ class ReferralService
      */
     public function markVerified(User $referred): ?Referral
     {
-        return $this->advance($referred, ReferralStatus::Verified, 'verified_at');
+        $referral = $this->advance($referred, ReferralStatus::Verified, 'verified_at');
+
+        // The reward trigger may be the Verified stage, so the hook has to run
+        // here too; maybeIssueReward ignores referrals that have not yet
+        // reached the configured stage.
+        if ($referral) {
+            $this->maybeIssueReward($referral);
+        }
+
+        return $referral;
     }
 
     /**
@@ -289,8 +298,6 @@ class ReferralService
 
     /**
      * Moves a referral to the next stage without ever going backwards.
-     *
-     * @return Referral|null
      */
     private function advance(User $referred, ReferralStatus $status, string $timestamp): ?Referral
     {

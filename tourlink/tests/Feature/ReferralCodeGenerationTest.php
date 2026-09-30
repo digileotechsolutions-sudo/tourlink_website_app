@@ -5,10 +5,13 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\ReferralStatus;
 use App\Services\Referral\ReferralService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ReferralCodeGenerationTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_a_generated_code_uses_the_configured_prefix_and_length(): void
     {
         $this->setReferralSettings(['code_prefix' => 'KIM', 'code_length' => '8']);

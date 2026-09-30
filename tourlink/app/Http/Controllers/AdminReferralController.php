@@ -58,7 +58,9 @@ class AdminReferralController extends Controller
 
         DB::transaction(function () use ($request, $payload): void {
             foreach ($payload as $key => $value) {
-                Setting::query()->updateOrCreate(['key' => $key], ['value' => $value]);
+                // Settings are stored and read under the "referral." namespace,
+                // so the prefix must be added here to match ReferralSettings.
+                Setting::query()->updateOrCreate(['key' => 'referral.'.$key], ['value' => $value]);
             }
 
             $request->user()->adminLogs()->create([

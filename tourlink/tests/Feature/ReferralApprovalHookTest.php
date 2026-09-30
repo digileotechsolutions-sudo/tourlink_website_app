@@ -3,14 +3,18 @@
 namespace Tests\Feature;
 
 use App\AccountApprovalStatus;
+use App\Models\Referral;
 use App\Models\User;
 use App\Models\VerificationRequest;
 use App\ReferralStatus;
 use App\Services\Referral\ReferralService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ReferralApprovalHookTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_approving_a_user_through_admin_moves_the_referral_forward(): void
     {
         $this->setReferralSettings();
@@ -75,7 +79,7 @@ class ReferralApprovalHookTest extends TestCase
         return User::factory()->create(['role' => 'ADMIN', 'referral_code' => 'TLADMIN1']);
     }
 
-    private function referralFor(): \App\Models\Referral
+    private function referralFor(): Referral
     {
         $referrer = $this->referrerUser();
         $referred = User::factory()->create([

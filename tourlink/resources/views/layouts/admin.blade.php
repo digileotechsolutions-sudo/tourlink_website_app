@@ -33,7 +33,7 @@
                     <a href="{{ route('admin.verification.index') }}" class="relative inline-flex min-h-10 shrink-0 items-center gap-2 rounded px-2 text-sm font-semibold text-slate-600 hover:bg-slate-100" aria-label="Notifications, verification requests">
                         <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         <span class="hidden sm:inline">Notifications</span>
-                        @if (isset($statistics) && $statistics['pendingVerification'] > 0)<span class="grid size-5 place-items-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-800">{{ min(99, $statistics['pendingVerification']) }}</span>@endif
+                        @if (isset($statistics) && ($statistics['pendingVerification'] ?? 0) > 0)<span class="grid size-5 place-items-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-800">{{ min(99, $statistics['pendingVerification']) }}</span>@endif
                     </a>
                     <a href="{{ route('password.change') }}" class="inline-flex min-h-10 shrink-0 items-center rounded px-2 text-sm font-semibold text-slate-600 hover:bg-slate-100" aria-label="Change password">Password</a>
                     <div class="flex shrink-0 items-center gap-2 border-l border-slate-200 pl-4">
