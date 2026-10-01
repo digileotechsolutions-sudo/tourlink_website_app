@@ -14,6 +14,3 @@
     <x-pwa-status />
 </body>
 </html>
-<div>
-    <!-- Happiness is not something readymade. It comes from your own actions. - Dalai Lama -->
-</div>

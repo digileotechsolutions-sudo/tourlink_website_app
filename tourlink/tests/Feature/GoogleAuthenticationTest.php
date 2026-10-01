@@ -49,7 +49,12 @@ class GoogleAuthenticationTest extends TestCase
         $this->post(route('google.authenticate'), [
             'credential' => 'signed-google-id-token',
             'mode' => 'register',
+            'role' => Role::Operator->value,
         ])->assertRedirect(route('google.complete'));
+
+        $this->get(route('google.complete'))
+            ->assertOk()
+            ->assertViewHas('initialRole', Role::Operator->value);
 
         $this->post(route('google.complete'), [
             'phone' => '0712345678',

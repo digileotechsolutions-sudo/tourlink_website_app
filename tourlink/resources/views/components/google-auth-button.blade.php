@@ -9,6 +9,9 @@
         <form method="POST" action="{{ route('google.authenticate') }}" data-google-credential-form hidden>
             @csrf
             <input type="hidden" name="mode" value="{{ $mode }}">
+            @if ($mode === 'register')
+                <input type="hidden" name="role" value="{{ $initialRole ?? 'TRAVELER' }}">
+            @endif
             <input type="hidden" name="credential" value="">
         </form>
     </div>

@@ -122,6 +122,11 @@ document.querySelectorAll('[data-google-auth]').forEach((container) => {
                 }
 
                 credentialInput.value = response.credential;
+                const roleInput = credentialForm.querySelector('input[name="role"]');
+                const selectedRole = document.querySelector('#register-form [name="role"]');
+                if (roleInput && selectedRole) {
+                    roleInput.value = selectedRole.value;
+                }
                 container.classList.add('is-processing');
                 container.setAttribute('aria-busy', 'true');
                 const status = container.querySelector('[data-google-auth-status]');
@@ -158,6 +163,9 @@ document.querySelectorAll('[data-google-auth]').forEach((container) => {
         initializeGoogleButton();
     } else {
         googleScript.addEventListener('load', initializeGoogleButton, { once: true });
+        googleScript.addEventListener('error', () => {
+            showError('Google sign-in could not load. Check your connection or use email and password.');
+        }, { once: true });
     }
 });
 

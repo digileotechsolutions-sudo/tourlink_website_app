@@ -33,9 +33,10 @@ class GoogleAuthController extends Controller
     public function authenticate(Request $request, GoogleIdTokenVerifier $verifier, AccountVerificationService $verification): mixed
     {
         $returnRoute = $request->input('mode') === 'register' ? 'register' : 'login';
-        $validator = Validator::make($request->only(['credential', 'mode']), [
+        $validator = Validator::make($request->only(['credential', 'mode', 'role']), [
             'credential' => ['required', 'string', 'max:16384'],
             'mode' => ['required', Rule::in(['login', 'register'])],
+            'role' => ['sometimes', 'required', Rule::in([Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value])],
         ]);
 
         if ($validator->fails()) {
@@ -118,7 +119,7 @@ class GoogleAuthController extends Controller
             return $this->finishSignIn($request, $user, $verification);
         }
 
-        $role = Role::tryFrom((string) ($nonceEntry['role'] ?? ''));
+        $role = Role::tryFrom((string) ($input['role'] ?? $nonceEntry['role'] ?? ''));
         if (! in_array($role, [Role::Traveler, Role::Operator, Role::VehicleOwner], true)) {
             $role = Role::Traveler;
         }
