@@ -275,6 +275,7 @@ const setPwaStatus = (message, state) => {
     pwaMessage.textContent = message;
     pwaStatus.dataset.state = state;
     const hasVisibleAction = [...pwaStatus.querySelectorAll('button')].some((button) => !button.hidden);
+    pwaStatus.classList.toggle('pwa-status--install-only', message === '' && !installButton?.hidden && updateButton?.hidden);
     pwaStatus.hidden = message === '' && !hasVisibleAction;
 };
 
@@ -457,6 +458,12 @@ window.addEventListener('beforeinstallprompt', (event) => {
     installPrompt = event;
     if (installButton) {
         installButton.hidden = false;
+        const label = installButton.querySelector('span');
+        if (label) {
+            label.textContent = 'Install App';
+        }
+        installButton.setAttribute('aria-label', 'Install App');
+        installButton.setAttribute('title', 'Install App');
     }
 });
 
@@ -468,7 +475,13 @@ installButton?.addEventListener('click', async () => {
             ? 'To install TourLink, tap Share, then Add to Home Screen.'
             : 'Open your browser menu and choose Install app or Add to Home screen.';
 
-        setPwaStatus(instructions, 'install');
+        const label = installButton.querySelector('span');
+        if (label) {
+            label.textContent = instructions;
+        }
+        installButton.setAttribute('aria-label', instructions);
+        installButton.setAttribute('title', instructions);
+        pwaStatus?.classList.add('pwa-status--install-only');
 
         return;
     }
