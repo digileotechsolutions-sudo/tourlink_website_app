@@ -27,12 +27,12 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('register') }}" data-auth-form data-auth-loading-label="Creating account...">
+        <form method="POST" action="{{ route('register') }}" data-auth-form data-form-draft="register" data-auth-loading-label="Creating account...">
             @csrf
 
             <div class="auth-field">
                 <label for="name">Your name</label>
-                <input id="name" name="name" type="text" autocomplete="name" autocapitalize="words" value="{{ old('name') }}" placeholder="Amina Musumba" required @if ($errors->has('name')) aria-invalid="true" aria-describedby="name-error" @endif>
+                <input id="name" name="name" type="text" autocomplete="name" autocapitalize="words" data-draft-field value="{{ old('name') }}" placeholder="Amina Musumba" required @if ($errors->has('name')) aria-invalid="true" aria-describedby="name-error" @endif>
                 @error('name')
                     <span id="name-error" class="field-error">{{ $message }}</span>
                 @enderror
@@ -42,7 +42,7 @@
                 <label for="email">Email address</label>
                 <div class="auth-modern-control">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="m5 7 7 5 7-5"/></svg>
-                    <input id="email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" value="{{ old('email') }}" placeholder="you@example.com" required @if ($errors->has('email')) aria-invalid="true" aria-describedby="email-error" @endif>
+                    <input id="email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" data-draft-field value="{{ old('email') }}" placeholder="you@example.com" required @if ($errors->has('email')) aria-invalid="true" aria-describedby="email-error" @endif>
                 </div>
                 @error('email')
                     <span id="email-error" class="field-error">{{ $message }}</span>
@@ -53,7 +53,7 @@
                 <label for="phone">Phone number</label>
                 <div class="auth-modern-control">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.7 3.5h2.4l1.2 4.1-1.8 1.6a14 14 0 0 0 6.3 6.3l1.6-1.8 4.1 1.2v2.4a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.7 5.7a2 2 0 0 1 2-2.2Z"/></svg>
-                    <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="{{ old('phone') }}" placeholder="0712345678 or +254712345678" required @if ($errors->has('phone')) aria-invalid="true" aria-describedby="phone-error" @endif>
+                    <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" data-draft-field value="{{ old('phone') }}" placeholder="0712345678 or +254712345678" required @if ($errors->has('phone')) aria-invalid="true" aria-describedby="phone-error" @endif>
                 </div>
                 @error('phone')
                     <span id="phone-error" class="field-error">{{ $message }}</span>
@@ -93,7 +93,7 @@
 
             <div class="auth-field">
                 <label for="role">Account type</label>
-                <select id="role" name="role" required @if ($errors->has('role')) aria-invalid="true" aria-describedby="role-error" @endif>
+                <select id="role" name="role" data-draft-field required @if ($errors->has('role')) aria-invalid="true" aria-describedby="role-error" @endif>
                     <option value="TRAVELER" @selected(old('role', $initialRole) === 'TRAVELER')>Traveler</option>
                     <option value="OPERATOR" @selected(old('role', $initialRole) === 'OPERATOR')>Tour operator</option>
                     <option value="VEHICLE_OWNER" @selected(old('role', $initialRole) === 'VEHICLE_OWNER')>Vehicle owner</option>

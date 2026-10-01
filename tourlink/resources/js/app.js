@@ -54,6 +54,39 @@ document.querySelectorAll('[data-auth-form]').forEach((form) => {
     });
 });
 
+const draftToClear = document.querySelector('[data-form-draft-clear]')?.dataset.formDraftClear;
+if (draftToClear) {
+    try {
+        sessionStorage.removeItem(`tourlink-form-draft:${draftToClear}`);
+    } catch {}
+}
+
+document.querySelectorAll('[data-form-draft]').forEach((form) => {
+    const draftKey = `tourlink-form-draft:${form.dataset.formDraft}`;
+    const fields = [...form.querySelectorAll('[data-draft-field]')];
+
+    try {
+        const draft = JSON.parse(sessionStorage.getItem(draftKey) ?? '{}');
+        fields.forEach((field) => {
+            if (!field.value && typeof draft[field.name] === 'string') {
+                field.value = draft[field.name];
+            }
+        });
+    } catch {}
+
+    const saveDraft = () => {
+        try {
+            const draft = Object.fromEntries(fields.map((field) => [field.name, field.value]));
+            sessionStorage.setItem(draftKey, JSON.stringify(draft));
+        } catch {}
+    };
+
+    fields.forEach((field) => {
+        field.addEventListener('input', saveDraft);
+        field.addEventListener('change', saveDraft);
+    });
+});
+
 document.querySelectorAll('[data-password-strength]').forEach((indicator) => {
     const input = document.querySelector('[data-strength-input]');
     const label = indicator.querySelector('[data-strength-label]');

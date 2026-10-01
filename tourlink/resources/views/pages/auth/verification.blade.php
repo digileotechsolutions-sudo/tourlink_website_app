@@ -1,7 +1,7 @@
 @extends('layouts.auth')
 @section('title', 'Verify your account | TourLink')
 @section('content')
-<div class="auth-wrapper auth-verification-wrapper">
+<div class="auth-wrapper auth-verification-wrapper" data-form-draft-clear="register">
     <section class="auth-left">
         <a class="auth-brand-mark" href="{{ route('home') }}" aria-label="TourLink home">TL</a>
         <span class="auth-kicker">One more step</span>
