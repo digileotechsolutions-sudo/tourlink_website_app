@@ -24,7 +24,7 @@ return [
     ],
 
     'google' => [
-        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_id' => env('GOOGLE_CLIENT_ID', '774417894577-u3rmi4unflbi83bp2kkodn4ugclbjasd.apps.googleusercontent.com'),
     ],
 
     'africastalking' => [
