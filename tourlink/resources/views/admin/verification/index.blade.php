@@ -40,6 +40,14 @@
                     </div>
                     <p class="mt-1 text-sm text-slate-600">{{ $verificationRequest->user?->email }} · {{ str($verificationRequest->user?->role?->value ?? 'UNKNOWN')->replace('_', ' ')->title() }}</p>
                     <p class="mt-1 text-xs text-slate-500">{{ str($verificationRequest->type)->replace('_', ' ')->title() }} · Submitted {{ $verificationRequest->created_at?->format('Y-m-d H:i') }}</p>
+                    @if ($verificationRequest->vehicle)
+                        <dl class="mt-3 grid gap-x-4 gap-y-1 rounded border border-slate-200 bg-slate-50 p-3 text-xs sm:grid-cols-2">
+                            <div><dt class="inline font-bold text-slate-700">Registration:</dt> <dd class="inline text-slate-600">{{ $verificationRequest->vehicle->registration_number }}</dd></div>
+                            <div><dt class="inline font-bold text-slate-700">Vehicle:</dt> <dd class="inline text-slate-600">{{ $verificationRequest->vehicle->year }} {{ $verificationRequest->vehicle->make }} {{ $verificationRequest->vehicle->model }}</dd></div>
+                            <div><dt class="inline font-bold text-slate-700">Type:</dt> <dd class="inline text-slate-600">{{ $verificationRequest->vehicle->body_type }}</dd></div>
+                            <div><dt class="inline font-bold text-slate-700">Seats:</dt> <dd class="inline text-slate-600">{{ $verificationRequest->vehicle->seating_capacity }}</dd></div>
+                        </dl>
+                    @endif
                     @if ($verificationRequest->documents)
                         <div class="mt-3">
                             <p class="text-sm font-bold text-slate-800">Submitted documents</p>

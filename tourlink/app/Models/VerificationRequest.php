@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class VerificationRequest extends TourLinkModel
 {
-    protected $fillable = ['user_id', 'type', 'status', 'notes', 'documents', 'reviewed_at'];
+    protected $fillable = ['user_id', 'vehicle_id', 'type', 'status', 'notes', 'documents', 'reviewed_at'];
 
     public const UPDATED_AT = null;
 
@@ -26,5 +26,10 @@ class VerificationRequest extends TourLinkModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
     }
 }

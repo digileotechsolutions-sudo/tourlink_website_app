@@ -21,6 +21,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 class VehicleOwnerController extends Controller
 {
@@ -123,10 +124,20 @@ class VehicleOwnerController extends Controller
     public function profile(Request $request): View
     {
         $owner = $request->user();
+        $vehicles = $owner->vehicles()->orderBy('name')->get();
+        $vehicleVerificationRequests = VerificationRequest::query()
+            ->where('user_id', $owner->id)
+            ->where('type', 'VEHICLE')
+            ->whereIn('vehicle_id', $vehicles->pluck('id'))
+            ->latest()
+            ->get()
+            ->keyBy('vehicle_id');
 
         return view('vehicle-owner.profile', [
             'profile' => $owner->vehicleOwnerProfile()->firstOrCreate([], ['business_name' => $owner->name]),
-            'verificationRequest' => $this->latestVerificationRequest($owner),
+            'identityVerificationRequest' => $this->latestVerificationRequest($owner, 'VEHICLE_OWNER_IDENTITY'),
+            'vehicles' => $vehicles,
+            'vehicleVerificationRequests' => $vehicleVerificationRequests,
         ]);
     }
 
@@ -138,24 +149,91 @@ class VehicleOwnerController extends Controller
         return back()->with('status', 'Vehicle-owner profile updated.');
     }
 
-    public function requestVerification(Request $request): RedirectResponse
+    public function requestIdentityVerification(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'notes' => ['nullable', 'string', 'max:2000'],
             'documents' => ['nullable', 'array'],
-            'documents.logbook' => ['nullable', 'file', 'mimes:pdf,jpeg,jpg,png', 'max:5120'],
-            'documents.kra_pin' => ['nullable', 'file', 'mimes:pdf,jpeg,jpg,png', 'max:5120'],
+            'documents.owner_id' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'documents.driving_license' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ]);
 
-        $verificationRequest = $this->latestVerificationRequest($request->user());
-        $documents = $this->storeVerificationDocuments($request, $verificationRequest->documents ?? []);
-
-        VerificationRequest::query()->updateOrCreate(
-            ['user_id' => $request->user()->id, 'type' => 'VEHICLE_OWNER'],
-            ['status' => VerificationStatus::Pending, 'notes' => $data['notes'] ?? null, 'documents' => $documents]
+        $owner = $request->user();
+        $verificationRequest = $this->latestVerificationRequest($owner, 'VEHICLE_OWNER_IDENTITY');
+        $stored = $this->storePrivateVerificationDocuments(
+            $request,
+            $verificationRequest->documents ?? [],
+            ['owner_id' => 'Owner ID or passport', 'driving_license' => 'Driving licence'],
+            ['owner_id'],
+            'vehicle-owner/identity',
         );
 
-        return back()->with('status', 'Verification request submitted with your logbook and KRA documents.');
+        try {
+            VerificationRequest::query()->updateOrCreate(
+                ['user_id' => $owner->id, 'type' => 'VEHICLE_OWNER_IDENTITY', 'vehicle_id' => null],
+                ['status' => VerificationStatus::Pending, 'notes' => $data['notes'] ?? null, 'documents' => $stored['documents']],
+            );
+        } catch (Throwable $exception) {
+            $this->deleteVerificationFiles($stored['new_paths']);
+            throw $exception;
+        }
+
+        $this->deleteVerificationFiles($stored['replaced_paths']);
+        $owner->forceFill(['verification_level' => \App\VerificationLevel::Basic])->save();
+
+        return back()->with('status', 'Owner identity documents submitted for admin review.');
+    }
+
+    public function requestVehicleVerification(Request $request): RedirectResponse
+    {
+        $documentLabels = [
+            'logbook' => 'Vehicle logbook',
+            'insurance' => 'Vehicle insurance certificate',
+            'inspection' => 'Motor vehicle inspection certificate',
+            'front_photo' => 'Front vehicle photo',
+            'rear_photo' => 'Rear vehicle photo',
+            'left_photo' => 'Left side vehicle photo',
+            'right_photo' => 'Right side vehicle photo',
+            'interior_photo' => 'Vehicle interior photo',
+            'number_plate_photo' => 'Number plate photo',
+        ];
+        $rules = [
+            'vehicle_id' => ['required', 'string', 'exists:vehicles,id'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+            'documents' => ['nullable', 'array'],
+        ];
+        foreach ($documentLabels as $key => $_label) {
+            $rules['documents.'.$key] = str_ends_with($key, '_photo')
+                ? ['nullable', 'image', 'max:5120']
+                : ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'];
+        }
+        $data = $request->validate($rules);
+        $owner = $request->user();
+        $vehicle = $owner->vehicles()->whereKey($data['vehicle_id'])->firstOrFail();
+        $verificationRequest = $this->latestVerificationRequest($owner, 'VEHICLE', $vehicle->id);
+        $required = ['logbook', 'insurance', 'front_photo', 'rear_photo', 'left_photo', 'right_photo', 'interior_photo', 'number_plate_photo'];
+        $stored = $this->storePrivateVerificationDocuments(
+            $request,
+            $verificationRequest->documents ?? [],
+            $documentLabels,
+            $required,
+            'vehicle-owner/vehicles/'.$vehicle->id,
+        );
+
+        try {
+            VerificationRequest::query()->updateOrCreate(
+                ['user_id' => $owner->id, 'type' => 'VEHICLE', 'vehicle_id' => $vehicle->id],
+                ['status' => VerificationStatus::Pending, 'notes' => $data['notes'] ?? null, 'documents' => $stored['documents']],
+            );
+            $vehicle->forceFill(['verification_status' => VerificationStatus::Pending, 'status' => ListingStatus::Draft])->save();
+        } catch (Throwable $exception) {
+            $this->deleteVerificationFiles($stored['new_paths']);
+            throw $exception;
+        }
+
+        $this->deleteVerificationFiles($stored['replaced_paths']);
+
+        return back()->with('status', 'Vehicle documents submitted for admin review.');
     }
 
     public function bookings(Request $request): View
@@ -232,52 +310,62 @@ class VehicleOwnerController extends Controller
         return array_slice($images, 0, 12);
     }
 
-    private function latestVerificationRequest(User $user): VerificationRequest
+    private function latestVerificationRequest(User $user, string $type, ?string $vehicleId = null): VerificationRequest
     {
-        return VerificationRequest::query()
+        $query = VerificationRequest::query()
             ->where('user_id', $user->id)
-            ->where('type', 'VEHICLE_OWNER')
-            ->latest()
-            ->first() ?? new VerificationRequest(['type' => 'VEHICLE_OWNER']);
+            ->where('type', $type);
+
+        if ($vehicleId === null) {
+            $query->whereNull('vehicle_id');
+        } else {
+            $query->where('vehicle_id', $vehicleId);
+        }
+
+        return $query->latest()->first() ?? new VerificationRequest(['type' => $type, 'vehicle_id' => $vehicleId]);
     }
 
     /**
-     * Compliance documents are private, so they live on the local disk rather
-     * than the public one and are served to admins through a guarded route.
+     * Compliance documents remain private and are served through the guarded admin route.
      *
      * @param  array<int, array<string, mixed>>  $existing
-     * @return array<int, array<string, mixed>>
+     * @param  array<string, string>  $labels
+     * @param  list<string>  $required
+     * @return array{documents: array<int, array<string, mixed>>, new_paths: list<string>, replaced_paths: list<string>}
      */
-    private function storeVerificationDocuments(Request $request, array $existing): array
+    private function storePrivateVerificationDocuments(Request $request, array $existing, array $labels, array $required, string $directory): array
     {
-        $requirements = [
-            'logbook' => 'Vehicle logbook',
-            'kra_pin' => 'KRA PIN certificate',
-        ];
-
         $documents = [];
-        foreach ($requirements as $key => $label) {
+        $newPaths = [];
+        $replacedPaths = [];
+        $missing = [];
+        foreach ($labels as $key => $label) {
             $previous = collect($existing)->firstWhere('key', $key);
             $file = $request->file('documents.'.$key);
 
-            if (! $file) {
-                if (is_array($previous)) {
-                    $documents[] = $previous;
-                }
-
+            if (! $file && is_array($previous) && is_string($previous['path'] ?? null)) {
+                $documents[] = $previous;
                 continue;
             }
 
-            if (is_array($previous) && is_string($previous['path'] ?? null)) {
-                Storage::disk('local')->delete($previous['path']);
+            if (! $file) {
+                if (in_array($key, $required, true)) {
+                    $missing[] = $key;
+                }
+                continue;
             }
 
-            $path = $file->store('verification-documents/'.$key, 'local');
+            $path = $file->store('verification-documents/'.$directory.'/'.$key, 'local');
 
             if (! is_string($path)) {
-                throw ValidationException::withMessages(['documents.'.$key => 'That document could not be stored. Please try again.']);
+                $this->deleteVerificationFiles($newPaths);
+                throw ValidationException::withMessages(['documents.'.$key => 'That file could not be stored. Please try again.']);
             }
 
+            $newPaths[] = $path;
+            if (is_array($previous) && is_string($previous['path'] ?? null)) {
+                $replacedPaths[] = $previous['path'];
+            }
             $documents[] = [
                 'key' => $key,
                 'label' => $label,
@@ -288,7 +376,24 @@ class VehicleOwnerController extends Controller
             ];
         }
 
-        return $documents;
+        if ($missing !== []) {
+            $this->deleteVerificationFiles($newPaths);
+            $errors = [];
+            foreach ($missing as $key) {
+                $errors['documents.'.$key] = 'Upload the '.$labels[$key].'.';
+            }
+            throw ValidationException::withMessages($errors);
+        }
+
+        return ['documents' => $documents, 'new_paths' => $newPaths, 'replaced_paths' => $replacedPaths];
+    }
+
+    /** @param list<string> $paths */
+    private function deleteVerificationFiles(array $paths): void
+    {
+        foreach ($paths as $path) {
+            Storage::disk('local')->delete($path);
+        }
     }
 
     private function syncAvailability(Request $request, Vehicle $vehicle): void

@@ -121,7 +121,8 @@ Route::prefix('vehicle-owner')->name('vehicle-owner.')->middleware(['auth', 'acc
     Route::patch('/bookings/{booking}', [VehicleOwnerController::class, 'updateBooking'])->name('bookings.update');
     Route::get('/profile', [VehicleOwnerController::class, 'profile'])->name('profile');
     Route::put('/profile', [VehicleOwnerController::class, 'updateProfile'])->name('profile.update');
-    Route::post('/verification', [VehicleOwnerController::class, 'requestVerification'])->name('verification.store');
+    Route::post('/verification/identity', [VehicleOwnerController::class, 'requestIdentityVerification'])->name('verification.identity.store');
+    Route::post('/verification/vehicle', [VehicleOwnerController::class, 'requestVehicleVerification'])->name('verification.vehicle.store');
     Route::get('/{section}', [VehicleOwnerController::class, 'section'])->whereIn('section', ['earnings', 'ratings', 'messages', 'verification', 'settings'])->name('section');
 });
 

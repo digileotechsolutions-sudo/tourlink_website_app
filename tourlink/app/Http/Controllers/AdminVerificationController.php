@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -30,7 +31,10 @@ class AdminVerificationController extends Controller
         ]);
 
         $requests = VerificationRequest::query()
-            ->with('user:id,name,email,phone,role,verification_level')
+            ->with([
+                'user:id,name,email,phone,role,verification_level',
+                'vehicle:id,registration_number,make,model,year,seating_capacity,body_type,owner_id',
+            ])
             ->when($filters['status'] ?? null, fn (Builder $query, string $status): Builder => $query->where('status', $status))
             ->when($filters['search'] ?? null, fn (Builder $query, string $search): Builder => $query->whereHas('user', fn (Builder $user): Builder => $user
                 ->where('name', 'like', '%'.$search.'%')
@@ -59,6 +63,35 @@ class AdminVerificationController extends Controller
         $reviewedUserId = null;
         $reviewStatus = VerificationStatus::from($data['status']);
 
+        $requiredDocuments = match ($verificationRequest->type) {
+            'OPERATOR' => ['registration_certificate', 'kra_pin', 'tour_operator_license', 'business_permit', 'representative_id'],
+            'VEHICLE_OWNER_IDENTITY' => ['owner_id'],
+            'VEHICLE' => ['logbook', 'insurance', 'front_photo', 'rear_photo', 'left_photo', 'right_photo', 'interior_photo', 'number_plate_photo'],
+            default => [],
+        };
+
+        if ($verificationRequest->type === 'VEHICLE') {
+            abort_unless($verificationRequest->vehicle !== null && $verificationRequest->vehicle->owner_id === $verificationRequest->user_id, 404);
+        }
+
+        if ($reviewStatus === VerificationStatus::Approved && $requiredDocuments !== []) {
+            $documents = collect($verificationRequest->documents ?? [])->keyBy('key');
+            $missingDocuments = [];
+
+            foreach ($requiredDocuments as $key) {
+                $path = $documents->get($key)['path'] ?? null;
+                if (! is_string($path) || ! Storage::disk('local')->exists($path)) {
+                    $missingDocuments[] = str($key)->replace('_', ' ')->toString();
+                }
+            }
+
+            if ($missingDocuments !== []) {
+                throw ValidationException::withMessages([
+                    'status' => 'Cannot approve this request. Missing or unavailable documents: '.implode(', ', $missingDocuments).'.',
+                ]);
+            }
+        }
+
         DB::transaction(function () use ($request, $verificationRequest, $data, &$published, &$reviewedUserId): void {
             $verificationRequest = VerificationRequest::query()->lockForUpdate()->findOrFail($verificationRequest->id);
             $previousStatus = $verificationRequest->status->value;
@@ -73,11 +106,22 @@ class AdminVerificationController extends Controller
             $reviewedUserId = $user->id;
 
             if ($status === VerificationStatus::Approved) {
-                if ($user->verification_level === VerificationLevel::Basic) {
+                if ($verificationRequest->type !== 'VEHICLE' && $user->verification_level === VerificationLevel::Basic) {
                     $user->forceFill(['verification_level' => VerificationLevel::Verified])->save();
                 }
 
-                $published = $this->publishPendingListings($user);
+                if ($verificationRequest->type === 'VEHICLE' && $verificationRequest->vehicle_id) {
+                    $published['vehicles'] = Vehicle::query()
+                        ->whereKey($verificationRequest->vehicle_id)
+                        ->where('owner_id', $user->id)
+                        ->where('verification_status', VerificationStatus::Pending)
+                        ->update([
+                            'verification_status' => VerificationStatus::Approved,
+                            'status' => ListingStatus::Published,
+                        ]);
+                } elseif (in_array($verificationRequest->type, ['OPERATOR', 'VEHICLE_OWNER'], true)) {
+                    $published = $this->publishPendingListings($user);
+                }
             }
 
             $user->appNotifications()->create([

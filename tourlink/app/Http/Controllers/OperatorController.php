@@ -18,12 +18,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use JsonException;
+use Throwable;
 
 class OperatorController extends Controller
 {
@@ -163,7 +165,12 @@ class OperatorController extends Controller
 
     public function profile(Request $request): View
     {
-        return view('operator.profile', ['profile' => $request->user()->operatorProfile()->firstOrCreate([], ['company_name' => $request->user()->name, 'slug' => Str::slug($request->user()->name)])]);
+        $operator = $request->user();
+
+        return view('operator.profile', [
+            'profile' => $operator->operatorProfile()->firstOrCreate([], ['company_name' => $operator->name, 'slug' => Str::slug($operator->name)]),
+            'verificationRequest' => $this->latestVerificationRequest($operator),
+        ]);
     }
 
     public function updateProfile(Request $request): RedirectResponse
@@ -188,12 +195,99 @@ class OperatorController extends Controller
 
     public function requestVerification(Request $request): RedirectResponse
     {
-        VerificationRequest::query()->updateOrCreate(
-            ['user_id' => $request->user()->id, 'type' => 'OPERATOR'],
-            ['status' => VerificationStatus::Pending, 'notes' => $request->input('notes'), 'documents' => $request->input('documents', [])],
-        );
+        $documentLabels = [
+            'registration_certificate' => 'Business registration certificate',
+            'kra_pin' => 'KRA PIN certificate',
+            'tour_operator_license' => 'Tour operator license',
+            'business_permit' => 'Business permit',
+            'representative_id' => 'Owner or representative ID',
+        ];
+        $rules = [
+            'notes' => ['nullable', 'string', 'max:2000'],
+            'documents' => ['nullable', 'array'],
+        ];
+        foreach (array_keys($documentLabels) as $key) {
+            $rules['documents.'.$key] = ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'];
+        }
+        $data = $request->validate($rules);
 
-        return back()->with('status', 'Verification request submitted.');
+        $verificationRequest = $this->latestVerificationRequest($request->user());
+        $existing = collect($verificationRequest->documents ?? [])->keyBy('key')->all();
+        $documents = [];
+        $replacedPaths = [];
+        $storedPaths = [];
+        $missing = [];
+
+        foreach ($documentLabels as $key => $label) {
+            $previous = $existing[$key] ?? null;
+            $file = $request->file('documents.'.$key);
+
+            if ($file) {
+                $path = $file->store('verification-documents/operator/'.$key, 'local');
+                if (! is_string($path)) {
+                    foreach ($storedPaths as $storedPath) {
+                        Storage::disk('local')->delete($storedPath);
+                    }
+
+                    throw ValidationException::withMessages(['documents.'.$key => 'That document could not be stored. Please try again.']);
+                }
+
+                $storedPaths[] = $path;
+                if (is_array($previous) && is_string($previous['path'] ?? null)) {
+                    $replacedPaths[] = $previous['path'];
+                }
+                $documents[] = [
+                    'key' => $key,
+                    'label' => $label,
+                    'path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                ];
+
+                continue;
+            }
+
+            if (is_array($previous) && is_string($previous['path'] ?? null)) {
+                $documents[] = $previous;
+            } else {
+                $missing[] = $key;
+            }
+        }
+
+        if ($missing !== []) {
+            foreach ($storedPaths as $storedPath) {
+                Storage::disk('local')->delete($storedPath);
+            }
+
+            $errors = [];
+            foreach ($missing as $key) {
+                $errors['documents.'.$key] = 'Upload the '.$documentLabels[$key].'.';
+            }
+
+            throw ValidationException::withMessages($errors);
+        }
+
+        try {
+            VerificationRequest::query()->updateOrCreate(
+                ['user_id' => $request->user()->id, 'type' => 'OPERATOR'],
+                ['status' => VerificationStatus::Pending, 'notes' => $data['notes'] ?? null, 'documents' => $documents],
+            );
+            $request->user()->forceFill(['verification_level' => \App\VerificationLevel::Basic])->save();
+        } catch (Throwable $exception) {
+            foreach ($storedPaths as $storedPath) {
+                Storage::disk('local')->delete($storedPath);
+            }
+            Log::error('Operator verification submission failed.', ['exception' => $exception::class]);
+
+            return back()->withInput()->withErrors(['verification' => 'Your verification request could not be saved. Please try again.']);
+        }
+
+        foreach ($replacedPaths as $replacedPath) {
+            Storage::disk('local')->delete($replacedPath);
+        }
+
+        return back()->with('status', 'Your documents were submitted for admin review.');
     }
 
     public function bookings(Request $request): View
@@ -244,6 +338,15 @@ class OperatorController extends Controller
         };
 
         return view('operator.section', array_merge(['title' => Str::headline($section), 'description' => 'Operator workspace for '.Str::lower(Str::headline($section)).'.', 'type' => $section], $data));
+    }
+
+    private function latestVerificationRequest(User $operator): VerificationRequest
+    {
+        return VerificationRequest::query()
+            ->where('user_id', $operator->id)
+            ->where('type', 'OPERATOR')
+            ->latest()
+            ->first() ?? new VerificationRequest(['type' => 'OPERATOR']);
     }
 
     private function validatedTripData(Request $request, ?Trip $trip = null): array
