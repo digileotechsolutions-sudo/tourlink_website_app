@@ -31,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by($request->ip());
         });
 
+        RateLimiter::for('auth-google', function (Request $request): Limit {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
         RateLimiter::for('auth-otp', function (Request $request): Limit {
             $userId = $request->string('user_id')->toString();
             $channel = $request->string('channel')->toString();

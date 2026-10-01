@@ -112,6 +112,8 @@
             </div>
         </form>
 
+        @include('components.google-auth-button', ['googleClientId' => $googleClientId, 'googleNonce' => $googleNonce, 'mode' => 'register'])
+
         <p class="auth-footer">Already have an account? <a href="{{ route('login') }}">Log in</a></p>
     </section>
 </div>

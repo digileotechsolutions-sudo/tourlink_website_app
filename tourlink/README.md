@@ -21,6 +21,18 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Google Sign-In Setup
+
+TourLink uses Google Identity Services to receive an ID token and verifies that token on the server against Google's rotating RSA signing keys. It does not use a Google client secret or store Google access tokens.
+
+1. In Google Cloud Console, create an OAuth client with application type **Web application**.
+2. Add `https://havenedgerealtors.com` as an authorized JavaScript origin. This GIS credential flow does not use a redirect URI.
+3. Set the public Web Client ID in the server-side `GOOGLE_CLIENT_ID` environment variable. Do not add a client secret to the application.
+4. Deploy the application and run `php artisan migrate --force` to add the Google identity columns.
+5. Rebuild and deploy the Vite assets so the login and registration pages include the GIS button.
+
+New Google users must provide a phone number and account type, then complete TourLink's existing verification and approval process. Existing accounts are linked only when Google reports a verified email matching the stored address.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.

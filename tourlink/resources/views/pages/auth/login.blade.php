@@ -9,6 +9,7 @@
             <p>Sign in to continue your journey.</p>
         </header>
         @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
+        @error('google')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
         <form method="POST" action="{{ route('login') }}" data-auth-form data-auth-loading-label="Signing in...">@csrf
             <div class="auth-login-field">
                 <label for="email">Email address</label>
@@ -40,6 +41,7 @@
                 </button>
             </div>
         </form>
+        @include('components.google-auth-button', ['googleClientId' => $googleClientId, 'googleNonce' => $googleNonce, 'mode' => 'login'])
         <p class="auth-login-footer">New to TourLink? <a href="{{ route('register') }}">Create an account</a></p>
     </section>
 </div>

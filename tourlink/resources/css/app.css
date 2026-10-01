@@ -152,6 +152,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .auth-compact-submit.is-loading [data-submit-arrow] { display: none; }
 .auth-compact-submit.is-loading .auth-login-spinner { display: block; }
 .auth-referrer-note { margin: 0 0 18px; padding: 12px 14px; border: 1px solid rgba(39, 117, 83, .16); border-radius: 13px; color: #315842; background: rgba(232, 245, 235, .82); font-size: 12px; line-height: 1.55; }
+.google-auth-block { margin-top: 18px; }
+.google-auth-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0 14px; color: #718279; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+.google-auth-divider::before, .google-auth-divider::after { height: 1px; flex: 1; background: #dce8e0; content: ''; }
+.google-auth-button-wrap { display: flex; min-height: 44px; justify-content: center; }
+.google-auth-button-wrap > div { max-width: 100%; }
+.google-auth-error { margin: 10px 0 0; text-align: center; }
+.google-auth-block.is-processing { opacity: .65; pointer-events: none; }
+.google-profile-summary { display: flex; align-items: center; gap: 12px; margin: 0 0 20px; padding: 12px; border: 1px solid #dce8e0; border-radius: 12px; background: rgba(255, 255, 255, .72); }
+.google-profile-summary img { flex: none; border-radius: 50%; object-fit: cover; }
+.google-profile-summary strong, .google-profile-summary span { display: block; overflow-wrap: anywhere; }
+.google-profile-summary strong { color: #173b2a; font-size: 13px; }
+.google-profile-summary span { margin-top: 2px; color: #718279; font-size: 11px; }
 .auth-compact-card .auth-footer { padding-top: 20px; }
 .auth-compact-card .auth-footer a, .auth-compact-header a { color: #176142; font-weight: 800; transition: color .18s ease; }
 .auth-compact-card .auth-footer a:hover, .auth-login-label-row a:hover, .auth-login-footer a:hover { color: #0b4830; text-decoration: underline; text-underline-offset: 3px; }

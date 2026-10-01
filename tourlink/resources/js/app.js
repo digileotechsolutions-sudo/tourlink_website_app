@@ -87,6 +87,80 @@ document.querySelectorAll('[data-form-draft]').forEach((form) => {
     });
 });
 
+document.querySelectorAll('[data-google-auth]').forEach((container) => {
+    const clientId = container.dataset.googleClientId;
+    const nonce = container.dataset.googleNonce;
+    const buttonContainer = container.querySelector('[data-google-button]');
+    const credentialForm = container.querySelector('[data-google-credential-form]');
+    const credentialInput = credentialForm?.querySelector('input[name="credential"]');
+    const errorMessage = container.querySelector('[data-google-auth-error]');
+
+    const showError = (message) => {
+        if (errorMessage) {
+            errorMessage.textContent = message;
+            errorMessage.hidden = false;
+        }
+    };
+
+    const initializeGoogleButton = () => {
+        if (!clientId || !nonce || !buttonContainer || !credentialForm || !credentialInput
+            || !window.google?.accounts?.id) {
+            showError('Google sign-in is unavailable. Please use email and password.');
+
+            return;
+        }
+
+        window.google.accounts.id.initialize({
+            client_id: clientId,
+            nonce,
+            auto_select: false,
+            callback: (response) => {
+                if (!response.credential) {
+                    showError('Google could not verify this sign-in. Please try again.');
+
+                    return;
+                }
+
+                credentialInput.value = response.credential;
+                container.classList.add('is-processing');
+                container.setAttribute('aria-busy', 'true');
+                const status = container.querySelector('[data-google-auth-status]');
+                if (status) {
+                    status.hidden = false;
+                    status.textContent = 'Verifying with Google...';
+                }
+                credentialForm.submit();
+            },
+        });
+
+        window.google.accounts.id.renderButton(buttonContainer, {
+            type: 'standard',
+            theme: 'outline',
+            size: 'large',
+            text: 'continue_with',
+            shape: 'rect',
+            width: Math.min(400, Math.max(220, Math.floor(container.clientWidth))),
+        });
+    };
+
+    const googleScript = document.querySelector('script[data-google-identity]') ?? document.createElement('script');
+    if (!googleScript.src) {
+        googleScript.src = 'https://accounts.google.com/gsi/client';
+        googleScript.async = true;
+        googleScript.defer = true;
+        googleScript.dataset.googleIdentity = 'true';
+        googleScript.addEventListener('load', initializeGoogleButton, { once: true });
+        googleScript.addEventListener('error', () => {
+            showError('Google sign-in could not load. Check your connection or use email and password.');
+        }, { once: true });
+        document.head.append(googleScript);
+    } else if (window.google?.accounts?.id) {
+        initializeGoogleButton();
+    } else {
+        googleScript.addEventListener('load', initializeGoogleButton, { once: true });
+    }
+});
+
 document.querySelectorAll('[data-password-strength]').forEach((indicator) => {
     const input = document.querySelector('[data-strength-input]');
     const label = indicator.querySelector('[data-strength-label]');

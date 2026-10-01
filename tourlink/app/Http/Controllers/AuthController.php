@@ -32,9 +32,12 @@ use Throwable;
 
 class AuthController extends Controller
 {
-    public function showLogin(): View
+    public function showLogin(Request $request): View
     {
-        return view('pages.auth.login');
+        $googleClientId = (string) config('services.google.client_id');
+        $googleNonce = $this->issueGoogleNonce($request, 'login', Role::Traveler->value);
+
+        return view('pages.auth.login', compact('googleClientId', 'googleNonce'));
     }
 
     public function showRegistration(Request $request, ReferralService $referrals, AccountVerificationService $verification): View
@@ -46,8 +49,10 @@ class AuthController extends Controller
 
         $referrer = $referrals->captureReferrer($request);
         $verificationAvailable = $verification->deliverableChannels() !== [];
+        $googleClientId = (string) config('services.google.client_id');
+        $googleNonce = $this->issueGoogleNonce($request, 'register', $initialRole);
 
-        return view('pages.auth.register', compact('initialRole', 'referrer', 'verificationAvailable'));
+        return view('pages.auth.register', compact('initialRole', 'referrer', 'verificationAvailable', 'googleClientId', 'googleNonce'));
     }
 
     public function login(Request $request, AccountVerificationService $verification): mixed
@@ -196,6 +201,32 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('home');
+    }
+
+    private function issueGoogleNonce(Request $request, string $mode, string $role): ?string
+    {
+        if ((string) config('services.google.client_id') === '') {
+            return null;
+        }
+
+        $now = now()->timestamp;
+        $nonces = $request->session()->get('google.auth_nonces', []);
+        if (! is_array($nonces)) {
+            $nonces = [];
+        }
+        $nonces = array_filter($nonces, fn (mixed $entry): bool => is_array($entry)
+            && (int) ($entry['issued_at'] ?? 0) >= $now - 600);
+
+        $nonce = Str::random(64);
+        $nonces[$nonce] = [
+            'issued_at' => $now,
+            'mode' => $mode,
+            'role' => $role,
+        ];
+
+        $request->session()->put('google.auth_nonces', array_slice($nonces, -5, null, true));
+
+        return $nonce;
     }
 
     private function discardSession(Request $request): void
