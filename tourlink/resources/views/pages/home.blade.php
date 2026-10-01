@@ -5,7 +5,7 @@
     <div class="container-page relative grid items-center gap-8 py-10 sm:gap-10 sm:py-14 lg:min-h-[650px] lg:grid-cols-[1.02fr_.98fr] lg:gap-12 lg:py-24">
         <div class="relative z-10">
             <span class="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-[11px] font-bold uppercase tracking-[.16em] text-white/80 sm:mb-6"><span class="text-sun" aria-hidden="true">✦</span> Kenya's travel marketplace</span>
-            <h1 class="display max-w-2xl text-5xl font-bold leading-[.94] sm:text-7xl lg:text-[88px]">Go further.<br><span class="text-sun">Feel more.</span></h1>
+            <h1 class="display max-w-2xl text-5xl font-bold leading-[.94] sm:text-7xl lg:text-[88px]">Go further.<br><span class="text-white">Feel more.</span></h1>
             <p class="mt-5 max-w-lg text-base leading-6 text-white/75 sm:mt-7 sm:text-lg sm:leading-7">Discover trips, hire verified vehicles, and connect with trusted tour operators. Your next story starts here.</p>
             <div class="mt-6 flex flex-wrap gap-3 sm:mt-9"><a class="rounded-full bg-sun px-6 py-3.5 text-sm font-extrabold text-ink hover:bg-orange-300" href="{{ route('trips.index') }}">Explore trips <span aria-hidden="true">↗</span></a><a class="rounded-full border border-white/25 px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10" href="{{ route('vehicles.index') }}">Browse vehicles <span aria-hidden="true">↗</span></a></div>
             <a class="mt-4 inline-flex text-sm font-bold text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white" href="#how-it-works">How TourLink works</a>
