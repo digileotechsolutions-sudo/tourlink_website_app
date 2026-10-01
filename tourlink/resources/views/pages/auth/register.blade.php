@@ -17,6 +17,8 @@
             <p class="auth-msg auth-msg-error" role="alert">Signup is temporarily unavailable because account verification delivery is not configured. Please contact TourLink support.</p>
         @endunless
 
+        <p class="auth-msg auth-msg-error" data-auth-offline-error role="alert" aria-live="assertive" hidden></p>
+
         @if ($errors->any())
             <div class="auth-msg auth-msg-error" role="alert" aria-live="assertive" tabindex="-1">
                 <strong>We couldn't create your account.</strong>
