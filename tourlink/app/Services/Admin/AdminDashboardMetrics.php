@@ -34,7 +34,11 @@ class AdminDashboardMetrics
             ->pluck('amount', 'role');
 
         $pendingVerification = User::query()->where('approval_status', AccountApprovalStatus::Pending)->count()
-            + DB::table('verification_requests')->where('status', VerificationStatus::Pending->value)->count()
+            + DB::table('verification_requests')->whereIn('status', [
+                VerificationStatus::Pending->value,
+                VerificationStatus::UnderReview->value,
+                VerificationStatus::MoreInfo->value,
+            ])->count()
             + Trip::query()->where('verification_status', VerificationStatus::Pending)->count()
             + Vehicle::query()->where('verification_status', VerificationStatus::Pending)->count();
 

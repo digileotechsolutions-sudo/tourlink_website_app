@@ -33,17 +33,7 @@ document.addEventListener('click', (event) => {
 });
 
 document.querySelectorAll('[data-auth-form]').forEach((form) => {
-    form.addEventListener('submit', (event) => {
-        if (!navigator.onLine) {
-            event.preventDefault();
-            const error = form.closest('.auth-card, .auth-login-card')?.querySelector('[data-auth-offline-error]');
-            if (error) {
-                error.textContent = 'You appear to be offline. Reconnect to the internet and try again.';
-                error.hidden = false;
-            }
-            return;
-        }
-
+    form.addEventListener('submit', () => {
         const button = form.querySelector('[data-auth-submit]');
         const label = button?.querySelector('[data-auth-submit-label]');
 
@@ -123,12 +113,6 @@ document.querySelectorAll('[data-google-auth]').forEach((container) => {
             callback: (response) => {
                 if (!response.credential) {
                     showError('Google could not verify this sign-in. Please try again.');
-
-                    return;
-                }
-
-                if (!navigator.onLine) {
-                    showError('You appear to be offline. Reconnect to the internet and try again.');
 
                     return;
                 }

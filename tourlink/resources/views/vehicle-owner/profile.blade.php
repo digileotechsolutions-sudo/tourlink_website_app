@@ -34,7 +34,7 @@
             <p class="text-xs font-bold uppercase tracking-wider text-amber-900">Identity verification</p>
             <h2 id="owner-verification-heading" class="mt-1 text-xl font-black text-slate-950">Verify the vehicle owner</h2>
             @if ($identityVerificationRequest->exists)
-                <p class="mt-2 text-sm font-bold text-amber-950">Status: {{ str($identityVerificationRequest->status->value)->replace('_', ' ')->title() }}</p>
+                <p class="mt-2 text-sm font-bold text-amber-950">Status: {{ $identityVerificationRequest->status->label() }}</p>
             @endif
         </div>
         @if ($identityDocuments !== [])
@@ -90,7 +90,7 @@
                         <p class="mt-1 text-sm text-slate-600">{{ $vehicle->body_type }} · {{ $vehicle->seating_capacity }} seats</p>
                     </div>
                     @if ($verificationRequest)
-                        <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-950">{{ str($verificationRequest->status->value)->replace('_', ' ')->title() }}</span>
+                        <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-950">{{ $verificationRequest->status->label() }}</span>
                     @endif
                 </div>
 

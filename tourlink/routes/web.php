@@ -190,7 +190,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/verification', [AdminVerificationController::class, 'index'])->name('verification.index');
     Route::patch('/verification/{verificationRequest}', [AdminVerificationController::class, 'update'])->name('verification.update');
     Route::get('/verification/{verificationRequest}/documents/{document}', [AdminVerificationController::class, 'document'])
-        ->whereIn('document', ['logbook', 'kra_pin'])
+        ->where('document', '[A-Za-z0-9_-]+')
         ->name('verification.document');
     Route::patch('/vehicles/{vehicle}', [AdminModerationController::class, 'updateVehicle'])->name('vehicles.update');
 });

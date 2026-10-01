@@ -27,7 +27,7 @@ class AdminVehicleController extends Controller
         $filters = $request->validate([
             'search' => ['nullable', 'string', 'max:120'],
             'status' => ['nullable', Rule::in(array_column(ListingStatus::cases(), 'value'))],
-            'verification_status' => ['nullable', Rule::in(array_column(VerificationStatus::cases(), 'value'))],
+            'verification_status' => ['nullable', Rule::in(array_values(array_diff(array_column(VerificationStatus::cases(), 'value'), [VerificationStatus::UnderReview->value])))],
         ]);
 
         $vehicles = Vehicle::query()
@@ -145,7 +145,7 @@ class AdminVehicleController extends Controller
             'owner_id' => ['required', 'string', Rule::exists('users', 'id')->where('role', Role::VehicleOwner->value)->where('account_status', AccountStatus::Active->value)->where('approval_status', AccountApprovalStatus::Approved->value)],
             'destination_id' => ['nullable', 'string', 'exists:destinations,id'],
             'status' => ['required', Rule::in(array_column(ListingStatus::cases(), 'value'))],
-            'verification_status' => ['required', Rule::in(array_column(VerificationStatus::cases(), 'value'))],
+            'verification_status' => ['required', Rule::in(array_values(array_diff(array_column(VerificationStatus::cases(), 'value'), [VerificationStatus::UnderReview->value])))],
             'images' => ['nullable', 'array', 'max:12'],
             'images.*.url' => ['required', 'url:http,https', 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],

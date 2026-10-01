@@ -8,6 +8,7 @@ use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VerificationRequest;
+use App\OperatorVerificationDocument;
 use App\Services\Referral\ReferralService;
 use App\VerificationLevel;
 use App\VerificationStatus;
@@ -33,13 +34,18 @@ class AdminVerificationController extends Controller
         $requests = VerificationRequest::query()
             ->with([
                 'user:id,name,email,phone,role,verification_level',
+                'user.operatorProfile:user_id,company_name,description,years_active,website',
                 'vehicle:id,registration_number,make,model,year,seating_capacity,body_type,owner_id',
             ])
             ->when($filters['status'] ?? null, fn (Builder $query, string $status): Builder => $query->where('status', $status))
             ->when($filters['search'] ?? null, fn (Builder $query, string $search): Builder => $query->whereHas('user', fn (Builder $user): Builder => $user
                 ->where('name', 'like', '%'.$search.'%')
                 ->orWhere('email', 'like', '%'.$search.'%')))
-            ->when(! isset($filters['status']), fn (Builder $query): Builder => $query->whereIn('status', [VerificationStatus::Pending->value, VerificationStatus::MoreInfo->value]))
+            ->when(! isset($filters['status']), fn (Builder $query): Builder => $query->whereIn('status', [
+                VerificationStatus::Pending->value,
+                VerificationStatus::UnderReview->value,
+                VerificationStatus::MoreInfo->value,
+            ]))
             ->orderByRaw("CASE WHEN status = 'PENDING' THEN 0 ELSE 1 END")
             ->latest('created_at')
             ->paginate(25)
@@ -55,6 +61,7 @@ class AdminVerificationController extends Controller
                 VerificationStatus::Approved->value,
                 VerificationStatus::Rejected->value,
                 VerificationStatus::MoreInfo->value,
+                VerificationStatus::UnderReview->value,
             ])],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -64,7 +71,7 @@ class AdminVerificationController extends Controller
         $reviewStatus = VerificationStatus::from($data['status']);
 
         $requiredDocuments = match ($verificationRequest->type) {
-            'OPERATOR' => ['registration_certificate', 'kra_pin', 'tour_operator_license', 'business_permit', 'representative_id'],
+            'OPERATOR' => OperatorVerificationDocument::requiredKeys(),
             'VEHICLE_OWNER_IDENTITY' => ['owner_id'],
             'VEHICLE' => ['logbook', 'insurance', 'front_photo', 'rear_photo', 'left_photo', 'right_photo', 'interior_photo', 'number_plate_photo'],
             default => [],

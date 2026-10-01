@@ -22,9 +22,9 @@
             <input id="verification-search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Applicant name or email" class="min-h-11 rounded border border-slate-300 px-3 text-sm">
             <label class="sr-only" for="verification-status">Request status</label>
             <select id="verification-status" name="status" class="min-h-11 rounded border border-slate-300 bg-white px-3 text-sm">
-                <option value="">Pending and more information</option>
+                <option value="">Pending, under review, and documents required</option>
                 @foreach (\App\VerificationStatus::cases() as $status)
-                    <option value="{{ $status->value }}" @selected(($filters['status'] ?? '') === $status->value)>{{ str($status->value)->replace('_', ' ')->title() }}</option>
+                    <option value="{{ $status->value }}" @selected(($filters['status'] ?? '') === $status->value)>{{ $status->label() }}</option>
                 @endforeach
             </select>
             <button class="min-h-11 rounded border border-slate-300 px-4 text-sm font-bold text-slate-800 hover:bg-slate-50">Filter</button>
@@ -36,7 +36,7 @@
                 <div>
                     <div class="flex flex-wrap items-baseline justify-between gap-3">
                         <h2 class="text-lg font-extrabold text-slate-950">{{ $verificationRequest->user?->name ?? 'Unknown applicant' }}</h2>
-                        <span class="text-xs font-bold uppercase text-slate-500">{{ str($verificationRequest->status->value)->replace('_', ' ')->title() }}</span>
+                        <span class="text-xs font-bold text-slate-700">{{ $verificationRequest->status->label() }}</span>
                     </div>
                     <p class="mt-1 text-sm text-slate-600">{{ $verificationRequest->user?->email }} · {{ str($verificationRequest->user?->role?->value ?? 'UNKNOWN')->replace('_', ' ')->title() }}</p>
                     <p class="mt-1 text-xs text-slate-500">{{ str($verificationRequest->type)->replace('_', ' ')->title() }} · Submitted {{ $verificationRequest->created_at?->format('Y-m-d H:i') }}</p>
@@ -46,6 +46,13 @@
                             <div><dt class="inline font-bold text-slate-700">Vehicle:</dt> <dd class="inline text-slate-600">{{ $verificationRequest->vehicle->year }} {{ $verificationRequest->vehicle->make }} {{ $verificationRequest->vehicle->model }}</dd></div>
                             <div><dt class="inline font-bold text-slate-700">Type:</dt> <dd class="inline text-slate-600">{{ $verificationRequest->vehicle->body_type }}</dd></div>
                             <div><dt class="inline font-bold text-slate-700">Seats:</dt> <dd class="inline text-slate-600">{{ $verificationRequest->vehicle->seating_capacity }}</dd></div>
+                        </dl>
+                    @endif
+                    @if ($verificationRequest->type === 'OPERATOR' && $verificationRequest->user?->operatorProfile)
+                        <dl class="mt-3 grid gap-2 rounded border border-slate-200 bg-slate-50 p-3 text-sm sm:grid-cols-2">
+                            <div><dt class="font-bold text-slate-700">Business</dt><dd class="text-slate-600">{{ $verificationRequest->user->operatorProfile->company_name }}</dd></div>
+                            <div><dt class="font-bold text-slate-700">Years operating</dt><dd class="text-slate-600">{{ $verificationRequest->user->operatorProfile->years_active }}</dd></div>
+                            <div class="sm:col-span-2"><dt class="font-bold text-slate-700">Company/business profile</dt><dd class="whitespace-pre-wrap text-slate-600">{{ $verificationRequest->user->operatorProfile->description }}</dd></div>
                         </dl>
                     @endif
                     @if ($verificationRequest->documents)
@@ -74,7 +81,8 @@
                         <select name="status" required class="min-h-11 rounded border border-slate-300 bg-white px-3 text-sm font-normal">
                             <option value="APPROVED">Approve</option>
                             <option value="REJECTED">Reject</option>
-                            <option value="MORE_INFO">Request more information</option>
+                            <option value="UNDER_REVIEW">Mark under review</option>
+                            <option value="MORE_INFO">Request documents</option>
                         </select>
                     </label>
                     <label class="grid gap-1 text-sm font-semibold text-slate-700">Reviewer note<textarea name="notes" maxlength="2000" rows="3" class="rounded border border-slate-300 px-3 py-2 text-sm font-normal" placeholder="Include any action the applicant needs to take."></textarea></label>

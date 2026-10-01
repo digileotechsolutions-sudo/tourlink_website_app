@@ -13,6 +13,8 @@ use App\Models\TripCategory;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VerificationRequest;
+use App\OperatorVerificationDocument;
+use App\VerificationLevel;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -195,19 +197,16 @@ class OperatorController extends Controller
 
     public function requestVerification(Request $request): RedirectResponse
     {
-        $documentLabels = [
-            'registration_certificate' => 'Business registration certificate',
-            'kra_pin' => 'KRA PIN certificate',
-            'tour_operator_license' => 'Tour operator license',
-            'business_permit' => 'Business permit',
-            'representative_id' => 'Owner or representative ID',
-        ];
+        $documentLabels = collect(OperatorVerificationDocument::cases())
+            ->mapWithKeys(fn (OperatorVerificationDocument $document): array => [$document->value => $document->label()])
+            ->all();
         $rules = [
             'notes' => ['nullable', 'string', 'max:2000'],
+            'company_profile' => ['required', 'string', 'min:20', 'max:5000'],
             'documents' => ['nullable', 'array'],
         ];
-        foreach (array_keys($documentLabels) as $key) {
-            $rules['documents.'.$key] = ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'];
+        foreach (OperatorVerificationDocument::cases() as $document) {
+            $rules['documents.'.$document->value] = ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'];
         }
         $data = $request->validate($rules);
 
@@ -250,7 +249,7 @@ class OperatorController extends Controller
 
             if (is_array($previous) && is_string($previous['path'] ?? null)) {
                 $documents[] = $previous;
-            } else {
+            } elseif (OperatorVerificationDocument::from($key)->required()) {
                 $missing[] = $key;
             }
         }
@@ -269,11 +268,19 @@ class OperatorController extends Controller
         }
 
         try {
-            VerificationRequest::query()->updateOrCreate(
-                ['user_id' => $request->user()->id, 'type' => 'OPERATOR'],
-                ['status' => VerificationStatus::Pending, 'notes' => $data['notes'] ?? null, 'documents' => $documents],
-            );
-            $request->user()->forceFill(['verification_level' => \App\VerificationLevel::Basic])->save();
+            DB::transaction(function () use ($request, $data, $documents): void {
+                $operator = $request->user();
+                $profile = $operator->operatorProfile()->firstOrCreate([], [
+                    'company_name' => $operator->operatorProfile?->company_name ?? $operator->name,
+                    'slug' => Str::slug($operator->name).'-'.Str::lower(Str::random(8)),
+                ]);
+                $profile->update(['description' => $data['company_profile']]);
+                VerificationRequest::query()->updateOrCreate(
+                    ['user_id' => $operator->id, 'type' => 'OPERATOR'],
+                    ['status' => VerificationStatus::Pending, 'notes' => $data['notes'] ?? null, 'documents' => $documents],
+                );
+                $operator->forceFill(['verification_level' => VerificationLevel::Basic])->save();
+            });
         } catch (Throwable $exception) {
             foreach ($storedPaths as $storedPath) {
                 Storage::disk('local')->delete($storedPath);

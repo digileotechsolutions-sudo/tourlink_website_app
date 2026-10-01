@@ -31,6 +31,7 @@
             <select id="trip-verification-filter" name="verification_status" class="min-h-11 rounded border border-slate-300 bg-white px-3 text-sm">
                 <option value="">All review statuses</option>
                 @foreach (\App\VerificationStatus::cases() as $status)
+                    @continue($status === \App\VerificationStatus::UnderReview)
                     <option value="{{ $status->value }}" @selected(($filters['verification_status'] ?? '') === $status->value)>{{ str($status->value)->replace('_', ' ')->title() }}</option>
                 @endforeach
             </select>

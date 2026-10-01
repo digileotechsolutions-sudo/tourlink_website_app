@@ -37,7 +37,7 @@ class AdminTripController extends Controller
         $filters = $request->validate([
             'search' => ['nullable', 'string', 'max:120'],
             'status' => ['nullable', Rule::in(array_column(ListingStatus::cases(), 'value'))],
-            'verification_status' => ['nullable', Rule::in(array_column(VerificationStatus::cases(), 'value'))],
+            'verification_status' => ['nullable', Rule::in(array_values(array_diff(array_column(VerificationStatus::cases(), 'value'), [VerificationStatus::UnderReview->value])))],
         ]);
 
         $trips = Trip::query()
@@ -154,7 +154,7 @@ class AdminTripController extends Controller
             'required_vehicle_id' => ['nullable', 'string', 'exists:vehicles,id'],
             'status' => ['required', Rule::in(array_column(ListingStatus::cases(), 'value'))],
             'featured' => ['required', 'boolean'],
-            'verification_status' => ['required', Rule::in(array_column(VerificationStatus::cases(), 'value'))],
+            'verification_status' => ['required', Rule::in(array_values(array_diff(array_column(VerificationStatus::cases(), 'value'), [VerificationStatus::UnderReview->value])))],
             'images' => ['nullable', 'array', 'max:12'],
             'images.*.url' => ['required', 'url:http,https', 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],

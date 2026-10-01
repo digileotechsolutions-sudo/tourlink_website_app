@@ -15,13 +15,12 @@
         <div class="sm:col-span-2"><button class="rounded bg-emerald-800 px-6 py-3 text-sm font-bold text-white">Save company profile</button></div>
     </form>
     @php
-        $operatorDocuments = [
-            ['key' => 'registration_certificate', 'label' => 'Business registration certificate'],
-            ['key' => 'kra_pin', 'label' => 'KRA PIN certificate'],
-            ['key' => 'tour_operator_license', 'label' => 'Tour operator license'],
-            ['key' => 'business_permit', 'label' => 'Business permit'],
-            ['key' => 'representative_id', 'label' => 'Owner or representative ID'],
-        ];
+        $operatorDocuments = collect(\App\OperatorVerificationDocument::cases())->map(fn ($document): array => [
+            'key' => $document->value,
+            'label' => $document->label(),
+            'guidance' => $document->guidance(),
+            'required' => $document->required(),
+        ]);
         $uploadedOperatorDocuments = collect($verificationRequest->documents ?? [])->pluck('key')->all();
     @endphp
     <section class="grid gap-5 rounded border border-amber-200 bg-amber-50 p-5 sm:p-6" aria-labelledby="operator-verification-heading">
@@ -46,8 +45,8 @@
         @if ($verificationRequest->exists)
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <span class="font-semibold text-slate-700">Status:</span>
-                <span class="rounded-full bg-white px-3 py-1 font-bold text-amber-900">{{ str($verificationRequest->status->value)->replace('_', ' ')->title() }}</span>
-                @if ($verificationRequest->status === \\App\\VerificationStatus::Approved)
+                <span class="rounded-full bg-white px-3 py-1 font-bold text-amber-900">{{ $verificationRequest->status->label() }}</span>
+                @if ($verificationRequest->status === \App\VerificationStatus::Approved)
                     <span class="font-bold text-emerald-800" aria-label="Verified">Verified</span>
                 @endif
             </div>
@@ -66,13 +65,21 @@
 
         <form method="POST" action="{{ route('operator.verification.store') }}" enctype="multipart/form-data" class="grid gap-4">
             @csrf
+            <label class="grid gap-2 rounded border border-amber-200 bg-white p-3 text-sm font-bold text-slate-800" for="company-profile">
+                Company/business profile <span class="text-red-700" aria-hidden="true">*</span>
+                <span class="text-xs font-normal leading-5 text-slate-600">Briefly describe your tour company, services offered, destinations served, and years of operation.</span>
+                <textarea id="company-profile" name="company_profile" rows="5" minlength="20" maxlength="5000" required class="rounded border border-slate-300 p-3 font-normal">{{ old('company_profile', $profile->description) }}</textarea>
+                @error('company_profile')
+                    <span class="text-xs font-semibold text-red-700">{{ $message }}</span>
+                @enderror
+            </label>
             <div class="grid gap-4 sm:grid-cols-2">
                 @foreach ($operatorDocuments as $document)
                     @php($errorKey = 'documents.'.$document['key'])
                     <label class="grid content-start gap-2 rounded border border-amber-200 bg-white p-3 text-sm font-bold text-slate-800" for="document-{{ $document['key'] }}">
-                        <span>{{ $document['label'] }} <span class="text-red-700" aria-hidden="true">*</span></span>
-                        <span class="text-xs font-normal leading-5 text-slate-600">PDF, JPG, or PNG. Maximum 10 MB.</span>
-                        <input id="document-{{ $document['key'] }}" type="file" name="documents[{{ $document['key'] }}]" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="min-h-11 w-full text-xs file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @unless (in_array($document['key'], $uploadedOperatorDocuments, true)) required @endunless @if ($errors->has($errorKey)) aria-invalid="true" aria-describedby="{{ $document['key'] }}-error" @endif>
+                        <span>{{ $document['label'] }} @if ($document['required'])<span class="text-red-700" aria-hidden="true">*</span>@else<span class="font-normal text-slate-500">(optional)</span>@endif</span>
+                        <span class="text-xs font-normal leading-5 text-slate-600">{{ $document['guidance'] }} PDF, JPG, or PNG; maximum 10 MB.</span>
+                        <input id="document-{{ $document['key'] }}" type="file" name="documents[{{ $document['key'] }}]" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="min-h-11 w-full text-xs file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @if ($document['required'] && ! in_array($document['key'], $uploadedOperatorDocuments, true)) required @endif @if ($errors->has($errorKey)) aria-invalid="true" aria-describedby="{{ $document['key'] }}-error" @endif>
                         @error($errorKey)
                             <span id="{{ $document['key'] }}-error" class="text-xs font-semibold text-red-700">{{ $message }}</span>
                         @enderror
