@@ -462,6 +462,14 @@ window.addEventListener('beforeinstallprompt', (event) => {
 
 installButton?.addEventListener('click', async () => {
     if (!installPrompt) {
+        const isAppleMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const instructions = isAppleMobile
+            ? 'To install TourLink, tap Share, then Add to Home Screen.'
+            : 'Open your browser menu and choose Install app or Add to Home screen.';
+
+        setPwaStatus(instructions, 'install');
+
         return;
     }
 
