@@ -14,7 +14,6 @@
             <div class="absolute inset-x-0 top-0 mx-auto h-full max-w-[480px] overflow-hidden rounded-[26px] border-4 border-white/15 shadow-2xl lg:left-auto lg:right-0 lg:top-1/2 lg:mx-0 lg:h-[420px] lg:w-[370px] lg:max-w-none lg:-translate-y-1/2 lg:rotate-3 lg:rounded-[32px] lg:border-8"><img class="size-full object-cover" src="https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=720&q=78" srcset="https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=480&q=72 480w, https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=720&q=78 720w, https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1000&q=82 1000w" sizes="(max-width: 1023px) 100vw, 480px" alt="Elephant in a Kenyan landscape" fetchpriority="high" decoding="async"></div>
             @if($featuredTrips->isNotEmpty())<div class="absolute bottom-3 left-3 z-10 max-w-[260px] rounded-2xl bg-white p-4 text-ink shadow-xl lg:bottom-8 lg:left-2"><p class="text-[10px] font-extrabold uppercase tracking-wider text-lagoon">Featured journey</p><p class="mt-1 font-extrabold">{{ $featuredTrips->first()->name }}</p><p class="mt-1 text-xs text-slate-500">{{ $featuredTrips->first()->destination?->name }} · {{ $featuredTrips->first()->duration_days }} days</p></div>@endif
         </div>
-        <div class="absolute bottom-6 right-6 hidden text-right text-[10px] font-bold uppercase tracking-[.16em] text-white/40 lg:block">Made for the moment<br>Kenya · East Africa</div>
     </div>
 </section>
 
