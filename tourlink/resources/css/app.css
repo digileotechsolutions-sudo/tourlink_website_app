@@ -71,6 +71,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .portal-footer nav { display: flex; flex-wrap: wrap; gap: 8px 18px; }
 .portal-footer a { min-height: 36px; display: inline-flex; align-items: center; color: #1F0052; font-weight: 700; }
 .portal-footer a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.footer-link { min-height: 36px; display: inline-flex; align-items: center; color: rgb(255 255 255 / 72%); font-size: 14px; transition: color .18s ease, transform .18s ease; }
+.footer-link:hover, .footer-link:focus-visible { color: #FFD51E; transform: translateX(2px); }
+.footer-details { border-top: 1px solid rgb(255 255 255 / 14%); padding-top: 12px; }
+.footer-details > summary { min-height: 44px; display: flex; cursor: pointer; align-items: center; color: #fff; font-size: 14px; font-weight: 800; }
+.site-footer { width: 100%; overflow: clip; }
+.site-footer .container-page > *, .site-footer nav, .site-footer address, .site-footer details { min-width: 0; }
+.site-footer .footer-link, .site-footer address > *, .site-footer p, .site-footer h2, .site-footer h3 { max-width: 100%; overflow-wrap: anywhere; word-break: normal; }
+.site-footer .footer-link { width: fit-content; }
+.site-footer address { overflow-wrap: anywhere; }
+.site-footer details > div { min-width: 0; }
+.footer-details > summary::marker { color: #FFD51E; }
 html:has(.mobile-app-menu[open]), body:has(.mobile-app-menu[open]), html:has(.site-header details[open]), body:has(.site-header details[open]) { overflow: hidden; overscroll-behavior: none; }
 @media (min-width: 1024px) {
     .mobile-app-header, .mobile-bottom-nav { display: none !important; }

@@ -2,6 +2,18 @@
 
 return [
 
+    'tourlink' => [
+        'support_email' => env('TOURLINK_SUPPORT_EMAIL'),
+        'support_phone' => env('TOURLINK_SUPPORT_PHONE'),
+        'location' => env('TOURLINK_LOCATION'),
+        'social' => [
+            'facebook' => env('TOURLINK_FACEBOOK_URL'),
+            'instagram' => env('TOURLINK_INSTAGRAM_URL'),
+            'x' => env('TOURLINK_X_URL'),
+            'linkedin' => env('TOURLINK_LINKEDIN_URL'),
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
