@@ -32,7 +32,7 @@ class VerificationController extends Controller
     {
         $input = $request->validate([
             'user_id' => ['required', 'string', 'exists:users,id'],
-            'channel' => ['required', Rule::in([OtpChannel::Email->value, OtpChannel::Phone->value])],
+            'channel' => ['required', Rule::in([OtpChannel::Email->value])],
             'code' => ['required', 'digits:6'],
         ]);
 
@@ -93,7 +93,7 @@ class VerificationController extends Controller
     {
         $input = $request->validate([
             'user_id' => ['required', 'string', 'exists:users,id'],
-            'channel' => ['required', Rule::in([OtpChannel::Email->value, OtpChannel::Phone->value])],
+            'channel' => ['required', Rule::in([OtpChannel::Email->value])],
         ]);
 
         $user = User::query()->findOrFail($input['user_id']);

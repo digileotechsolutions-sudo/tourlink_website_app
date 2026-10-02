@@ -169,6 +169,8 @@ html:has(.mobile-app-menu[open]), body:has(.mobile-app-menu[open]), html:has(.si
 .auth-login-submit.is-loading .auth-login-spinner { display: block; }
 .auth-login-footer { margin: 23px 0 0; color: #74847a; font-size: 12px; text-align: center; }
 .auth-login-footer a { color: #176142; font-weight: 800; }
+.auth-provider-details { display: grid; gap: 2px; }
+.auth-provider-details[hidden] { display: none; }
 @keyframes auth-login-spin { to { transform: rotate(360deg); } }
 .auth-compact-shell { display: grid; width: 100%; max-width: none; min-height: 0; place-items: center; overflow: visible; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .auth-compact-card { width: min(100%, 460px); padding: 38px 38px 30px; border: 1px solid rgba(255, 255, 255, .78); border-radius: 24px; background: rgba(255, 255, 255, .83); box-shadow: 0 28px 80px rgba(5, 28, 23, .24); backdrop-filter: blur(28px) saturate(145%); -webkit-backdrop-filter: blur(28px) saturate(145%); }

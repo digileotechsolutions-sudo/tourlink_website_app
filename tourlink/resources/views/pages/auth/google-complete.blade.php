@@ -29,11 +29,12 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('google.complete') }}" data-auth-form data-auth-loading-label="Creating account...">
+        <form method="POST" action="{{ route('google.complete') }}" data-auth-form data-provider-role-fields data-auth-loading-label="Creating account...">
             @csrf
             <div class="auth-field">
                 <label for="phone">Phone number</label>
                 <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="{{ old('phone', $profile['phone'] ?? '') }}" placeholder="0712345678 or +254712345678" required @if ($errors->has('phone')) aria-invalid="true" aria-describedby="google-phone-error" @endif>
+                <p class="mt-1 text-xs font-normal text-slate-500">Phone verification is not required.</p>
                 @error('phone')
                     <span id="google-phone-error" class="field-error">{{ $message }}</span>
                 @enderror
@@ -47,6 +48,18 @@
                         <option value="OPERATOR" @selected(old('role', $initialRole) === 'OPERATOR')>Tour operator</option>
                         <option value="VEHICLE_OWNER" @selected(old('role', $initialRole) === 'VEHICLE_OWNER')>Vehicle owner</option>
                     </select>
+                </div>
+                <div class="auth-provider-details" data-provider-business-fields @if (old('role', $initialRole) === 'TRAVELER') hidden @endif>
+                    <div class="auth-field">
+                        <label for="business_name">Company/business name</label>
+                        <input id="business_name" name="business_name" type="text" autocomplete="organization" autocapitalize="words" value="{{ old('business_name') }}" maxlength="255" @if (old('role', $initialRole) !== 'TRAVELER') required @endif>
+                        @error('business_name')<span class="field-error">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="auth-field">
+                        <label for="business_description">About your business <span class="font-normal text-slate-500">(optional)</span></label>
+                        <textarea id="business_description" name="business_description" rows="3" maxlength="10000">{{ old('business_description') }}</textarea>
+                        @error('business_description')<span class="field-error">{{ $message }}</span>@enderror
+                    </div>
                 </div>
             @endif
 

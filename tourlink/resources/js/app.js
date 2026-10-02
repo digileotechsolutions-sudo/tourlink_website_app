@@ -5,6 +5,25 @@ const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
 const portalDrawer = document.querySelector('[data-portal-drawer]');
 const drawerOpenButton = document.querySelector('[data-drawer-open]');
 
+document.querySelectorAll('[data-provider-role-fields]').forEach((form) => {
+    const roleSelect = form.querySelector('select[name="role"]');
+    const businessFields = form.querySelector('[data-provider-business-fields]');
+    const businessName = businessFields?.querySelector('[name="business_name"]');
+
+    if (!roleSelect || !businessFields || !businessName) {
+        return;
+    }
+
+    const updateBusinessFields = () => {
+        const isProvider = ['OPERATOR', 'VEHICLE_OWNER'].includes(roleSelect.value);
+        businessFields.hidden = !isProvider;
+        businessName.required = isProvider;
+    };
+
+    updateBusinessFields();
+    roleSelect.addEventListener('change', updateBusinessFields);
+});
+
 if (portalSidebar && sidebarToggle) {
     const storageKey = 'tourlink:sidebar-collapsed';
     let isCollapsed = false;
@@ -187,6 +206,8 @@ document.querySelectorAll('[data-form-draft]').forEach((form) => {
             }
         });
     } catch {}
+
+    form.querySelector('select[name="role"]')?.dispatchEvent(new Event('change', { bubbles: true }));
 
     const saveDraft = () => {
         try {

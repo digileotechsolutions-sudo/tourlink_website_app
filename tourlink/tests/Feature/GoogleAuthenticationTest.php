@@ -59,6 +59,8 @@ class GoogleAuthenticationTest extends TestCase
         $this->post(route('google.complete'), [
             'phone' => '0712345678',
             'role' => Role::Operator->value,
+            'business_name' => 'Savanna Google Tours',
+            'business_description' => 'Small-group wildlife and culture trips.',
         ])->assertRedirect();
 
         $user = User::query()->where('google_id', 'google-sub-new-user')->firstOrFail();
@@ -70,6 +72,8 @@ class GoogleAuthenticationTest extends TestCase
         $this->assertSame('https://lh3.googleusercontent.com/avatar.png', $user->avatar_url);
         $this->assertNotNull($user->email_verified_at);
         $this->assertSame('PENDING', $user->approval_status->value);
+        $this->assertSame('Savanna Google Tours', $user->operatorProfile()->value('company_name'));
+        $this->assertSame('Small-group wildlife and culture trips.', $user->operatorProfile()->value('description'));
     }
 
     public function test_google_sign_in_links_an_existing_verified_email_without_creating_a_duplicate(): void

@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\OtpChannel;
+use App\Services\Verification\AccountVerificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Cache;
@@ -44,6 +46,7 @@ class PasswordPolicyTest extends TestCase
         $response->assertRedirect(route('verification.notice', ['user' => $user->id]));
         $this->assertTrue(Hash::check('Jungle@Trail29', $user->password));
         $this->assertNotSame('Jungle@Trail29', $user->password);
+        $this->assertDatabaseMissing('otp_challenges', ['user_id' => $user->id, 'channel' => OtpChannel::Phone->value]);
     }
 
     public function test_registration_page_explains_when_verification_delivery_is_unavailable(): void
@@ -52,7 +55,65 @@ class PasswordPolicyTest extends TestCase
 
         $this->get(route('register'))
             ->assertOk()
-            ->assertSee('Signup is temporarily unavailable because account verification delivery is not configured.');
+            ->assertSee('Signup is temporarily unavailable because email verification delivery is not configured.');
+    }
+
+    public function test_provider_registration_requires_and_saves_business_details(): void
+    {
+        $this->from(route('register'))->post(route('register'), [
+            'name' => 'Operator Owner',
+            'email' => 'operator@example.com',
+            'phone' => '0712345678',
+            'password' => 'Jungle@Trail29',
+            'password_confirmation' => 'Jungle@Trail29',
+            'role' => 'OPERATOR',
+        ])->assertSessionHasErrors('business_name');
+
+        foreach ([
+            ['role' => 'OPERATOR', 'email' => 'operator@example.com', 'phone' => '0712345678', 'name' => 'Savanna Tours'],
+            ['role' => 'VEHICLE_OWNER', 'email' => 'owner@example.com', 'phone' => '0712345679', 'name' => 'Highland Rides'],
+        ] as $provider) {
+            $this->post(route('register'), [
+                'name' => 'Account Owner',
+                'email' => $provider['email'],
+                'phone' => $provider['phone'],
+                'password' => 'Jungle@Trail29',
+                'password_confirmation' => 'Jungle@Trail29',
+                'role' => $provider['role'],
+                'business_name' => $provider['name'],
+                'business_description' => 'Locally operated journeys and transport.',
+            ])->assertRedirect();
+
+            $user = User::query()->where('email', $provider['email'])->firstOrFail();
+            $profile = $provider['role'] === 'OPERATOR' ? $user->operatorProfile : $user->vehicleOwnerProfile;
+            $nameColumn = $provider['role'] === 'OPERATOR' ? 'company_name' : 'business_name';
+
+            $this->assertSame($provider['name'], $profile->{$nameColumn});
+            $this->assertSame('Locally operated journeys and transport.', $profile->description);
+        }
+    }
+
+    public function test_phone_verification_is_not_required_or_available(): void
+    {
+        $verification = app(AccountVerificationService::class);
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+            'phone_verified_at' => null,
+        ]);
+
+        $this->assertSame([OtpChannel::Email], $verification->requiredChannels());
+        $this->assertTrue($verification->isFullyVerified($user));
+
+        $this->post(route('verification.verify'), [
+            'user_id' => $user->id,
+            'channel' => OtpChannel::Phone->value,
+            'code' => '123456',
+        ])->assertSessionHasErrors('channel');
+
+        $this->post(route('verification.resend'), [
+            'user_id' => $user->id,
+            'channel' => OtpChannel::Phone->value,
+        ])->assertSessionHasErrors('channel');
     }
 
     public function test_registration_rejects_passwords_that_break_policy_or_match_account_identifiers(): void

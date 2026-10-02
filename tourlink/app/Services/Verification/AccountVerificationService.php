@@ -27,16 +27,11 @@ class AccountVerificationService
     /**
      * Channels an account must verify before it can use protected areas.
      *
-     * Falls back to every channel while delivery is unconfigured so accounts
-     * can never slip through verification checks.
-     *
      * @return array<int, OtpChannel>
      */
     public function requiredChannels(): array
     {
-        $available = $this->deliverableChannels();
-
-        return $available !== [] ? $available : OtpChannel::cases();
+        return [OtpChannel::Email];
     }
 
     public function isChannelVerified(User $user, OtpChannel $channel): bool
@@ -66,7 +61,7 @@ class AccountVerificationService
     public function methodsFor(User $user): array
     {
         $channels = array_values(array_filter(
-            OtpChannel::cases(),
+            $this->requiredChannels(),
             fn (OtpChannel $channel): bool => $this->isChannelVerified($user, $channel) || $this->canDeliver($channel),
         ));
 

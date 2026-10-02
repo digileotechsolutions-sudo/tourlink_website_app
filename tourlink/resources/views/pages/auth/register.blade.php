@@ -14,7 +14,7 @@
         @endif
 
         @unless ($verificationAvailable)
-            <p class="auth-msg auth-msg-error" role="alert">Signup is temporarily unavailable because account verification delivery is not configured. Please contact TourLink support.</p>
+            <p class="auth-msg auth-msg-error" role="alert">Signup is temporarily unavailable because email verification delivery is not configured. Please contact TourLink support.</p>
         @endunless
 
         @if ($errors->any())
@@ -28,7 +28,7 @@
             </div>
         @endif
 
-        <form id="register-form" method="POST" action="{{ route('register') }}" data-auth-form data-form-draft="register" data-auth-loading-label="Creating account...">
+        <form id="register-form" method="POST" action="{{ route('register') }}" data-auth-form data-form-draft="register" data-provider-role-fields data-auth-loading-label="Creating account...">
             @csrf
 
             <div class="auth-field">
@@ -56,9 +56,23 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.7 3.5h2.4l1.2 4.1-1.8 1.6a14 14 0 0 0 6.3 6.3l1.6-1.8 4.1 1.2v2.4a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.7 5.7a2 2 0 0 1 2-2.2Z"/></svg>
                     <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" data-draft-field value="{{ old('phone') }}" placeholder="0712345678 or +254712345678" maxlength="30" required @if ($errors->has('phone')) aria-invalid="true" aria-describedby="phone-error" @endif>
                 </div>
+                <p class="mt-1 text-xs font-normal text-slate-500">Phone verification is not required.</p>
                 @error('phone')
                     <span id="phone-error" class="field-error">{{ $message }}</span>
                 @enderror
+            </div>
+
+            <div class="auth-provider-details" data-provider-business-fields @if (old('role', $initialRole) === 'TRAVELER') hidden @endif>
+                <div class="auth-field">
+                    <label for="business_name">Company/business name</label>
+                    <input id="business_name" name="business_name" type="text" autocomplete="organization" autocapitalize="words" data-draft-field value="{{ old('business_name') }}" maxlength="255" @if (old('role', $initialRole) !== 'TRAVELER') required @endif>
+                    @error('business_name')<span class="field-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="auth-field">
+                    <label for="business_description">About your business <span class="font-normal text-slate-500">(optional)</span></label>
+                    <textarea id="business_description" name="business_description" rows="3" maxlength="10000" data-draft-field>{{ old('business_description') }}</textarea>
+                    @error('business_description')<span class="field-error">{{ $message }}</span>@enderror
+                </div>
             </div>
 
             <div class="auth-field auth-field-password">

@@ -48,7 +48,7 @@ class AuthController extends Controller
             : Role::Traveler->value;
 
         $referrer = $referrals->captureReferrer($request);
-        $verificationAvailable = $verification->deliverableChannels() !== [];
+        $verificationAvailable = $verification->canDeliver(OtpChannel::Email);
         $googleClientId = (string) config('services.google.client_id');
         $googleNonce = $this->issueGoogleNonce($request, 'register', $initialRole);
 
@@ -122,6 +122,8 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'min:2', 'max:80'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['required', 'string', 'min:8', 'max:30'],
+            'business_name' => ['nullable', 'string', 'min:2', 'max:255', Rule::requiredIf(in_array($request->input('role'), [Role::Operator->value, Role::VehicleOwner->value], true))],
+            'business_description' => ['nullable', 'string', 'max:10000'],
             'password' => [...PasswordRules::withAccountContext(PasswordRules::rules(), $request), 'confirmed'],
             'role' => ['required', Rule::in([Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value])],
         ], PasswordRules::messages());
@@ -136,11 +138,11 @@ class AuthController extends Controller
         }
         Log::info('Registration pipeline: phone normalized.');
 
-        if ($verification->deliverableChannels() === []) {
-            report(new RuntimeException('No OTP delivery channel is configured. Set Resend, Africa\'s Talking, or OTP_DELIVERY=log.'));
+        if (! $verification->canDeliver(OtpChannel::Email)) {
+            report(new RuntimeException('Email verification delivery is not configured.'));
 
             return back()->withInput($request->except(['password', 'password_confirmation']))
-                ->withErrors(['email' => 'Account verification delivery is not configured. Please contact TourLink support.']);
+                ->withErrors(['email' => 'Email verification delivery is not configured. Please contact TourLink support.']);
         }
 
         $existingAccount = User::query()
@@ -167,12 +169,12 @@ class AuthController extends Controller
 
         try {
             Log::info('Registration pipeline: OTP delivery started.');
-            foreach ($verification->deliverableChannels() as $channel) {
+            foreach ($verification->requiredChannels() as $channel) {
                 $code = $otpService->issueForRegistration($user, $channel);
-                $codes[$channel === OtpChannel::Email ? 'email' : 'phone'] = $code;
+                $codes['email'] = $code;
             }
 
-            $status = 'Verification codes sent to your '.$verification->describeChannels($verification->deliverableChannels()).'.';
+            $status = 'A verification code was sent to your email address.';
             Log::info('Registration pipeline: OTP delivery completed.');
         } catch (Throwable $exception) {
             report($exception);
@@ -268,10 +270,14 @@ class AuthController extends Controller
                     match (Role::from($input['role'])) {
                         Role::Traveler => $user->travelerProfile()->save(new TravelerProfile),
                         Role::Operator => $user->operatorProfile()->save(new OperatorProfile([
-                            'company_name' => $input['name'],
-                            'slug' => Str::slug($input['name']).'-'.Str::lower(Str::random(8)),
+                            'company_name' => $input['business_name'] ?? $input['name'],
+                            'slug' => Str::slug($input['business_name'] ?? $input['name']).'-'.Str::lower(Str::random(8)),
+                            'description' => $input['business_description'] ?? null,
                         ])),
-                        Role::VehicleOwner => $user->vehicleOwnerProfile()->save(new VehicleOwnerProfile),
+                        Role::VehicleOwner => $user->vehicleOwnerProfile()->save(new VehicleOwnerProfile([
+                            'business_name' => $input['business_name'] ?? $input['name'],
+                            'description' => $input['business_description'] ?? null,
+                        ])),
                         Role::Admin => null,
                     };
 

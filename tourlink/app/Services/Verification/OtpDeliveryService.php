@@ -194,7 +194,7 @@ class OtpDeliveryService
             $this->sendEmail($user->email, $subject, $html);
         }
 
-        if ($user->phone && $this->canDeliver(OtpChannel::Phone)) {
+        if ($user->phone && $user->phone_verified_at && $this->canDeliver(OtpChannel::Phone)) {
             $this->sendSms($user->phone, 'Hello '.$user->name.', your '.config('app.name').' account was '.($approved ? 'approved. You can now log in.' : 'not approved.'));
         }
     }

@@ -169,6 +169,8 @@ class GoogleAuthController extends Controller
         $rules = ['phone' => ['required', 'string', 'min:8', 'max:30']];
         if ($needsAccountType) {
             $rules['role'] = ['required', Rule::in([Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value])];
+            $rules['business_name'] = ['nullable', 'string', 'min:2', 'max:255', Rule::requiredIf(in_array($request->input('role'), [Role::Operator->value, Role::VehicleOwner->value], true))];
+            $rules['business_description'] = ['nullable', 'string', 'max:10000'];
         }
         $input = $request->validate($rules);
 
@@ -186,10 +188,6 @@ class GoogleAuthController extends Controller
             return back()->withInput()->withErrors(['phone' => 'An account with that phone number already exists.']);
         }
 
-        if ($verification->deliverableChannels() === []) {
-            return back()->withInput()->withErrors(['phone' => 'Account verification delivery is not configured. Please contact TourLink support.']);
-        }
-
         try {
             if (! empty($profile['user_id'])) {
                 $user = User::query()->findOrFail($profile['user_id']);
@@ -197,7 +195,14 @@ class GoogleAuthController extends Controller
                 $newUser = false;
             } else {
                 $role = Role::from($input['role']);
-                $user = $this->createGoogleUser($profile, $phone, $role, $referrals);
+                $user = $this->createGoogleUser(
+                    $profile,
+                    $phone,
+                    $role,
+                    $referrals,
+                    $input['business_name'] ?? $profile['name'],
+                    $input['business_description'] ?? null,
+                );
                 $newUser = true;
             }
         } catch (QueryException $exception) {
@@ -253,9 +258,9 @@ class GoogleAuthController extends Controller
     /**
      * @param  array{sub: string, email: string, name: string, picture: ?string}  $profile
      */
-    private function createGoogleUser(array $profile, string $phone, Role $role, ReferralService $referrals): User
+    private function createGoogleUser(array $profile, string $phone, Role $role, ReferralService $referrals, string $businessName, ?string $businessDescription): User
     {
-        return DB::transaction(function () use ($profile, $phone, $role, $referrals): User {
+        return DB::transaction(function () use ($profile, $phone, $role, $referrals, $businessName, $businessDescription): User {
             $user = new User;
             $user->fill([
                 'name' => $profile['name'],
@@ -279,10 +284,14 @@ class GoogleAuthController extends Controller
             match ($role) {
                 Role::Traveler => $user->travelerProfile()->save(new TravelerProfile),
                 Role::Operator => $user->operatorProfile()->save(new OperatorProfile([
-                    'company_name' => $profile['name'],
-                    'slug' => Str::slug($profile['name']).'-'.Str::lower(Str::random(8)),
+                    'company_name' => $businessName,
+                    'slug' => Str::slug($businessName).'-'.Str::lower(Str::random(8)),
+                    'description' => $businessDescription,
                 ])),
-                Role::VehicleOwner => $user->vehicleOwnerProfile()->save(new VehicleOwnerProfile),
+                Role::VehicleOwner => $user->vehicleOwnerProfile()->save(new VehicleOwnerProfile([
+                    'business_name' => $businessName,
+                    'description' => $businessDescription,
+                ])),
                 Role::Admin => throw new InvalidArgumentException('Google sign-up cannot create administrators.'),
             };
 
