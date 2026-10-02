@@ -66,6 +66,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .mobile-menu-panel { position: absolute; top: 50px; left: 0; display: grid; width: min(250px, calc(100vw - 20px)); gap: 4px; padding: 8px; border: 1px solid rgba(15, 23, 42, .1); border-radius: 14px; background: #fff; box-shadow: 0 16px 40px rgba(15, 23, 42, .16); }
 .mobile-menu-panel a { min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 9px; color: #0f172a; font-size: 13px; font-weight: 700; }
 .mobile-menu-panel a:hover, .mobile-menu-panel a:focus-visible { color: #1F0052; background: #FFFFFF; }
+@media (min-width: 1024px) { .mobile-app-header, .mobile-bottom-nav { display: none !important; } }
 @media (max-width: 1023px) { body:has(.mobile-bottom-nav) { padding-bottom: calc(86px + env(safe-area-inset-bottom)); } }
 @media (max-width: 1023px) { body:has(.mobile-app-header) { padding-top: calc(60px + env(safe-area-inset-top)); } body:has(.mobile-app-header) main > header, body:has(.mobile-app-header) .admin-topbar { display: none; } body:has(.mobile-app-header) .site-header { top: calc(60px + env(safe-area-inset-top)); } }
 @media (max-width: 1023px) { body.admin-app:has(.mobile-app-header) { padding-top: calc(112px + env(safe-area-inset-top)); } body.admin-app .mobile-app-header { min-height: calc(112px + env(safe-area-inset-top)); } }
