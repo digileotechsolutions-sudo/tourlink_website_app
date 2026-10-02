@@ -133,6 +133,9 @@ html:has(.mobile-app-menu[open]), body:has(.mobile-app-menu[open]), html:has(.si
 .auth-btn:hover { background: #174d2f; }
 .auth-login-shell { display: grid; width: 100%; max-width: none; min-height: 0; place-items: center; overflow: visible; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .auth-login-card { width: min(100%, 460px); padding: 42px 44px 32px; border: 1px solid rgba(255, 255, 255, .78); border-radius: 24px; color: #18382c; background: rgba(255, 255, 255, .82); box-shadow: 0 28px 80px rgba(5, 28, 23, .24); backdrop-filter: blur(28px) saturate(145%); -webkit-backdrop-filter: blur(28px) saturate(145%); }
+.auth-login-back { display: inline-flex; min-height: 40px; align-items: center; gap: 8px; margin: -12px 0 18px; color: #53645b; font-size: 12px; font-weight: 700; }
+.auth-login-back:hover { color: #176142; }
+.auth-login-back svg { width: 17px; height: 17px; }
 .auth-login-logo { display: grid; width: 54px; height: 54px; margin: 0 auto 22px; place-items: center; border: 1px solid rgba(31, 105, 73, .14); border-radius: 50%; color: #176142; background: rgba(255, 255, 255, .84); box-shadow: 0 8px 22px rgba(23, 86, 58, .1); }
 .auth-login-logo svg { width: 27px; height: 27px; }
 .auth-login-header { margin-bottom: 27px; text-align: center; }
