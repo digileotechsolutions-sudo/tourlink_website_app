@@ -4,5 +4,5 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Havenedge Tourlink">
 <link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/icons/tourlink-192.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/icons/tourlink-192.png">
+<link rel="icon" href="/icons/havenedge-192.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/havenedge-192.png">
