@@ -4,7 +4,10 @@
 <div class="mx-auto max-w-7xl space-y-6 p-4 sm:space-y-8 sm:p-8">
     <header class="flex flex-wrap items-end justify-between gap-4">
         <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">Traveler overview</p><h1 class="mt-2 text-3xl font-black">Plan your next journey</h1><p class="mt-2 text-slate-600">Keep bookings, payments, favorites, and conversations together.</p></div>
-        <a class="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-ink px-5 text-sm font-bold text-white shadow-soft sm:w-auto" href="{{ route('trips.index') }}">Find a trip</a>
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <a class="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 text-sm font-bold text-ink shadow-soft" href="{{ route('support.index') }}">Chat with Support</a>
+            <a class="inline-flex min-h-12 items-center justify-center rounded-xl bg-ink px-5 text-sm font-bold text-white shadow-soft" href="{{ route('trips.index') }}">Find a trip</a>
+        </div>
     </header>
     <div class="dashboard-kpi-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Your travel statistics">
         @foreach([['Bookings',$bookingCount],['Upcoming',$upcomingCount],['Favorites',$favoriteCount],['Pending payments',$pendingPaymentCount]] as [$label,$value])

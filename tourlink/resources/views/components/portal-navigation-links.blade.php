@@ -8,6 +8,7 @@
                     <a href="{{ route($item['route'], $item['parameters'] ?? []) }}" class="portal-nav-link {{ $active ? 'is-active' : '' }}" @if ($active) aria-current="page" @endif title="{{ $item['label'] }}">
                         <span class="portal-icon" aria-hidden="true">@include('components.portal-icon', ['name' => $item['icon']])</span>
                         <span class="portal-nav-label">{{ $item['label'] }}</span>
+                        @if ($item['label'] === 'Support' && $supportUnreadCount > 0)<span class="portal-nav-badge">{{ min(99, $supportUnreadCount) }}</span>@endif
                     </a>
                 @endif
             @endforeach

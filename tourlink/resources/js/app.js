@@ -917,3 +917,124 @@ if (!navigator.onLine) {
 if ('serviceWorker' in navigator && window.isSecureContext) {
     setPwaStatus(navigator.onLine ? '' : 'You are offline. Some features may be unavailable.', navigator.onLine ? 'online' : 'offline');
 }
+
+document.querySelectorAll('[data-support-chat]').forEach((form) => {
+    const messageList = document.querySelector('[data-support-messages]');
+    const errorMessage = form.querySelector('[data-support-error]');
+    const currentSender = form.dataset.currentSender;
+    let lastMessageId = form.dataset.lastMessageId || '';
+    let isPolling = false;
+
+    if (!messageList || !currentSender || !form.dataset.pollUrl) {
+        return;
+    }
+
+    const formatMessageTime = (value) => {
+        const date = new Date(value);
+        return Number.isNaN(date.getTime())
+            ? ''
+            : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+    };
+
+    messageList.scrollTop = messageList.scrollHeight;
+
+    const appendMessage = (message) => {
+        if (messageList.querySelector(`[data-message-id="${CSS.escape(message.id)}"]`)) {
+            return;
+        }
+
+        messageList.querySelector('.support-welcome, .support-empty-note')?.remove();
+
+        const isOwnMessage = message.sender_type === currentSender;
+        const article = document.createElement('article');
+        article.className = `support-message ${isOwnMessage ? 'support-message--customer' : 'support-message--admin'}`;
+        article.dataset.supportMessage = '';
+        article.dataset.messageId = message.id;
+
+        if (currentSender === 'admin') {
+            const author = document.createElement('p');
+            author.className = 'support-message__author';
+            author.textContent = isOwnMessage ? 'You' : message.sender_name;
+            article.append(author);
+        }
+
+        const text = document.createElement('p');
+        text.className = 'support-message__text';
+        text.textContent = message.message;
+        article.append(text);
+
+        const meta = document.createElement('div');
+        meta.className = 'support-message__meta';
+        const time = document.createElement('time');
+        time.dateTime = message.created_at;
+        time.textContent = formatMessageTime(message.created_at);
+        meta.append(time);
+
+        if (isOwnMessage) {
+            const readStatus = document.createElement('span');
+            readStatus.dataset.readStatus = '';
+            readStatus.textContent = message.read_at ? 'Read' : 'Sent';
+            meta.append(readStatus);
+        }
+
+        article.append(meta);
+        messageList.append(article);
+        lastMessageId = message.id;
+        form.dataset.lastMessageId = lastMessageId;
+        messageList.scrollTop = messageList.scrollHeight;
+    };
+
+    const refreshMessages = async () => {
+        if (isPolling || document.visibilityState !== 'visible') {
+            return;
+        }
+
+        isPolling = true;
+        try {
+            const pollUrl = new URL(form.dataset.pollUrl, window.location.href);
+            if (lastMessageId) {
+                pollUrl.searchParams.set('after', lastMessageId);
+            }
+            const response = await fetch(pollUrl, {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin',
+                cache: 'no-store',
+            });
+            if (!response.ok) {
+                throw new Error(`Support message refresh failed: ${response.status}`);
+            }
+
+            const result = await response.json();
+            (result.read_message_ids || []).forEach((messageId) => {
+                const status = messageList.querySelector(`[data-message-id="${CSS.escape(messageId)}"] [data-read-status]`);
+                if (status) {
+                    status.textContent = 'Read';
+                }
+            });
+            (result.messages || []).forEach(appendMessage);
+            if (errorMessage) {
+                errorMessage.hidden = true;
+            }
+            if (result.status === 'closed') {
+                window.location.reload();
+            }
+        } catch {
+            if (errorMessage) {
+                errorMessage.hidden = false;
+            }
+        } finally {
+            isPolling = false;
+        }
+    };
+
+    form.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey && event.target.matches('input[name="message"]')) {
+            event.preventDefault();
+            if (form.reportValidity()) {
+                form.requestSubmit();
+            }
+        }
+    });
+
+    window.setInterval(refreshMessages, 5000);
+});

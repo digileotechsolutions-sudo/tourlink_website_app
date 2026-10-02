@@ -26,6 +26,7 @@
                         <a class="rounded bg-emerald-800 px-4 py-2 text-sm font-bold text-white" href="{{ route('payments.show', $booking) }}">
                             {{ $booking->payment_summary['balance'] > 0 && ! in_array($booking->status, [\App\BookingStatus::Cancelled, \App\BookingStatus::Refunded], true) ? 'Pay balance' : 'Payment details' }}
                         </a>
+                        <a class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-800" href="{{ route('support.index', ['booking' => $booking->reference]) }}">Get help with this booking</a>
                         @if(in_array($booking->status, [\App\BookingStatus::Pending, \App\BookingStatus::Confirmed], true) && $booking->payment_summary['paid'] === 0 && ! $booking->payment_in_flight)
                             <form method="POST" action="{{ route('traveler.bookings.cancel', $booking) }}">
                                 @csrf

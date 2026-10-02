@@ -1,9 +1,20 @@
 @auth
-    @if (request()->routeIs('admin.*', 'operator.*', 'vehicle-owner.*', 'traveler.*', 'dashboard'))
+    @if (request()->routeIs('admin.*', 'operator.*', 'vehicle-owner.*', 'traveler.*', 'support.*', 'dashboard'))
         <x-portal-footer />
     @endif
     @php
         $role = auth()->user()->role;
+        $supportUnreadCount = in_array($role, [\App\Role::Traveler, \App\Role::Admin], true)
+            ? \App\Models\SupportMessage::query()
+                ->where('sender_type', $role === \App\Role::Admin
+                    ? \App\Models\SupportMessage::SENDER_CUSTOMER
+                    : \App\Models\SupportMessage::SENDER_ADMIN)
+                ->whereNull('read_at')
+                ->whereHas('conversation', fn ($query) => $role === \App\Role::Admin
+                    ? $query
+                    : $query->where('user_id', auth()->id()))
+                ->count()
+            : 0;
         $pageTitle = str($__env->yieldContent('title', 'Havenedge Tourlink'))->before('|')->trim();
         $dashboardRoute = match ($role) {
             \App\Role::Operator => 'operator.dashboard',
@@ -27,8 +38,8 @@
         $menuLinks = match ($role) {
             \App\Role::Operator => [['operator.dashboard', 'Dashboard'], ['operator.trips.index', 'Trips'], ['operator.trips.create', 'Create trip'], ['operator.bookings.index', 'Bookings'], ['operator.section', 'Customers', ['section' => 'customers']], ['operator.section', 'Vehicles', ['section' => 'vehicles']], ['operator.section', 'Messages', ['section' => 'messages']], ['operator.section', 'Reviews', ['section' => 'reviews']], ['operator.section', 'Earnings', ['section' => 'earnings']], ['operator.section', 'Payments', ['section' => 'payments']], ['operator.section', 'Verification', ['section' => 'verification']], ['operator.section', 'Analytics', ['section' => 'analytics']], ['referrals.index', 'Referrals'], ['operator.profile', 'Profile'], ['operator.section', 'Settings', ['section' => 'settings']]],
             \App\Role::VehicleOwner => [['vehicle-owner.dashboard', 'Dashboard'], ['vehicle-owner.vehicles.index', 'Vehicles'], ['vehicle-owner.vehicles.create', 'Add vehicle'], ['vehicle-owner.bookings.index', 'Bookings'], ['vehicle-owner.section', 'Earnings', ['section' => 'earnings']], ['vehicle-owner.section', 'Ratings', ['section' => 'ratings']], ['vehicle-owner.section', 'Messages', ['section' => 'messages']], ['vehicle-owner.section', 'Verification', ['section' => 'verification']], ['referrals.index', 'Referrals'], ['vehicle-owner.section', 'Settings', ['section' => 'settings']], ['vehicle-owner.profile', 'Profile']],
-            \App\Role::Traveler => [['dashboard', 'Dashboard'], ['traveler.bookings', 'My bookings'], ['traveler.section', 'Upcoming trips', ['section' => 'upcoming']], ['traveler.section', 'Past trips', ['section' => 'past']], ['traveler.favorites', 'Favorites'], ['traveler.section', 'Payments', ['section' => 'payments']], ['traveler.section', 'Receipts', ['section' => 'receipts']], ['traveler.section', 'Messages', ['section' => 'messages']], ['traveler.notifications', 'Notifications'], ['traveler.section', 'Reviews', ['section' => 'reviews']], ['referrals.index', 'Referrals'], ['traveler.profile', 'Profile'], ['traveler.section', 'Settings', ['section' => 'settings']]],
-            default => [['admin.dashboard', 'Dashboard'], ['admin.users.index', 'Users'], ['admin.bookings.index', 'Bookings'], ['admin.trips.index', 'Trips'], ['admin.payments.index', 'Payments'], ['admin.vehicles.index', 'Inventory'], ['admin.events.index', 'Events'], ['admin.blog.index', 'Blog'], ['admin.reviews.index', 'Reviews'], ['admin.referrals.index', 'Referrals'], ['admin.reports.index', 'Reports'], ['admin.messages.index', 'Messages'], ['admin.settings.index', 'Settings'], ['admin.verification.index', 'Verification'], ['admin.catalog.index', 'Catalog'], ['admin.audit.index', 'Audit log']],
+            \App\Role::Traveler => [['dashboard', 'Dashboard'], ['traveler.bookings', 'My bookings'], ['traveler.section', 'Upcoming trips', ['section' => 'upcoming']], ['traveler.section', 'Past trips', ['section' => 'past']], ['traveler.favorites', 'Favorites'], ['traveler.section', 'Payments', ['section' => 'payments']], ['traveler.section', 'Receipts', ['section' => 'receipts']], ['traveler.section', 'Messages', ['section' => 'messages']], ['support.index', 'Support'], ['traveler.notifications', 'Notifications'], ['traveler.section', 'Reviews', ['section' => 'reviews']], ['referrals.index', 'Referrals'], ['traveler.profile', 'Profile'], ['traveler.section', 'Settings', ['section' => 'settings']]],
+            default => [['admin.dashboard', 'Dashboard'], ['admin.users.index', 'Users'], ['admin.bookings.index', 'Bookings'], ['admin.trips.index', 'Trips'], ['admin.payments.index', 'Payments'], ['admin.vehicles.index', 'Inventory'], ['admin.events.index', 'Events'], ['admin.blog.index', 'Blog'], ['admin.reviews.index', 'Reviews'], ['admin.referrals.index', 'Referrals'], ['admin.reports.index', 'Reports'], ['admin.messages.index', 'Messages'], ['admin.support.index', 'Support'], ['admin.settings.index', 'Settings'], ['admin.verification.index', 'Verification'], ['admin.catalog.index', 'Catalog'], ['admin.audit.index', 'Audit log']],
         };
         $links = match ($role) {
             \App\Role::Operator => [['operator.dashboard', 'Dashboard'], ['operator.trips.index', 'Trips'], ['operator.bookings.index', 'Bookings'], ['operator.section', 'Messages', ['section' => 'messages']], ['operator.profile', 'Profile']],
@@ -59,7 +70,7 @@
                 <summary class="mobile-app-icon" aria-label="Open app menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary>
                 <div class="mobile-menu-panel">
                     @foreach ($menuLinks as $menuLink)
-                        @if (Route::has($menuLink[0]))<a href="{{ route($menuLink[0], $menuLink[2] ?? []) }}">{{ $menuLink[1] }}</a>@endif
+                        @if (Route::has($menuLink[0]))<a href="{{ route($menuLink[0], $menuLink[2] ?? []) }}">{{ $menuLink[1] }}@if($menuLink[1] === 'Support' && $supportUnreadCount > 0)<span class="ml-2 rounded-full bg-pink-600 px-2 py-0.5 text-[10px] font-bold text-white">{{ min(99, $supportUnreadCount) }}</span>@endif</a>@endif
                     @endforeach
                     <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-200 pt-2">
                         @csrf

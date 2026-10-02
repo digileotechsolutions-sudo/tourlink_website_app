@@ -1,6 +1,10 @@
 @props(['variant' => 'sidebar'])
 
 @php
+    $unreadSupportCount = \App\Models\SupportMessage::query()
+        ->where('sender_type', \App\Models\SupportMessage::SENDER_CUSTOMER)
+        ->whereNull('read_at')
+        ->count();
     $items = [
         ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard'],
         ['label' => 'Users', 'route' => 'admin.users.index', 'active' => 'admin.users.*'],
@@ -14,6 +18,7 @@
         ['label' => 'Referrals', 'route' => 'admin.referrals.index', 'active' => 'admin.referrals.*'],
         ['label' => 'Reports', 'route' => 'admin.reports.index', 'active' => 'admin.reports.*'],
         ['label' => 'Messages', 'route' => 'admin.messages.index', 'active' => 'admin.messages.*'],
+        ['label' => 'Support', 'route' => 'admin.support.index', 'active' => 'admin.support.*'],
         ['label' => 'Settings', 'route' => 'admin.settings.index', 'active' => 'admin.settings.*'],
     ];
     $supportItems = [
@@ -30,7 +35,7 @@
     @foreach ($items as $item)
         @php($active = request()->routeIs($item['active']))
         @if (Route::has($item['route']))
-            <a href="{{ route($item['route']) }}" @if($active) aria-current="page" @endif class="{{ $itemClass }} {{ $active ? 'border-l-2 border-sun bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">{{ $item['label'] }}</a>
+            <a href="{{ route($item['route']) }}" @if($active) aria-current="page" @endif class="{{ $itemClass }} {{ $active ? 'border-l-2 border-sun bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">{{ $item['label'] }}@if($item['label'] === 'Support' && $unreadSupportCount > 0)<span class="ml-2 rounded-full bg-pink-600 px-2 py-0.5 text-[10px] font-bold text-white">{{ min(99, $unreadSupportCount) }}</span>@endif</a>
         @else
             <span aria-disabled="true" title="This admin section is not available yet" class="{{ $itemClass }} cursor-not-allowed text-white/35">{{ $item['label'] }}</span>
         @endif

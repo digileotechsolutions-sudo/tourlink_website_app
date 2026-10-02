@@ -34,7 +34,7 @@ class User extends Authenticatable
         return 'password';
     }
 
-    public function sendPasswordResetNotification(string $token): void
+    public function sendPasswordResetNotification($token)
     {
         app(OtpDeliveryService::class)->sendPasswordResetLink($this, $token);
     }
@@ -82,6 +82,21 @@ class User extends Authenticatable
     public function appNotifications(): HasMany
     {
         return $this->hasMany(Notification::class);
+    }
+
+    public function supportConversations(): HasMany
+    {
+        return $this->hasMany(SupportConversation::class);
+    }
+
+    public function assignedSupportConversations(): HasMany
+    {
+        return $this->hasMany(SupportConversation::class, 'assigned_admin_id');
+    }
+
+    public function supportMessages(): HasMany
+    {
+        return $this->hasMany(SupportMessage::class, 'sender_id');
     }
 
     public function sentMessages(): HasMany

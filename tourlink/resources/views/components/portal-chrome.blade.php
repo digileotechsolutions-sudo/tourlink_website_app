@@ -14,6 +14,15 @@
         \App\Role::Traveler => 'Traveler',
         default => 'Administrator',
     };
+    $supportUnreadCount = in_array($role, [\App\Role::Traveler, \App\Role::Admin], true)
+        ? \App\Models\SupportMessage::query()
+            ->where('sender_type', $role === \App\Role::Admin ? 'customer' : 'admin')
+            ->whereNull('read_at')
+            ->whereHas('conversation', fn ($query) => $role === \App\Role::Admin
+                ? $query
+                : $query->where('user_id', $user->id))
+            ->count()
+        : 0;
     $profileRoute = match ($role) {
         \App\Role::Operator => 'operator.profile',
         \App\Role::VehicleOwner => 'vehicle-owner.profile',
@@ -99,6 +108,7 @@
                 ['label' => 'Payments', 'route' => 'traveler.section', 'section' => 'payments', 'parameters' => ['section' => 'payments'], 'icon' => 'wallet'],
                 ['label' => 'Receipts', 'route' => 'traveler.section', 'section' => 'receipts', 'parameters' => ['section' => 'receipts'], 'icon' => 'receipt'],
                 ['label' => 'Messages', 'route' => 'traveler.section', 'section' => 'messages', 'parameters' => ['section' => 'messages'], 'icon' => 'message'],
+                ['label' => 'Support', 'route' => 'support.index', 'active' => 'support.*', 'icon' => 'message'],
                 ['label' => 'Notifications', 'route' => 'traveler.notifications', 'active' => 'traveler.notifications*', 'icon' => 'bell'],
                 ['label' => 'Reviews', 'route' => 'traveler.section', 'section' => 'reviews', 'parameters' => ['section' => 'reviews'], 'icon' => 'star'],
                 ['label' => 'Referrals', 'route' => 'referrals.index', 'active' => 'referrals.*', 'icon' => 'gift'],
@@ -128,6 +138,7 @@
                 ['label' => 'Verification', 'route' => 'admin.verification.index', 'active' => 'admin.verification.*', 'icon' => 'shield'],
                 ['label' => 'Reviews', 'route' => 'admin.reviews.index', 'active' => 'admin.reviews.*', 'icon' => 'star'],
                 ['label' => 'Messages', 'route' => 'admin.messages.index', 'active' => 'admin.messages.*', 'icon' => 'message'],
+                ['label' => 'Support', 'route' => 'admin.support.index', 'active' => 'admin.support.*', 'icon' => 'message'],
                 ['label' => 'Referrals', 'route' => 'admin.referrals.index', 'active' => 'admin.referrals.*', 'icon' => 'gift'],
             ]],
             ['label' => 'System', 'items' => [
