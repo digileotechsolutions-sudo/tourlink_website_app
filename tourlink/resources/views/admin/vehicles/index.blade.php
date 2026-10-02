@@ -45,7 +45,7 @@
                 <p class="rounded-lg border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-600">No vehicles match these filters.</p>
             @endforelse
         </div>
-        <div class="mt-2 hidden overflow-x-auto md:block"><table class="w-full min-w-[900px] text-left text-sm">
+        <div class="mt-2 hidden overflow-x-auto md:block"><table data-mobile-table="exclude" class="w-full min-w-[900px] text-left text-sm">
             <thead class="border-b border-slate-200 text-xs font-bold uppercase text-slate-500"><tr><th class="py-3 pr-4">Vehicle</th><th class="py-3 pr-4">Owner</th><th class="py-3 pr-4">Destination</th><th class="py-3 pr-4">Rate</th><th class="py-3 pr-4">Bookings</th><th class="py-3 pr-4">Status</th><th class="py-3">Actions</th></tr></thead>
             <tbody>@forelse ($vehicles as $vehicle)
                 <tr class="border-b border-slate-100 align-top">

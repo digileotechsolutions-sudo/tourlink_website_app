@@ -1,5 +1,24 @@
 const prefetchedAppRoutes = new Set();
 
+if (document.body.classList.contains('admin-app')) {
+    document.querySelectorAll('table:not([data-mobile-table="exclude"])').forEach((table) => {
+        const headers = [...table.querySelectorAll('thead th')].map((header) => header.textContent.trim());
+
+        if (headers.length === 0) {
+            return;
+        }
+
+        table.classList.add('admin-mobile-data-table');
+        table.querySelectorAll('tbody tr').forEach((row) => {
+            [...row.cells].forEach((cell, index) => {
+                if (!cell.hasAttribute('colspan') && headers[index]) {
+                    cell.dataset.label = headers[index];
+                }
+            });
+        });
+    });
+}
+
 const portalSidebar = document.querySelector('[data-portal-sidebar]');
 const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
 const portalDrawer = document.querySelector('[data-portal-drawer]');
