@@ -14,7 +14,8 @@ class MarkPublicPwaPages
 
         if ($request->isMethod('GET') && $request->query->count() === 0 && $request->user() === null && $response->isSuccessful()) {
             $response->headers->set('X-PWA-Cacheable', 'public');
-            $response->headers->set('Cache-Control', 'public, max-age=0, must-revalidate');
+            $response->headers->set('Cache-Control', 'private, max-age=60, stale-while-revalidate=300');
+            $response->setVary('Cookie', false);
         }
 
         return $response;

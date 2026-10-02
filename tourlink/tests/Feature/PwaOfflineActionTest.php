@@ -17,10 +17,8 @@ class PwaOfflineActionTest extends TestCase
         $this->get(route('trips.index'))
             ->assertOk()
             ->assertHeader('X-PWA-Cacheable', 'public')
-            // Symfony sorts Cache-Control directives alphabetically when the
-            // response is prepared, so the directives are asserted in that
-            // canonical order rather than the order the middleware set them.
-            ->assertHeader('Cache-Control', 'max-age=0, must-revalidate, public');
+            ->assertHeader('Cache-Control', 'max-age=60, private, stale-while-revalidate=300')
+            ->assertHeader('Vary', 'Cookie');
     }
 
     public function test_authenticated_pages_are_not_marked_for_public_caching(): void
