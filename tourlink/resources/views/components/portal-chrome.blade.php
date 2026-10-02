@@ -20,6 +20,18 @@
         \App\Role::Traveler => 'traveler.profile',
         default => null,
     };
+    $profileIncomplete = match ($role) {
+        \App\Role::Operator => blank($user->operatorProfile?->company_name) || blank($user->operatorProfile?->description),
+        \App\Role::VehicleOwner => blank($user->vehicleOwnerProfile?->business_name) || blank($user->vehicleOwnerProfile?->description),
+        \App\Role::Traveler => blank($user->travelerProfile?->bio),
+        default => false,
+    };
+    $profileReminderMessage = match ($role) {
+        \App\Role::Operator => 'Add your company name and a short business description.',
+        \App\Role::VehicleOwner => 'Add your business name and a short description.',
+        \App\Role::Traveler => 'Add a short bio so providers can get to know you.',
+        default => '',
+    };
     $settingsRoute = match ($role) {
         \App\Role::Operator => ['operator.section', ['section' => 'settings']],
         \App\Role::VehicleOwner => ['vehicle-owner.section', ['section' => 'settings']],
@@ -194,4 +206,16 @@
             @endif
         @endforeach
     </nav>
+
+    @if ($profileIncomplete && $profileRoute && Route::has($profileRoute))
+        <aside class="profile-reminder {{ $role === \App\Role::Admin ? 'profile-reminder--search' : '' }}" data-profile-reminder data-user-id="{{ $user->id }}" role="status" aria-labelledby="profile-reminder-title">
+            <span class="profile-reminder__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0m-4-7 2 2 4-4"/></svg></span>
+            <div class="profile-reminder__content">
+                <strong id="profile-reminder-title">Complete your profile</strong>
+                <p>{{ $profileReminderMessage }}</p>
+                <a href="{{ route($profileRoute) }}">Go to profile <span aria-hidden="true">&rarr;</span></a>
+            </div>
+            <button class="profile-reminder__dismiss" type="button" data-profile-reminder-dismiss aria-label="Dismiss profile reminder" title="Dismiss">&times;</button>
+        </aside>
+    @endif
 </div>

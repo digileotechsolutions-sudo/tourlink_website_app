@@ -467,6 +467,18 @@ body:has(.dashboard-chrome) .portal-footer { margin-top: auto; }
 .portal-drawer__foot strong { overflow: hidden; font-size: 12px; text-overflow: ellipsis; }
 .portal-drawer__foot span { color: var(--portal-muted); font-size: 11px; }
 .portal-bottom-nav { display: none; }
+.profile-reminder { position: fixed; top: 82px; right: 20px; z-index: 65; display: grid; width: min(360px, calc(100vw - 32px)); grid-template-columns: 38px minmax(0, 1fr) 32px; align-items: start; gap: 10px; padding: 14px 12px; border-left: 3px solid #D83B69; border-radius: 10px; color: #243044; background: #fff; box-shadow: 0 12px 32px rgb(15 23 42 / 17%); animation: profile-reminder-enter .22s ease-out both; }
+.profile-reminder[hidden] { display: none; }
+.profile-reminder__icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 9px; color: #1F0052; background: #F5F0FA; }
+.profile-reminder__icon svg { width: 19px; height: 19px; }
+.profile-reminder__content { min-width: 0; }
+.profile-reminder__content strong { display: block; color: #1E293B; font-size: 13px; font-weight: 800; }
+.profile-reminder__content p { margin: 4px 0 8px; color: #64748B; font-size: 11px; line-height: 1.45; }
+.profile-reminder__content a { display: inline-flex; min-height: 30px; align-items: center; gap: 5px; color: #1F0052; font-size: 11px; font-weight: 800; }
+.profile-reminder__content a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.profile-reminder__dismiss { display: grid; width: 30px; height: 30px; min-height: 30px; place-items: center; border: 0; border-radius: 7px; color: #64748B; background: transparent; cursor: pointer; font-size: 19px; line-height: 1; }
+.profile-reminder__dismiss:hover { color: #1E293B; background: #F1F5F9; }
+@keyframes profile-reminder-enter { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 1023px) {
     body:has(.dashboard-chrome) { padding-top: calc(64px + env(safe-area-inset-top)); padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
@@ -503,6 +515,8 @@ body:has(.dashboard-chrome) .portal-footer { margin-top: auto; }
     .portal-bottom-nav__item.is-active { color: var(--portal-ink); background: #F5F0FA; }
     .portal-footer { margin-top: 22px; padding: 13px 16px calc(13px + env(safe-area-inset-bottom)); font-size: 11px; }
     .portal-footer nav { display: none; }
+    .profile-reminder { top: calc(72px + env(safe-area-inset-top)); right: 10px; left: 10px; width: auto; }
+    .profile-reminder--search { top: calc(122px + env(safe-area-inset-top)); }
 }
 
 @media (min-width: 1024px) {
@@ -522,6 +536,7 @@ body:has(.dashboard-chrome) .portal-footer { margin-top: auto; }
 
 @media (prefers-reduced-motion: reduce) {
     .portal-sidebar, .portal-topbar, .portal-nav-group__heading svg { transition: none; }
+    .profile-reminder { animation: none; }
 }
 
 @media (orientation: landscape) and (max-height: 500px) and (max-width: 1023px) {

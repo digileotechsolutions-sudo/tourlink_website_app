@@ -4,6 +4,30 @@ const portalSidebar = document.querySelector('[data-portal-sidebar]');
 const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
 const portalDrawer = document.querySelector('[data-portal-drawer]');
 const drawerOpenButton = document.querySelector('[data-drawer-open]');
+const profileReminder = document.querySelector('[data-profile-reminder]');
+
+if (profileReminder) {
+    const reminderKey = `tourlink:profile-reminder-dismissed:${profileReminder.dataset.userId}`;
+
+    try {
+        profileReminder.hidden = sessionStorage.getItem(reminderKey) === 'true';
+    } catch {}
+
+    profileReminder.querySelector('[data-profile-reminder-dismiss]')?.addEventListener('click', () => {
+        profileReminder.hidden = true;
+        try {
+            sessionStorage.setItem(reminderKey, 'true');
+        } catch {}
+    });
+
+    document.querySelectorAll('form[action$="/logout"]').forEach((form) => {
+        form.addEventListener('submit', () => {
+            try {
+                sessionStorage.removeItem(reminderKey);
+            } catch {}
+        });
+    });
+}
 
 document.querySelectorAll('[data-provider-role-fields]').forEach((form) => {
     const roleSelect = form.querySelector('select[name="role"]');
