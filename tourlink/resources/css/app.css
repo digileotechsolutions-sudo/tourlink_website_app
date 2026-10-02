@@ -6,12 +6,12 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --color-ink: #063b00;
-    --color-lagoon: #266210;
-    --color-leaf: #266210;
-    --color-sun: #ee8d3b;
-    --color-sand: #f5f2e9;
-    --color-mist: #f8faf8;
+    --color-ink: #5003C0;
+    --color-lagoon: #5003C0;
+    --color-leaf: #FF467A;
+    --color-sun: #FFD51E;
+    --color-sand: #FFF8D8;
+    --color-mist: #FFFCF1;
     --font-sans: 'Poppins', Arial, sans-serif;
     --font-display: 'Poppins', Arial, sans-serif;
     --shadow-soft: 0 8px 30px rgba(13, 37, 48, .06);
@@ -25,17 +25,17 @@
 :root { color-scheme: light; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: #f8faf8; color: #0f172a; font-family: 'Poppins', Arial, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body { margin: 0; background: #FFFCF1; color: #0f172a; font-family: 'Poppins', Arial, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 button, input, select { font: inherit; }
 a, button { transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease, opacity .2s ease; }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(0, 128, 0, .45); outline-offset: 3px; }
-::selection { background: #008000; color: #fff; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(255, 70, 122, .65); outline-offset: 3px; }
+::selection { background: #5003C0; color: #FFD51E; }
 .container-page { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
 .display { font-family: 'Poppins', Arial, sans-serif; letter-spacing: -.055em; }
-.eyebrow { color: #008000; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+.eyebrow { color: #5003C0; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
 .grain { position: relative; }
 .grain::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .055; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
-.bg-hero-glow { background: #063b00; }
+.bg-hero-glow { background: #5003C0; }
 .hide-scrollbar { scrollbar-width: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 @media (max-width: 640px) { .container-page { width: min(100% - 28px, 1180px); } }
@@ -219,3 +219,52 @@ body:has(.pwa-status) { padding-bottom: 64px; }
 @media (max-width: 480px) { .login-page:has(.auth-login-shell) { align-items: center; padding: 24px 20px 88px; } .auth-login-card { padding: 34px 24px 28px; border-radius: 22px; } .auth-login-header h1 { font-size: 29px; } }
 @media (max-width: 480px) { .login-page:has(.auth-compact-shell) { align-items: flex-start; padding: 24px 20px 88px; } .auth-compact-card { padding: 32px 22px 26px; border-radius: 22px; } .auth-compact-header h1 { font-size: 27px; } }
 @media (prefers-reduced-motion: reduce) { .login-page, .login-page:has(.auth-login-shell), .login-page:has(.auth-compact-shell) { animation: none; } .auth-wrapper { animation: none; } }
+
+/* Site-wide brand palette: solid yellow, purple, and pink with no gradients. */
+:root {
+    --brand-pink: #FF467A;
+    --brand-purple: #5003C0;
+    --brand-yellow: #FFD51E;
+    --brand-yellow-soft: #FFF8D8;
+    --brand-purple-soft: #F1E8FF;
+}
+
+[class~="bg-emerald-50"], [class~="bg-emerald-100"], [class~="bg-amber-50"], [class~="bg-amber-100"] { background-color: var(--brand-yellow-soft); }
+[class~="bg-emerald-200"], [class~="bg-amber-200"] { background-color: var(--brand-yellow); }
+[class~="bg-emerald-300"], [class~="bg-emerald-400"], [class~="bg-amber-300"], [class~="bg-amber-400"] { background-color: var(--brand-pink); }
+[class~="bg-orange-300"] { background-color: var(--brand-yellow); }
+[class~="bg-emerald-700"], [class~="bg-emerald-800"], [class~="bg-emerald-900"], [class~="bg-emerald-950"], [class~="bg-amber-700"], [class~="bg-amber-800"], [class~="bg-amber-900"], [class~="bg-amber-950"] { background-color: var(--brand-purple); }
+[class~="text-emerald-700"], [class~="text-emerald-800"], [class~="text-emerald-900"], [class~="text-emerald-950"], [class~="text-amber-700"], [class~="text-amber-800"], [class~="text-amber-900"], [class~="text-amber-950"] { color: var(--brand-purple); }
+[class~="text-emerald-500"], [class~="text-emerald-600"], [class~="text-amber-500"], [class~="text-amber-600"] { color: var(--brand-pink); }
+[class~="border-emerald-200"], [class~="border-emerald-300"], [class~="border-amber-200"], [class~="border-amber-300"] { border-color: var(--brand-purple); }
+[class~="border-emerald-700"], [class~="border-emerald-800"], [class~="border-amber-700"], [class~="border-amber-800"] { border-color: var(--brand-pink); }
+[class~="accent-emerald-800"], [class~="accent-emerald-700"] { accent-color: var(--brand-pink); }
+[class~="hover:bg-emerald-50"]:hover, [class~="hover:bg-amber-50"]:hover { background-color: var(--brand-yellow-soft); }
+[class~="hover:bg-emerald-900"]:hover, [class~="hover:bg-amber-900"]:hover { background-color: #3F029A; }
+[class~="hover:text-emerald-800"]:hover, [class~="hover:text-amber-800"]:hover { color: var(--brand-pink); }
+[class~="file:bg-amber-800"]::file-selector-button { background-color: var(--brand-purple); }
+
+.mobile-bottom-nav__item.is-active { color: var(--brand-purple); background: var(--brand-yellow-soft); }
+.mobile-menu-fab > summary { color: var(--brand-purple); }
+.mobile-menu-panel a:hover, .mobile-menu-panel a:focus-visible { color: var(--brand-purple); background: var(--brand-yellow-soft); }
+.auth-left { background-color: var(--brand-purple); }
+.auth-right { background: var(--brand-yellow-soft); }
+.auth-card h2, .auth-login-header h1, .auth-compact-header h1 { color: var(--brand-purple); }
+.auth-kicker, .auth-login-eyebrow, .auth-login-label-row a, .auth-login-footer a, .auth-compact-card .auth-footer a, .auth-compact-header a, .auth-footer a, .auth-password-toggle { color: var(--brand-purple); }
+.auth-field input:focus, .auth-field select:focus, .auth-login-control input:focus, .auth-compact-card .auth-modern-control input:focus, .auth-compact-card .auth-modern-control select:focus, .auth-otp-digit:focus { border-color: var(--brand-purple); box-shadow: 0 0 0 4px rgb(80 3 192 / 12%); }
+.auth-form-check input, .auth-login-remember input { accent-color: var(--brand-pink); }
+.auth-btn, .auth-login-submit, .auth-compact-submit, .auth-verify-controls button, .auth-resend:not(:disabled), .pwa-status button { background-color: var(--brand-purple); }
+.auth-btn:hover, .auth-login-submit:hover, .auth-compact-submit:hover, .auth-verify-controls button:hover, .pwa-status button:hover { background-color: #3F029A; }
+.auth-login-submit:hover, .auth-compact-submit:hover { background-image: none; }
+.auth-msg-notice, .auth-referrer-note, .auth-verification-icon { color: var(--brand-purple); background-color: var(--brand-yellow-soft); }
+.password-strength[data-strength="strong"] .password-strength__label strong { color: var(--brand-purple); }
+.auth-login-logo { color: var(--brand-purple); border-color: rgb(255 70 122 / 25%); }
+.auth-login-field label, .auth-field label, .auth-verify-heading strong { color: var(--brand-purple); }
+.auth-verify-status, .auth-verify-status.is-verified { color: var(--brand-purple); background-color: var(--brand-yellow-soft); }
+.auth-dev-code { color: var(--brand-purple); }
+.pwa-status button[data-pwa-update] { color: var(--brand-purple); background-color: var(--brand-yellow); }
+[role="progressbar"] > div { background-color: var(--brand-pink); }
+.password-strength__track span { background-color: var(--brand-pink); }
+.password-strength[data-strength="fair"] .password-strength__track span { background-color: var(--brand-yellow); }
+.password-strength[data-strength="strong"] .password-strength__track span { background-color: var(--brand-purple); }
+.auth-password-toggle:hover, .auth-login-toggle:hover { color: var(--brand-purple); background: var(--brand-purple-soft); }
