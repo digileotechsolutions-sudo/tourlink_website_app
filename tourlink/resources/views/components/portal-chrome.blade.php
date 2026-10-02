@@ -174,6 +174,7 @@
                         @if ($profileRoute && Route::has($profileRoute))<a href="{{ route($profileRoute) }}">Profile</a>@endif
                         @if (Route::has($settingsRoute[0]))<a href="{{ route($settingsRoute[0], $settingsRoute[1]) }}">{{ $role === \App\Role::Admin ? 'System settings' : 'Settings' }}</a>@endif
                         <a href="{{ route('password.change') }}">Password and security</a>
+                        <a href="{{ route('home') }}">View website</a>
                         <a href="{{ route('home') }}#how-it-works">Help</a>
                         <a href="{{ route('contact') }}">Support</a>
                         @if (Route::has('privacy'))<a href="{{ route('privacy') }}">Privacy policy</a>@endif
