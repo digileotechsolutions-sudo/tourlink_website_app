@@ -8,7 +8,7 @@
     <title>@yield('title', 'Sign in | TourLink')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
+<body class="app-page auth-page">
     <main class="login-page">
         @yield('content')
     </main>

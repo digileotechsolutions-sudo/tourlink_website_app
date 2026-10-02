@@ -25,6 +25,10 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: #FFFFFF; color: #0f172a; font-family: Roboto, 'Noto Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+.app-page { display: flex; min-height: 100svh; flex-direction: column; }
+.app-page > main { flex: 1 0 auto; }
+.auth-page > .login-page { min-height: 0; flex: 1 0 auto; }
+.app-page > .portal-footer { margin-top: auto; }
 button, input, select { font: inherit; }
 a, button { transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease, opacity .2s ease; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(255, 70, 122, .65); outline-offset: 3px; }
@@ -384,6 +388,12 @@ body:has(.dashboard-chrome) > div.flex > div.flex > main { padding-top: 70px; }
 body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 { width: calc(100% - var(--portal-sidebar-width)); margin-left: var(--portal-sidebar-width); }
 body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 > header.admin-topbar { display: none !important; }
 body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 > main { padding-top: 70px; }
+body:has(.dashboard-chrome) > div.flex > main { display: flex; flex-direction: column; }
+body:has(.dashboard-chrome) > div.flex > div.flex,
+body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 { display: flex; min-height: 100svh; flex-direction: column; }
+body:has(.dashboard-chrome) > div.flex > div.flex > main,
+body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 > main { display: flex; flex: 1; flex-direction: column; }
+body:has(.dashboard-chrome) .portal-footer { margin-top: auto; }
 
 .portal-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 55; display: flex; width: var(--portal-sidebar-width); flex-direction: column; gap: 15px; padding: 18px 12px 12px; overflow: hidden; border-right: 1px solid var(--portal-line); background: #fff; transition: width .18s ease; }
 .portal-brand { display: flex; min-height: 44px; flex: none; align-items: center; gap: 11px; padding: 0 8px; color: var(--portal-ink); }
@@ -466,6 +476,10 @@ body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 > main { padding-top
     body:has(.dashboard-chrome) > div.flex > div.flex > main { padding-top: 0; }
     body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 { width: 100%; margin-left: 0; }
     body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 > main { padding-top: 0; }
+    body:has(.dashboard-chrome) > div.flex { min-height: calc(100svh - 64px - 86px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+    body:has(.dashboard-chrome .portal-topbar--search) > div.flex { min-height: calc(100svh - 112px - 86px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+    body:has(.dashboard-chrome) > div.flex > div.flex,
+    body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 { min-height: 100%; }
     .portal-sidebar { display: none; }
     .portal-topbar { inset: 0 0 auto; min-height: calc(64px + env(safe-area-inset-top)); padding: calc(5px + env(safe-area-inset-top)) 10px 5px; }
     .portal-topbar--search { min-height: calc(112px + env(safe-area-inset-top)); }
