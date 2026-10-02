@@ -3,17 +3,17 @@
 @section('content')
 <div class="mx-auto max-w-7xl space-y-8 p-4 sm:p-8">
     <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">Operator overview</p><h1 class="mt-2 text-3xl font-black text-slate-950">Run your travel business</h1><p class="mt-2 text-slate-600">Manage trips, travelers, bookings, and company verification from one workspace.</p></div>
-    <section class="grid gap-4 rounded border border-[#3B008F] bg-[#FFD51E] p-5" aria-labelledby="verification-reminder-heading">
+    <section class="grid gap-4 rounded border border-[#1F0052] bg-[#FFD51E] p-5" aria-labelledby="verification-reminder-heading">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h2 id="verification-reminder-heading" class="text-lg font-black text-[#3B008F]">Company profile: {{ $verificationCompletionPercentage }}% complete</h2>
-                <p class="mt-1 text-sm text-[#3B008F]">{{ $verificationCompletionPercentage < 100 ? 'Your account starts at 50%. Complete your company details and upload each required business document.' : 'Your account, company details, and required business documents are complete.' }}</p>
+                <h2 id="verification-reminder-heading" class="text-lg font-black text-[#1F0052]">Company profile: {{ $verificationCompletionPercentage }}% complete</h2>
+                <p class="mt-1 text-sm text-[#1F0052]">{{ $verificationCompletionPercentage < 100 ? 'Your account starts at 50%. Complete your company details and upload each required business document.' : 'Your account, company details, and required business documents are complete.' }}</p>
             </div>
             @if ($verificationCompletionPercentage < 100)
-                <a class="inline-flex min-h-11 items-center rounded bg-[#3B008F] px-5 py-3 text-sm font-bold text-white hover:bg-[#2D006E]" href="{{ route('operator.profile') }}">Complete profile</a>
+                <a class="inline-flex min-h-11 items-center rounded bg-[#1F0052] px-5 py-3 text-sm font-bold text-white hover:bg-[#150039]" href="{{ route('operator.profile') }}">Complete profile</a>
             @endif
         </div>
-        <div class="h-2 overflow-hidden rounded-full bg-[#3B008F]/20" role="progressbar" aria-label="Company profile completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $verificationCompletionPercentage }}">
+        <div class="h-2 overflow-hidden rounded-full bg-[#1F0052]/20" role="progressbar" aria-label="Company profile completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $verificationCompletionPercentage }}">
             <div class="h-full rounded-full bg-[#FF467A]" style="width: {{ $verificationCompletionPercentage }}%"></div>
         </div>
     </section>
