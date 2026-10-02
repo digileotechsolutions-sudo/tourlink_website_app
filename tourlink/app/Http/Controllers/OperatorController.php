@@ -40,11 +40,13 @@ class OperatorController extends Controller
         $bookings = Booking::query()->whereIn('trip_id', $tripIds);
         $verificationRequest = $this->latestVerificationRequest($operator);
         $uploadedDocumentKeys = collect($verificationRequest->documents ?? [])->pluck('key')->all();
-        $hasIncompleteVerification = mb_strlen((string) $operator->operatorProfile?->description) < 20
-            || array_diff(OperatorVerificationDocument::requiredKeys(), $uploadedDocumentKeys) !== [];
+        $requiredDocumentKeys = OperatorVerificationDocument::requiredKeys();
+        $completedRequirements = count(array_intersect($requiredDocumentKeys, $uploadedDocumentKeys));
+        $hasCompanyProfile = mb_strlen((string) $operator->operatorProfile?->description) >= 20;
+        $verificationCompletionPercentage = (int) round((($completedRequirements + (int) $hasCompanyProfile) / (count($requiredDocumentKeys) + 1)) * 100);
 
         return view('operator.dashboard', [
-            'hasIncompleteVerification' => $hasIncompleteVerification,
+            'verificationCompletionPercentage' => $verificationCompletionPercentage,
             'tripCount' => $operator->trips()->count(),
             'publishedTripCount' => $operator->trips()->where('status', ListingStatus::Published)->count(),
             'bookingCount' => (clone $bookings)->count(),

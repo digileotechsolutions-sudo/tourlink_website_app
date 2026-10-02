@@ -31,20 +31,20 @@ class VehicleOwnerController extends Controller
         $bookings = Booking::query()->whereIn('vehicle_id', $owner->vehicles()->select('id'));
         $identityVerificationRequest = $this->latestVerificationRequest($owner, 'VEHICLE_OWNER_IDENTITY');
         $uploadedIdentityDocumentKeys = collect($identityVerificationRequest->documents ?? [])->pluck('key')->all();
-        $hasIncompleteVerification = ! in_array('owner_id', $uploadedIdentityDocumentKeys, true);
+        $completedRequirements = (int) in_array('owner_id', $uploadedIdentityDocumentKeys, true);
+        $totalRequirements = 1;
         $requiredVehicleDocumentKeys = ['logbook', 'insurance', 'front_photo', 'rear_photo', 'left_photo', 'right_photo', 'interior_photo', 'number_plate_photo'];
 
         foreach ($owner->vehicles()->get() as $vehicle) {
             $verificationRequest = $this->latestVerificationRequest($owner, 'VEHICLE', $vehicle->id);
             $uploadedVehicleDocumentKeys = collect($verificationRequest->documents ?? [])->pluck('key')->all();
-            if (array_diff($requiredVehicleDocumentKeys, $uploadedVehicleDocumentKeys) !== []) {
-                $hasIncompleteVerification = true;
-                break;
-            }
+            $completedRequirements += count(array_intersect($requiredVehicleDocumentKeys, $uploadedVehicleDocumentKeys));
+            $totalRequirements += count($requiredVehicleDocumentKeys);
         }
+        $verificationCompletionPercentage = (int) round(($completedRequirements / $totalRequirements) * 100);
 
         return view('vehicle-owner.dashboard', [
-            'hasIncompleteVerification' => $hasIncompleteVerification,
+            'verificationCompletionPercentage' => $verificationCompletionPercentage,
             'vehicleCount' => $owner->vehicles()->count(),
             'publishedVehicleCount' => $owner->vehicles()->where('status', ListingStatus::Published)->count(),
             'bookingCount' => (clone $bookings)->count(),
