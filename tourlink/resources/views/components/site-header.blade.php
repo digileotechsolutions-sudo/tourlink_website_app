@@ -6,7 +6,7 @@
             </span>
             <span><span class="site-header__brand-name block text-lg font-black">Havenedge <span class="text-sun">Tourlink</span></span><span class="hidden text-[8px] font-bold uppercase tracking-[.18em] text-white/50 sm:block">Trips · Vehicles · Together</span></span>
         </a>
-        <nav class="hidden items-center gap-7 text-sm font-semibold text-white/75 lg:flex" aria-label="Main navigation">
+        <nav class="hidden items-center gap-1 text-sm font-semibold text-white/75 lg:flex xl:gap-2" aria-label="Main navigation">
             <a class="hover:text-white" href="{{ route('trips.index') }}">Find a trip</a>
             <a class="hover:text-white" href="{{ route('vehicles.index') }}">Hire a vehicle</a>
             <a class="hover:text-white" href="{{ route('blog.index') }}">Journal</a>
@@ -16,7 +16,7 @@
         </nav>
         <div class="hidden items-center gap-4 sm:flex">
             @auth
-                @if(auth()->user()->role === \App\Role::Admin && Route::has('admin.dashboard'))<a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('admin.dashboard') }}">Admin review</a><a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('admin.users.index') }}">Users</a><a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('admin.verification.index') }}">Verification</a><a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('admin.trips.index') }}">Manage trips</a><a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('admin.vehicles.index') }}">Manage vehicles</a><a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('admin.catalog.index') }}">Catalog</a><a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('admin.audit.index') }}">Audit log</a>@elseif(Route::has('dashboard'))<a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('dashboard') }}">Dashboard</a>@endif
+                @if(auth()->user()->role === \App\Role::Admin && Route::has('admin.dashboard'))<a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('admin.dashboard') }}">Admin dashboard</a>@elseif(Route::has('dashboard'))<a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('dashboard') }}">Dashboard</a>@endif
                 @if(Route::has('logout'))<form method="POST" action="{{ route('logout') }}">@csrf<button class="rounded-full bg-sun px-5 py-3 text-sm font-extrabold text-ink hover:bg-orange-300" type="submit">Log out</button></form>@endif
             @else
                 @if(Route::has('login'))<a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('login') }}">Log in</a>@endif

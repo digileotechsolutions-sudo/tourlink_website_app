@@ -651,7 +651,7 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 .site-header__brand-name { text-shadow: 0 0 16px rgb(255 255 255 / 12%); transition: text-shadow .2s ease; }
 .site-header__brand:hover .site-header__brand-icon, .site-header__brand:focus-visible .site-header__brand-icon { box-shadow: 0 0 19px rgb(255 213 30 / 28%); }
 .site-header__brand:hover .site-header__brand-name, .site-header__brand:focus-visible .site-header__brand-name { text-shadow: 0 0 19px rgb(255 213 30 / 24%); }
-.site-header nav[aria-label="Main navigation"] a { display: inline-flex; min-height: 40px; align-items: center; padding-inline: 10px; border-radius: 8px; transition: color .18s ease, background-color .18s ease; }
+.site-header nav[aria-label="Main navigation"] a { display: inline-flex; min-height: 40px; align-items: center; padding-inline: 7px; border-radius: 8px; transition: color .18s ease, background-color .18s ease; }
 .site-header nav[aria-label="Main navigation"] a:hover, .site-header nav[aria-label="Main navigation"] a:focus-visible { color: #fff; background: rgb(255 255 255 / 11%); }
 .site-header details .absolute a:not([class*="bg-sun"]):focus-visible { color: #fff; background: rgb(255 255 255 / 11%); }
 

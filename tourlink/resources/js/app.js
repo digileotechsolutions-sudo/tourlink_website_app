@@ -556,6 +556,8 @@ const installButton = pwaStatus?.querySelector('[data-pwa-install]');
 const updateButton = pwaStatus?.querySelector('[data-pwa-update]');
 const onlineOnlyNotice = document.querySelector('[data-online-only-notice]');
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isAppleMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 let installPrompt = null;
 let pwaRegistration = null;
 
@@ -571,7 +573,7 @@ const setPwaStatus = (message, state) => {
     pwaStatus.hidden = message === '' && !hasVisibleAction;
 };
 
-if (installButton && !isStandalone) {
+if (installButton && !isStandalone && isAppleMobile) {
     installButton.hidden = false;
 }
 
@@ -762,31 +764,40 @@ window.addEventListener('beforeinstallprompt', (event) => {
         installButton.setAttribute('aria-label', 'Install App');
         installButton.setAttribute('title', 'Install App');
     }
+    setPwaStatus('', 'install');
 });
 
 installButton?.addEventListener('click', async () => {
     if (!installPrompt) {
-        const isAppleMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         const instructions = isAppleMobile
             ? 'To install Havenedge Tourlink, tap Share, then Add to Home Screen.'
             : 'Open your browser menu and choose Install app or Add to Home screen.';
 
-        const label = installButton.querySelector('span');
-        if (label) {
-            label.textContent = instructions;
-        }
-        installButton.setAttribute('aria-label', instructions);
-        installButton.setAttribute('title', instructions);
-        pwaStatus?.classList.add('pwa-status--install-only');
+        installButton.hidden = true;
+        setPwaStatus(instructions, 'install');
 
         return;
     }
 
-    await installPrompt.prompt();
-    await installPrompt.userChoice;
+    const prompt = installPrompt;
     installPrompt = null;
-    installButton.hidden = true;
+    installButton.disabled = true;
+
+    try {
+        await prompt.prompt();
+        const choice = await prompt.userChoice;
+
+        if (choice?.outcome === 'accepted') {
+            installButton.hidden = true;
+            setPwaStatus('Installing Havenedge Tourlink...', 'install');
+        } else {
+            setPwaStatus('Installation was cancelled. You can install later from your browser menu.', 'install');
+        }
+    } catch {
+        setPwaStatus('The install prompt could not open. Try installing from your browser menu.', 'install');
+    } finally {
+        installButton.disabled = false;
+    }
 });
 
 window.addEventListener('appinstalled', () => {
