@@ -5,7 +5,7 @@
 <article class="group overflow-hidden rounded-2xl bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-card">
     <a href="{{ route('vehicles.show', ['vehicle' => $vehicle->slug]) }}" class="block">
         <div class="relative h-48 overflow-hidden bg-sand">
-            @if($imageUrl)<img class="size-full object-cover transition duration-700 group-hover:scale-105" src="{{ $imageUrl }}" alt="{{ $vehicle->images->first()?->alt ?? $vehicle->name }}" loading="lazy">@endif
+            @if($imageUrl)<img class="size-full object-cover transition duration-700 group-hover:scale-105" src="{{ $imageUrl }}" alt="{{ $vehicle->images->first()?->alt ?? $vehicle->name }}" loading="lazy" decoding="async">@endif
             <span class="absolute left-4 top-4 rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-[.08em] {{ $verification === 'TRUSTED' ? 'bg-sun/90 text-ink' : 'bg-white/90 text-ink' }}">{{ $verification }}</span>
         </div>
         <div class="p-4">

@@ -20,7 +20,7 @@
             @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
             @if(session('referred_by'))<p class="auth-msg auth-msg-notice" role="status"><strong>{{ session('referred_by') }}</strong> referred you. Your referral is credited once your account is approved.</p>@endif
             <p class="auth-msg auth-msg-notice pwa-online-only" data-online-only-notice hidden>Email OTP verification requires an internet connection. Please reconnect and retry.</p>
-            @error('code')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
+            @error('code')<p id="verification-code-error" class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
             @error('user_id')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
 
             @foreach($verificationMethods as $verification)
@@ -52,7 +52,7 @@
                                 <input type="hidden" name="code" data-otp-value>
                                 <div class="auth-otp-inputs" role="group" aria-label="{{ $verification['label'] }} verification code">
                                     @for($digit = 0; $digit < 6; $digit++)
-                                        <input class="auth-otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="one-time-code" data-otp-digit data-otp-index="{{ $digit }}" aria-label="Code digit {{ $digit + 1 }}" required>
+                                        <input class="auth-otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="{{ $digit === 0 ? 'one-time-code' : 'off' }}" data-otp-digit data-otp-index="{{ $digit }}" aria-label="Code digit {{ $digit + 1 }}" @if ($errors->has('code')) aria-invalid="true" aria-describedby="verification-code-error" @endif required>
                                     @endfor
                                 </div>
                                 <button class="auth-btn auth-verify-button" type="submit"><span data-verify-label>Verify Account</span><span class="auth-loading-spinner" data-verify-spinner aria-hidden="true"></span></button>

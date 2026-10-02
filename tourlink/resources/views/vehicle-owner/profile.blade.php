@@ -23,9 +23,9 @@
         @csrf
         @method('PUT')
         <h2 class="text-lg font-black">Owner information</h2>
-        <label class="grid gap-1 text-sm font-semibold">Business name<input required name="business_name" value="{{ old('business_name', $profile->business_name) }}" class="min-h-11 rounded border border-slate-300 px-3"></label>
-        <label class="grid gap-1 text-sm font-semibold">About your business<textarea name="description" rows="4" class="rounded border border-slate-300 p-3">{{ old('description', $profile->description) }}</textarea></label>
-        <button class="w-fit rounded bg-emerald-800 px-6 py-3 text-sm font-bold text-white">Save profile</button>
+        <label class="grid gap-2 text-sm font-semibold">Business name<input required name="business_name" type="text" autocomplete="organization" autocapitalize="words" value="{{ old('business_name', $profile->business_name) }}" class="min-h-12 w-full rounded-xl border border-slate-300 px-3"></label>
+        <label class="grid gap-2 text-sm font-semibold">About your business<textarea name="description" rows="4" class="w-full rounded-xl border border-slate-300 p-3">{{ old('description', $profile->description) }}</textarea></label>
+        <button type="submit" class="min-h-12 w-full rounded-xl bg-ink px-6 text-sm font-bold text-white shadow-soft sm:w-fit">Save profile</button>
     </form>
 
     @php($identityDocuments = collect($identityVerificationRequest->documents ?? [])->pluck('key')->all())

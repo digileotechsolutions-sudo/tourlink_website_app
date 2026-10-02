@@ -1,10 +1,9 @@
-const VERSION = 'tourlink-pwa-v3';
+const VERSION = 'tourlink-pwa-v5';
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-public-pages`;
 const CACHE_PREFIX = 'tourlink-pwa-';
-const FONT_HOSTS = new Set(['fonts.googleapis.com', 'fonts.gstatic.com']);
 const IMAGE_HOSTS = new Set(['images.unsplash.com']);
-const SHELL = ['/offline.html', '/manifest.json', '/manifest.webmanifest', '/favicon.ico', '/icons/tourlink-192.svg', '/icons/tourlink-512.svg'];
+const SHELL = ['/offline.html', '/manifest.json', '/manifest.webmanifest', '/favicon.ico', '/icons/tourlink-192.png', '/icons/tourlink-512.png', '/icons/tourlink-192.svg', '/icons/tourlink-512.svg'];
 const PRIVATE_PATHS = ['/admin', '/account', '/api', '/dashboard', '/login', '/logout', '/operator', '/password', '/referrals', '/register', '/reset-password', '/traveler', '/vehicle-owner', '/verify', '/forgot-password'];
 const STATIC_PATHS = [/^\/build\/assets\//, /^\/icons\//, /^\/storage\/(trips|vehicles|destinations|events|blog)\//, /^\/(favicon\.ico|form-image1\.png|manifest\.json|manifest\.webmanifest|offline\.html)$/];
 
@@ -16,7 +15,7 @@ self.addEventListener('install', (event) => {
 		try {
 			const response = await fetch('/build/manifest.json', { cache: 'no-store' });
 			const manifest = await response.json();
-			const assets = [manifest['resources/css/app.css']?.file, manifest['resources/js/app.js']?.file, manifest['resources/js/echo.js']?.file]
+			const assets = [manifest['resources/css/app.css']?.file, manifest['resources/js/app.js']?.file]
 				.filter(Boolean)
 				.map((asset) => `/build/${asset}`);
 
@@ -64,8 +63,7 @@ self.addEventListener('fetch', (event) => {
 	}
 
 	if (url.origin !== self.location.origin) {
-		if ((FONT_HOSTS.has(url.hostname) && (request.destination === 'font' || url.hostname === 'fonts.googleapis.com'))
-			|| (IMAGE_HOSTS.has(url.hostname) && request.destination === 'image')) {
+		if (IMAGE_HOSTS.has(url.hostname) && request.destination === 'image') {
 			event.respondWith(cacheFirst(request, true));
 		}
 		return;

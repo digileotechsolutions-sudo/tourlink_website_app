@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="view-transition" content="same-origin">
     <x-pwa-head />
     <title>@yield('title', 'Admin | TourLink')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900">
+<body class="admin-app min-h-screen bg-slate-50 text-slate-900">
     <a class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-white focus:p-3" href="#admin-main">Skip to content</a>
     <div class="flex min-h-screen">
         <aside class="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-ink px-4 py-5 text-white lg:flex">
@@ -23,7 +24,7 @@
         </aside>
 
         <div class="min-w-0 flex-1">
-            <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+            <header class="admin-topbar sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
                 <div class="flex min-h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
                     <a href="{{ route('admin.dashboard') }}" class="grid size-9 shrink-0 place-items-center rounded bg-ink text-xs font-black text-white lg:hidden">TL</a>
                     <form method="GET" action="{{ route('admin.users.index') }}" class="min-w-0 flex-1">

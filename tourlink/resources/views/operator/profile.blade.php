@@ -5,14 +5,14 @@
     <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">Company profile</p><h1 class="mt-2 text-3xl font-black">Present your business</h1></div>
     <form method="POST" action="{{ route('operator.profile.update') }}" enctype="multipart/form-data" class="grid gap-4 rounded border border-slate-200 bg-white p-6 sm:grid-cols-2">
         @csrf @method('PUT')
-        <label class="grid gap-1 text-sm font-semibold">Company name<input required name="company_name" value="{{ old('company_name', $profile->company_name) }}" class="min-h-11 rounded border border-slate-300 px-3"></label>
-        <label class="grid gap-1 text-sm font-semibold">Public slug<input required name="slug" value="{{ old('slug', $profile->slug) }}" class="min-h-11 rounded border border-slate-300 px-3"></label>
-        <label class="grid gap-1 text-sm font-semibold sm:col-span-2">Business description<textarea name="description" rows="5" class="rounded border border-slate-300 p-3">{{ old('description', $profile->description) }}</textarea></label>
-        <label class="grid gap-1 text-sm font-semibold">Logo URL<input type="url" name="logo_url" value="{{ old('logo_url', $profile->logo_url) }}" class="min-h-11 rounded border border-slate-300 px-3"></label>
-        <label class="grid gap-1 text-sm font-semibold">Upload logo<input type="file" name="logo" accept="image/*" class="rounded border border-slate-300 p-2"></label>
-        <label class="grid gap-1 text-sm font-semibold">Website<input type="url" name="website" value="{{ old('website', $profile->website) }}" class="min-h-11 rounded border border-slate-300 px-3"></label>
-        <label class="grid gap-1 text-sm font-semibold">Years active<input type="number" min="0" name="years_active" value="{{ old('years_active', $profile->years_active) }}" class="min-h-11 rounded border border-slate-300 px-3"></label>
-        <div class="sm:col-span-2"><button class="rounded bg-emerald-800 px-6 py-3 text-sm font-bold text-white">Save company profile</button></div>
+        <label class="grid gap-2 text-sm font-semibold">Company name<input required name="company_name" type="text" autocomplete="organization" autocapitalize="words" value="{{ old('company_name', $profile->company_name) }}" class="min-h-12 w-full rounded-xl border border-slate-300 px-3"></label>
+        <label class="grid gap-2 text-sm font-semibold">Public slug<input required name="slug" type="text" autocapitalize="none" spellcheck="false" value="{{ old('slug', $profile->slug) }}" class="min-h-12 w-full rounded-xl border border-slate-300 px-3"></label>
+        <label class="grid gap-2 text-sm font-semibold sm:col-span-2">Business description<textarea name="description" rows="5" class="w-full rounded-xl border border-slate-300 p-3">{{ old('description', $profile->description) }}</textarea></label>
+        <label class="grid gap-2 text-sm font-semibold">Logo URL<input type="url" inputmode="url" autocapitalize="none" name="logo_url" value="{{ old('logo_url', $profile->logo_url) }}" class="min-h-12 w-full rounded-xl border border-slate-300 px-3"></label>
+        <label class="grid gap-2 text-sm font-semibold">Upload logo<input type="file" name="logo" accept="image/*" class="w-full rounded-xl border border-slate-300 p-3 text-sm"></label>
+        <label class="grid gap-2 text-sm font-semibold">Website<input type="url" inputmode="url" autocapitalize="none" name="website" value="{{ old('website', $profile->website) }}" class="min-h-12 w-full rounded-xl border border-slate-300 px-3"></label>
+        <label class="grid gap-2 text-sm font-semibold">Years active<input type="number" inputmode="numeric" min="0" name="years_active" value="{{ old('years_active', $profile->years_active) }}" class="min-h-12 w-full rounded-xl border border-slate-300 px-3"></label>
+        <div class="sm:col-span-2"><button type="submit" class="min-h-12 w-full rounded-xl bg-ink px-6 text-sm font-bold text-white shadow-soft sm:w-auto">Save company profile</button></div>
     </form>
     @php
         $operatorDocuments = collect(\App\OperatorVerificationDocument::cases())->map(fn ($document): array => [

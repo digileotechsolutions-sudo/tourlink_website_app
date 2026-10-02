@@ -1,3 +1,44 @@
+const prefetchedAppRoutes = new Set();
+
+const prefetchAppRoute = (link) => {
+    const destination = new URL(link.href, location.href);
+    const connection = navigator.connection ?? navigator.mozConnection ?? navigator.webkitConnection;
+
+    if (destination.origin !== location.origin
+        || destination.href === location.href
+        || prefetchedAppRoutes.has(destination.href)
+        || connection?.saveData
+        || ['slow-2g', '2g'].includes(connection?.effectiveType)) {
+        return;
+    }
+
+    prefetchedAppRoutes.add(destination.href);
+    const prefetch = document.createElement('link');
+    prefetch.rel = 'prefetch';
+    prefetch.as = 'document';
+    prefetch.href = destination.href;
+    prefetch.fetchPriority = 'low';
+    document.head.append(prefetch);
+};
+
+document.addEventListener('pointerover', (event) => {
+    if (event.pointerType === 'touch') {
+        return;
+    }
+
+    const link = event.target.closest('.mobile-bottom-nav a, .mobile-app-menu a');
+    if (link instanceof HTMLAnchorElement) {
+        prefetchAppRoute(link);
+    }
+});
+
+document.addEventListener('focusin', (event) => {
+    const link = event.target.closest('.mobile-bottom-nav a, .mobile-app-menu a');
+    if (link instanceof HTMLAnchorElement) {
+        prefetchAppRoute(link);
+    }
+});
+
 document.addEventListener('click', (event) => {
     const toggle = event.target.closest('[data-password-toggle]');
 
@@ -49,6 +90,40 @@ document.querySelectorAll('[data-auth-form]').forEach((form) => {
         }
     });
 });
+
+document.querySelectorAll('img[loading="lazy"]').forEach((image) => {
+    if (image.complete) {
+        return;
+    }
+
+    image.classList.add('image-skeleton');
+    const clearSkeleton = () => image.classList.remove('image-skeleton');
+    image.addEventListener('load', clearSkeleton, { once: true });
+    image.addEventListener('error', clearSkeleton, { once: true });
+});
+
+document.addEventListener('submit', (event) => {
+    const form = event.target;
+
+    if (!(form instanceof HTMLFormElement)
+        || event.defaultPrevented
+        || form.target === '_blank'
+        || form.matches('[data-auth-form], [data-otp-form], [data-offline-favorite], [data-no-loading]')) {
+        return;
+    }
+
+    const button = event.submitter instanceof HTMLButtonElement
+        ? event.submitter
+        : form.querySelector('button[type="submit"], button:not([type])');
+
+    if (!(button instanceof HTMLButtonElement) || button.disabled) {
+        return;
+    }
+
+    button.disabled = true;
+    button.classList.add('app-submit-loading');
+    button.setAttribute('aria-busy', 'true');
+}, true);
 
 const draftToClear = document.querySelector('[data-form-draft-clear]')?.dataset.formDraftClear;
 if (draftToClear) {
@@ -212,7 +287,16 @@ document.querySelectorAll('[data-otp-form]').forEach((form) => {
 
     digits.forEach((digit, index) => {
         digit.addEventListener('input', () => {
-            digit.value = digit.value.replace(/\D/g, '').slice(-1);
+            const enteredDigits = digit.value.replace(/\D/g, '');
+            if (enteredDigits.length > 1) {
+                enteredDigits.slice(0, digits.length - index).split('').forEach((character, enteredIndex) => {
+                    digits[index + enteredIndex].value = character;
+                });
+                syncValue();
+                (digits[Math.min(index + enteredDigits.length, digits.length) - 1] ?? digit).focus();
+                return;
+            }
+            digit.value = enteredDigits.slice(-1);
             syncValue();
             if (digit.value && digits[index + 1]) {
                 digits[index + 1].focus();
@@ -358,17 +442,6 @@ document.querySelectorAll('[data-resend-form]').forEach((form) => {
     tick();
 });
 
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allow your team to quickly build robust real-time web applications.
- *
- * Loaded as a dynamic import so a broadcasting problem can never prevent the
- * listeners above from being registered.
- */
-
-import('./echo').catch(() => {});
-
 const pwaStatus = document.querySelector('[data-pwa-status]');
 const pwaMessage = pwaStatus?.querySelector('[data-pwa-message]');
 const installButton = pwaStatus?.querySelector('[data-pwa-install]');
@@ -461,11 +534,16 @@ window.addEventListener('online', () => {
         onlineOnlyNotice.hidden = true;
     }
 
-    if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({ type: 'SYNC_OUTBOX' });
-    } else {
-        setPwaStatus('', 'online');
-    }
+    navigator.serviceWorker?.ready.then((registration) => {
+        const worker = navigator.serviceWorker.controller ?? registration.active;
+        worker?.postMessage({ type: 'SYNC_OUTBOX' });
+        if (!worker) {
+            setPwaStatus('', 'online');
+        }
+        if (registration.sync) {
+            registration.sync.register('tourlink-outbox').catch(() => {});
+        }
+    }).catch(() => setPwaStatus('', 'online'));
 });
 
 document.addEventListener('submit', async (event) => {

@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="view-transition" content="same-origin">
     <meta name="description" content="@yield('meta_description', 'Discover trips, hire verified vehicles and travel Kenya with confidence.')">
     <x-pwa-head />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
     <title>@yield('title', 'TourLink | One Platform. Endless Journeys.')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

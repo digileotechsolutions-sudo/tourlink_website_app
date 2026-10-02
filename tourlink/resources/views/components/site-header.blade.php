@@ -1,4 +1,4 @@
-<header class="sticky top-0 z-40 border-b border-white/10 bg-ink text-white">
+<header class="site-header sticky top-0 z-40 border-b border-white/10 bg-ink text-white">
     <div class="container-page flex h-[76px] items-center justify-between gap-6">
         <a class="flex items-center gap-2.5" href="{{ route('home') }}" aria-label="TourLink home">
             <span class="grid size-9 place-items-center rounded-xl bg-sun text-ink" aria-hidden="true">

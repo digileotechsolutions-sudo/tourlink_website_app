@@ -5,7 +5,7 @@
 <article class="group overflow-hidden rounded-2xl bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-card">
     <a href="{{ route('trips.show', ['trip' => $trip->slug]) }}" class="block">
         <div class="relative h-52 overflow-hidden bg-sand">
-            @if($imageUrl)<img class="size-full object-cover transition duration-700 group-hover:scale-105" src="{{ $imageUrl }}" alt="{{ $trip->images->first()?->alt ?? $trip->name }}" loading="lazy">@endif
+            @if($imageUrl)<img class="size-full object-cover transition duration-700 group-hover:scale-105" src="{{ $imageUrl }}" alt="{{ $trip->images->first()?->alt ?? $trip->name }}" loading="lazy" decoding="async">@endif
             <div class="absolute inset-0 bg-ink/45"></div>
             <span class="absolute left-4 top-4 rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-[.08em] {{ $verification === 'TRUSTED' ? 'bg-sun/90 text-ink' : 'bg-white/90 text-ink' }}">{{ $verification }}</span>
             <div class="absolute bottom-4 left-4 text-white"><p class="text-xs font-semibold text-white/75">{{ $trip->category?->name }}</p><h3 class="mt-1 text-xl font-extrabold">{{ $trip->name }}</h3></div>
