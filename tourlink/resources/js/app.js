@@ -9,6 +9,23 @@ const printTermsButton = document.querySelector('[data-print-terms]');
 
 printTermsButton?.addEventListener('click', () => window.print());
 
+const howSections = document.querySelectorAll('.how-page .how-section');
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (howSections.length > 0 && !prefersReducedMotion && 'IntersectionObserver' in window) {
+    howSections.forEach((section) => section.classList.add('how-reveal'));
+    document.documentElement.classList.add('has-how-reveal');
+    const howObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    howSections.forEach((section) => howObserver.observe(section));
+}
+
 if (profileReminder) {
     const reminderKey = `tourlink:profile-reminder-dismissed:${profileReminder.dataset.userId}`;
 
