@@ -76,10 +76,10 @@
             <div class="grid gap-4 sm:grid-cols-2">
                 @foreach ($operatorDocuments as $document)
                     @php($errorKey = 'documents.'.$document['key'])
-                    <label class="grid content-start gap-2 rounded border border-amber-200 bg-white p-3 text-sm font-bold text-slate-800" for="document-{{ $document['key'] }}">
+                    <label class="grid content-start gap-2 rounded bg-white p-3 text-sm font-bold text-slate-800" for="document-{{ $document['key'] }}">
                         <span>{{ $document['label'] }} @if ($document['required'])<span class="text-red-700" aria-hidden="true">*</span>@else<span class="font-normal text-slate-500">(optional)</span>@endif</span>
                         <span class="text-xs font-normal leading-5 text-slate-600">{{ $document['guidance'] }} PDF, JPG, or PNG; maximum 10 MB.</span>
-                        <input id="document-{{ $document['key'] }}" type="file" name="documents[{{ $document['key'] }}]" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="min-h-11 w-full text-xs file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @if ($document['required'] && ! in_array($document['key'], $uploadedOperatorDocuments, true)) required @endif @if ($errors->has($errorKey)) aria-invalid="true" aria-describedby="{{ $document['key'] }}-error" @endif>
+                        <input id="document-{{ $document['key'] }}" type="file" name="documents[{{ $document['key'] }}]" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="min-h-11 w-full rounded bg-slate-800 p-1 text-xs text-white outline-none focus-visible:outline-none file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @if ($document['required'] && ! in_array($document['key'], $uploadedOperatorDocuments, true)) required @endif @if ($errors->has($errorKey)) aria-invalid="true" aria-describedby="{{ $document['key'] }}-error" @endif>
                         @error($errorKey)
                             <span id="{{ $document['key'] }}-error" class="text-xs font-semibold text-red-700">{{ $message }}</span>
                         @enderror
