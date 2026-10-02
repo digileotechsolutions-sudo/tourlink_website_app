@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Travel journal | TourLink')
+@section('title', 'Travel journal | Havenedge Tourlink')
 @section('content')
 <section class="bg-lagoon py-12 text-white sm:py-16"><div class="container-page"><p class="eyebrow text-sun">Travel journal</p><h1 class="display mt-2 text-4xl font-bold sm:text-6xl">Stories for the road.</h1><form method="GET" action="{{ route('blog.index') }}" class="mt-8 flex max-w-xl gap-2"><label class="sr-only" for="blog-search">Search articles</label><input id="blog-search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Search articles..." class="min-h-11 flex-1 rounded-lg border border-white/25 bg-white/10 px-4 text-sm text-white placeholder:text-white/60 focus:border-sun focus:outline-none"><button type="submit" class="min-h-11 rounded-lg bg-sun px-5 text-sm font-extrabold text-ink">Search</button></form></div></section>
 <section class="container-page min-h-[55vh] py-10"><div class="mb-7 flex items-center justify-between"><p class="text-sm text-slate-500">{{ $posts->total() }} {{ Str::plural('article', $posts->total()) }}</p>@if(!empty($filters['search']))<a class="text-xs font-bold text-lagoon" href="{{ route('blog.index') }}">Clear search</a>@endif</div>

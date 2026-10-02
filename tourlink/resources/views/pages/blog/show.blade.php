@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $blogPost->title.' | TourLink')
+@section('title', $blogPost->title.' | Havenedge Tourlink')
 @section('content')
 <article class="container-page min-h-[60vh] py-10">
     <a class="text-xs font-bold text-lagoon" href="{{ route('blog.index') }}">&larr; Back to the journal</a>

@@ -1,5 +1,5 @@
 @extends('layouts.auth')
-@section('title', 'Sign in | TourLink')
+@section('title', 'Sign in | Havenedge Tourlink')
 @section('content')
 <div class="auth-wrapper auth-login-shell">
     <section class="auth-login-card" aria-labelledby="login-heading">
@@ -8,7 +8,7 @@
             <span>Back to home</span>
         </a>
         <header class="auth-login-header">
-            <p class="auth-login-eyebrow">TourLink account</p>
+            <p class="auth-login-eyebrow">Havenedge Tourlink account</p>
             <h1 id="login-heading">Welcome Back</h1>
             <p>Sign in to continue your journey.</p>
         </header>
@@ -46,7 +46,7 @@
             </div>
         </form>
         @include('components.google-auth-button', ['googleClientId' => $googleClientId, 'googleNonce' => $googleNonce, 'mode' => 'login'])
-        <p class="auth-login-footer">New to TourLink? <a href="{{ route('register') }}">Create an account</a></p>
+        <p class="auth-login-footer">New to Havenedge Tourlink? <a href="{{ route('register') }}">Create an account</a></p>
     </section>
 </div>
 @endsection

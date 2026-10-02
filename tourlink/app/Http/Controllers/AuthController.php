@@ -72,8 +72,8 @@ class AuthController extends Controller
 
         if ($user->account_status !== AccountStatus::Active) {
             $message = $user->account_status === AccountStatus::Suspended
-                ? 'Your account has been suspended. Please contact TourLink support.'
-                : 'Your account is inactive. Please contact TourLink support.';
+                ? 'Your account has been suspended. Please contact Havenedge Tourlink support.'
+                : 'Your account is inactive. Please contact Havenedge Tourlink support.';
 
             $this->discardSession($request);
 
@@ -90,7 +90,7 @@ class AuthController extends Controller
         if ($user->approval_status !== AccountApprovalStatus::Approved) {
             $message = $user->approval_status === AccountApprovalStatus::Pending
                 ? 'Your account is waiting for admin approval.'
-                : 'Your account was not approved. Please contact TourLink support.';
+                : 'Your account was not approved. Please contact Havenedge Tourlink support.';
 
             $this->discardSession($request);
 
@@ -142,7 +142,7 @@ class AuthController extends Controller
             report(new RuntimeException('Email verification delivery is not configured.'));
 
             return back()->withInput($request->except(['password', 'password_confirmation']))
-                ->withErrors(['email' => 'Email verification delivery is not configured. Please contact TourLink support.']);
+                ->withErrors(['email' => 'Email verification delivery is not configured. Please contact Havenedge Tourlink support.']);
         }
 
         $existingAccount = User::query()

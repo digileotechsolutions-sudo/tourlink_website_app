@@ -10,7 +10,7 @@
     $titles = ['payments' => 'Payments', 'refunds' => 'Refunds', 'commissions' => 'Commissions', 'payouts' => 'Payouts'];
 @endphp
 
-@section('title', $titles[$section].' | TourLink Admin')
+@section('title', $titles[$section].' | Havenedge Tourlink Admin')
 
 @section('content')
     <div class="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">

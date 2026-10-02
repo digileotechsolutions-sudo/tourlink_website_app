@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Hire a vehicle | TourLink')
+@section('title', 'Hire a vehicle | Havenedge Tourlink')
 @section('content')
 <section class="bg-lagoon py-12 text-white sm:py-16"><div class="container-page"><p class="eyebrow text-sun">Go your own way</p><h1 class="display mt-2 text-4xl font-bold sm:text-6xl">The right ride is here.</h1><div class="mt-8 max-w-4xl"><x-search-panel mode="vehicles" :search="$filters['search'] ?? ''" /></div></div></section>
 <section class="container-page min-h-[55vh] py-10"><div class="mb-7 flex items-center justify-between"><p class="text-sm text-slate-500">{{ $vehicles->total() }} vehicles ready to go</p>@if(!empty($filters['search']))<a class="text-xs font-bold text-lagoon" href="{{ route('vehicles.index') }}">Clear search</a>@endif</div>

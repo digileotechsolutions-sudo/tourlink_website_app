@@ -8,7 +8,7 @@
             <h1 class="display max-w-2xl text-5xl font-bold leading-[.94] sm:text-7xl lg:text-[88px]">Go further.<br><span class="text-white">Feel more.</span></h1>
             <p class="mt-5 max-w-lg text-base leading-6 text-white/75 sm:mt-7 sm:text-lg sm:leading-7">Discover trips, hire verified vehicles, and connect with trusted tour operators. Your next story starts here.</p>
             <div class="mt-6 flex flex-wrap gap-3 sm:mt-9"><a class="rounded-full bg-sun px-6 py-3.5 text-sm font-extrabold text-ink hover:bg-orange-300" href="{{ route('trips.index') }}">Explore trips <span aria-hidden="true">↗</span></a><a class="rounded-full border border-white/25 px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10" href="{{ route('vehicles.index') }}">Browse vehicles <span aria-hidden="true">↗</span></a></div>
-            <a class="mt-4 inline-flex text-sm font-bold text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white" href="#how-it-works">How TourLink works</a>
+            <a class="mt-4 inline-flex text-sm font-bold text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white" href="#how-it-works">How Havenedge Tourlink works</a>
             <div class="mt-6 flex flex-wrap items-center gap-4 text-xs text-white/65 sm:mt-10"><span><strong class="text-white">{{ number_format($journeyCount) }}</strong> journeys booked</span><span class="size-1 rounded-full bg-sun"></span><span><strong class="text-white">{{ number_format($providerCount) }}</strong> active providers</span></div>
         </div>
         <div class="relative h-[230px] w-full sm:h-[320px] lg:h-[460px]">

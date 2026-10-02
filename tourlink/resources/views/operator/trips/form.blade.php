@@ -1,5 +1,5 @@
 @extends('layouts.operator')
-@section('title', ($trip->exists ? 'Edit trip' : 'Create trip').' | TourLink')
+@section('title', ($trip->exists ? 'Edit trip' : 'Create trip').' | Havenedge Tourlink')
 @section('content')
 <div class="mx-auto max-w-5xl space-y-6 p-4 sm:p-8">
     <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">Trip management</p><h1 class="mt-2 text-3xl font-black">{{ $trip->exists ? 'Edit trip' : 'Create trip' }}</h1><p class="mt-2 text-sm text-slate-600">Trips are reviewed before they can be published.</p></div>

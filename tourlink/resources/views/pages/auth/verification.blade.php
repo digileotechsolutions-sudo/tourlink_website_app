@@ -1,12 +1,12 @@
 @extends('layouts.auth')
-@section('title', 'Verify your account | TourLink')
+@section('title', 'Verify your account | Havenedge Tourlink')
 @section('content')
 <div class="auth-wrapper auth-verification-wrapper" data-form-draft-clear="register">
     <section class="auth-left">
-        <a class="auth-brand-mark" href="{{ route('home') }}" aria-label="TourLink home">TL</a>
+        <a class="auth-brand-mark" href="{{ route('home') }}" aria-label="Havenedge Tourlink home">HT</a
         <span class="auth-kicker">One more step</span>
         <h1>Verify Your Account</h1>
-        <p>Confirm your contact details to keep your TourLink account secure and unlock trusted journeys.</p>
+        <p>Confirm your contact details to keep your Havenedge Tourlink account secure and unlock trusted journeys.</p>
         <div class="auth-feature-list"><span>Private verification</span><span>Six-digit secure codes</span></div>
     </section>
     <section class="auth-right">
@@ -64,14 +64,14 @@
                                 <button class="auth-resend" type="submit" data-resend-button>Resend {{ $isEmail ? 'email' : 'SMS' }} code <span data-resend-countdown></span></button>
                             </form>
                         @else
-                            <p class="auth-msg auth-msg-notice">Code delivery for this {{ $isEmail ? 'email address' : 'phone number' }} is not available yet. Contact TourLink support.</p>
+                            <p class="auth-msg auth-msg-notice">Code delivery for this {{ $isEmail ? 'email address' : 'phone number' }} is not available yet. Contact Havenedge Tourlink support.</p>
                         @endif
                     @endunless
                 </div>
             @endforeach
 
             @if($verificationMethods === [])
-                <p class="auth-msg auth-msg-error" role="alert">Account verification delivery is not configured. Please contact TourLink support.</p>
+                <p class="auth-msg auth-msg-error" role="alert">Account verification delivery is not configured. Please contact Havenedge Tourlink support.</p>
             @endif
 
             <p class="auth-footer"><a href="{{ route('register') }}">Return to registration</a><span aria-hidden="true"> · </span><a href="{{ route('login') }}">Go to sign in</a></p>

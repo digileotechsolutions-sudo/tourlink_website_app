@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $trip->name.' | TourLink')
+@section('title', $trip->name.' | Havenedge Tourlink')
 @section('content')
 <section class="bg-ink py-10 text-white"><div class="container-page"><a class="text-xs font-bold text-white/70 hover:text-white" href="{{ route('trips.index') }}">Trips / {{ $trip->destination?->name }}</a><p class="eyebrow mt-8 text-sun">{{ $trip->category?->name }}</p><h1 class="display mt-2 max-w-3xl text-4xl font-bold sm:text-6xl">{{ $trip->name }}</h1><p class="mt-4 text-sm text-white/70">{{ $trip->starting_point }} → {{ $trip->ending_point }} · {{ $trip->duration_days }} days</p></div></section>
 <section class="container-page grid gap-10 py-10 lg:grid-cols-[1.5fr_.7fr]">

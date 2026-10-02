@@ -2,7 +2,7 @@
 
 @php($editing = $post->exists)
 
-@section('title', ($editing ? 'Edit post' : 'New post').' | TourLink Admin')
+@section('title', ($editing ? 'Edit post' : 'New post').' | Havenedge Tourlink Admin')
 
 @section('content')
     <div class="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8"><header class="border-b border-slate-200 pb-6"><a href="{{ route('admin.blog.index') }}" class="text-sm font-semibold text-emerald-800">Back to blog</a><h1 class="mt-3 text-3xl font-black">{{ $editing ? 'Edit post' : 'New post' }}</h1></header>

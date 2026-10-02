@@ -251,7 +251,7 @@ class BookingService
             Notification::query()->create([
                 'user_id' => $providerId,
                 'title' => 'Booking cancelled',
-                'body' => $booking->reference.($adminInitiated ? ' was cancelled by TourLink support.' : ' was cancelled by the traveler.'),
+                'body' => $booking->reference.($adminInitiated ? ' was cancelled by Havenedge Tourlink support.' : ' was cancelled by the traveler.'),
                 'type' => 'BOOKING_CANCELLED',
             ]);
         }
@@ -260,7 +260,7 @@ class BookingService
             Notification::query()->create([
                 'user_id' => $booking->traveler_id,
                 'title' => 'Booking cancelled',
-                'body' => $booking->reference.' was cancelled by TourLink support.'.($reason ? ' '.$reason : ''),
+                'body' => $booking->reference.' was cancelled by Havenedge Tourlink support.'.($reason ? ' '.$reason : ''),
                 'type' => 'BOOKING_CANCELLED',
             ]);
         }

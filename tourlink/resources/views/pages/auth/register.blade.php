@@ -1,20 +1,20 @@
 @extends('layouts.auth')
-@section('title', 'Create an account | TourLink')
+@section('title', 'Create an account | Havenedge Tourlink')
 @section('content')
 <div class="auth-wrapper auth-compact-shell auth-register-shell">
     <section class="auth-card auth-compact-card" aria-labelledby="register-heading">
         <header class="auth-compact-header">
-            <p class="auth-login-eyebrow">Join TourLink</p>
+            <p class="auth-login-eyebrow">Join Havenedge Tourlink</p>
             <h1 id="register-heading">Create your account</h1>
             <p>One account for trips, trusted operators, and better journeys.</p>
         </header>
 
         @if ($referrer)
-            <p class="auth-referrer-note"><strong>{{ $referrer->name }}</strong> invited you to join TourLink. Your referral is credited after verification and approval.</p>
+            <p class="auth-referrer-note"><strong>{{ $referrer->name }}</strong> invited you to join Havenedge Tourlink. Your referral is credited after verification and approval.</p>
         @endif
 
         @unless ($verificationAvailable)
-            <p class="auth-msg auth-msg-error" role="alert">Signup is temporarily unavailable because email verification delivery is not configured. Please contact TourLink support.</p>
+            <p class="auth-msg auth-msg-error" role="alert">Signup is temporarily unavailable because email verification delivery is not configured. Please contact Havenedge Tourlink support.</p>
         @endunless
 
         @if ($errors->any())

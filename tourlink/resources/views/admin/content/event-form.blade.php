@@ -2,7 +2,7 @@
 
 @php($editing = $event->exists)
 
-@section('title', ($editing ? 'Edit event' : 'Create event').' | TourLink Admin')
+@section('title', ($editing ? 'Edit event' : 'Create event').' | Havenedge Tourlink Admin')
 
 @section('content')
     <div class="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8"><header class="border-b border-slate-200 pb-6"><a href="{{ route('admin.events.index') }}" class="text-sm font-semibold text-emerald-800">Back to events</a><h1 class="mt-3 text-3xl font-black">{{ $editing ? 'Edit event' : 'Create event' }}</h1></header>

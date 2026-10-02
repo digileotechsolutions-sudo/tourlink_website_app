@@ -7,7 +7,7 @@
     <meta name="description" content="@yield('meta_description', 'Discover trips, hire verified vehicles and travel Kenya with confidence.')">
     <x-pwa-head />
     <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
-    <title>@yield('title', 'TourLink | One Platform. Endless Journeys.')</title>
+    <title>@yield('title', 'Havenedge Tourlink | One Platform. Endless Journeys.')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="app-page">

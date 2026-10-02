@@ -6,7 +6,7 @@
     $imagesJson = is_string($imageValue) ? $imageValue : json_encode($imageValue, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 @endphp
 
-@section('title', ($editing ? 'Edit vehicle' : 'Add vehicle').' | TourLink')
+@section('title', ($editing ? 'Edit vehicle' : 'Add vehicle').' | Havenedge Tourlink')
 
 @section('content')
     <div class="mx-auto max-w-5xl px-5 py-10 sm:px-8">

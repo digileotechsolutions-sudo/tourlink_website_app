@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="view-transition" content="same-origin">
     <x-pwa-head />
-    <title>@yield('title', 'Admin | TourLink')</title>
+    <title>@yield('title', 'Admin | Havenedge Tourlink')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="admin-app min-h-screen bg-slate-50 text-slate-900">
     <a class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-white focus:p-3" href="#admin-main">Skip to content</a>
     <div class="flex min-h-screen">
         <aside class="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-ink px-4 py-5 text-white lg:flex">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 pb-6" aria-label="TourLink admin dashboard">
-                <span class="grid size-10 place-items-center rounded bg-sun text-sm font-black text-ink">TL</span>
-                <span><span class="block text-lg font-extrabold">TourLink</span><span class="block text-[10px] font-semibold uppercase text-white/55">Administration</span></span>
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 pb-6" aria-label="Havenedge Tourlink admin dashboard">
+                <span class="grid size-10 place-items-center rounded bg-sun text-sm font-black text-ink">HT</span>
+                <span><span class="block text-lg font-extrabold">Havenedge Tourlink</span><span class="block text-[10px] font-semibold uppercase text-white/55">Administration</span></span>
             </a>
             <x-admin-nav />
             <div class="mt-auto border-t border-white/10 pt-4">
@@ -26,7 +26,7 @@
         <div class="min-w-0 flex-1">
             <header class="admin-topbar sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
                 <div class="flex min-h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
-                    <a href="{{ route('admin.dashboard') }}" class="grid size-9 shrink-0 place-items-center rounded bg-ink text-xs font-black text-white lg:hidden">TL</a>
+                    <a href="{{ route('admin.dashboard') }}" class="grid size-9 shrink-0 place-items-center rounded bg-ink text-xs font-black text-white lg:hidden">HT</a
                     <form method="GET" action="{{ route('admin.users.index') }}" class="min-w-0 flex-1">
                         <label class="sr-only" for="admin-global-search">Search users</label>
                         <input id="admin-global-search" name="search" value="{{ request()->routeIs('admin.users.*') ? request('search') : '' }}" placeholder="Search users..." class="min-h-10 w-full max-w-xl rounded border border-slate-200 bg-slate-50 px-3 text-sm placeholder:text-slate-500 focus:border-emerald-700 focus:bg-white">

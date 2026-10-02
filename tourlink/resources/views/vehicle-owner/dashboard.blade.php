@@ -1,5 +1,5 @@
 @extends('layouts.vehicle-owner')
-@section('title', 'Vehicle owner overview | TourLink')
+@section('title', 'Vehicle owner overview | Havenedge Tourlink')
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6 p-4 sm:space-y-8 sm:p-8">
     <header class="flex flex-wrap items-end justify-between gap-4">

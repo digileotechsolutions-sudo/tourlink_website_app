@@ -495,7 +495,7 @@ document.addEventListener('click', (event) => {
 
     if (navigator.share) {
         navigator.share({
-            title: button.dataset.shareTitle ?? 'TourLink',
+            title: button.dataset.shareTitle ?? 'Havenedge Tourlink',
             text: button.dataset.shareText ?? '',
             url: link,
         }).catch(() => {});
@@ -749,7 +749,7 @@ installButton?.addEventListener('click', async () => {
         const isAppleMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent)
             || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         const instructions = isAppleMobile
-            ? 'To install TourLink, tap Share, then Add to Home Screen.'
+            ? 'To install Havenedge Tourlink, tap Share, then Add to Home Screen.'
             : 'Open your browser menu and choose Install app or Add to Home screen.';
 
         const label = installButton.querySelector('span');
@@ -774,7 +774,7 @@ window.addEventListener('appinstalled', () => {
     if (installButton) {
         installButton.hidden = true;
     }
-    setPwaStatus('TourLink installed', 'online');
+    setPwaStatus('Havenedge Tourlink installed', 'online');
 });
 
 if ('serviceWorker' in navigator && window.isSecureContext) {
@@ -801,7 +801,7 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
             if (updateButton) {
                 updateButton.hidden = false;
             }
-            setPwaStatus('A new TourLink version is ready.', 'update');
+            setPwaStatus('A new Havenedge Tourlink version is ready.', 'update');
         };
 
         if (registration.waiting) {
@@ -822,7 +822,7 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
 updateButton?.addEventListener('click', () => {
     pwaRegistration?.waiting?.postMessage({ type: 'SKIP_WAITING' });
     updateButton.disabled = true;
-    setPwaStatus('Updating TourLink...', 'update');
+    setPwaStatus('Updating Havenedge Tourlink...', 'update');
 });
 
 if (!navigator.onLine) {

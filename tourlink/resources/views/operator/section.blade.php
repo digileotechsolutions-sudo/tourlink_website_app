@@ -1,5 +1,5 @@
 @extends('layouts.operator')
-@section('title', $title.' | TourLink')
+@section('title', $title.' | Havenedge Tourlink')
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6 p-4 sm:p-8">
     <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">Operator workspace</p><h1 class="mt-2 text-3xl font-black">{{ $title }}</h1><p class="mt-2 text-slate-600">{{ $description }}</p></div>

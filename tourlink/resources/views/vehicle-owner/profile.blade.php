@@ -1,5 +1,5 @@
 @extends('layouts.vehicle-owner')
-@section('title', 'Vehicle-owner profile | TourLink')
+@section('title', 'Vehicle-owner profile | Havenedge Tourlink')
 @section('content')
 <div class="mx-auto max-w-4xl space-y-6 p-4 sm:p-8">
     <header>

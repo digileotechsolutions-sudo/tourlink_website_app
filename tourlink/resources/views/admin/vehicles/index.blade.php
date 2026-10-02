@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Manage vehicles | TourLink')
+@section('title', 'Manage vehicles | Havenedge Tourlink')
 
 @section('content')
     <div class="mx-auto max-w-7xl px-5 py-10 sm:px-8">

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="view-transition" content="same-origin">
     <x-pwa-head />
-    <title>@yield('title', 'Sign in | TourLink')</title>
+    <title>@yield('title', 'Sign in | Havenedge Tourlink')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="app-page auth-page">

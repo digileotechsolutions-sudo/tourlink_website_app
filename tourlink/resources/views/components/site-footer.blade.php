@@ -13,8 +13,8 @@
 <footer class="site-footer bg-ink text-white">
     <div class="container-page grid gap-10 py-12 sm:py-14 md:grid-cols-2 xl:grid-cols-7">
         <section class="md:col-span-2" aria-labelledby="footer-brand-heading">
-            <a id="footer-brand-heading" href="{{ route('home') }}" class="inline-flex items-center gap-3" aria-label="TourLink home">
-                <span class="grid size-11 place-items-center rounded-xl bg-sun text-sm font-black text-ink" aria-hidden="true">TL</span>
+            <a id="footer-brand-heading" href="{{ route('home') }}" class="inline-flex items-center gap-3" aria-label="Havenedge Tourlink home">
+                <span class="grid size-11 place-items-center rounded-xl bg-sun text-sm font-black text-ink" aria-hidden="true">HT</span>
                 <span class="text-2xl font-black tracking-[-.05em]">TOUR<span class="text-sun">link</span></span>
             </a>
             <p class="mt-4 max-w-sm text-sm leading-6 text-white/70">Discover memorable trips, hire verified vehicles, and connect with trusted local travel providers across Kenya.</p>
@@ -79,6 +79,6 @@
             <p class="border-t border-white/10 pt-4 text-sm leading-6 text-white/65">For help with a booking, sign in and message the provider from your booking. For account and listing support, sign in and open Messages in your dashboard.</p>
         </details>
 
-        <p class="border-t border-white/15 pt-5 text-xs text-white/55 md:col-span-2 xl:col-span-7">© {{ now()->year }} TourLink. All rights reserved. Made for the journey.</p>
+        <p class="border-t border-white/15 pt-5 text-xs text-white/55 md:col-span-2 xl:col-span-7">© {{ now()->year }} Havenedge Tourlink. All rights reserved. Made for the journey.</p>
     </div>
 </footer>

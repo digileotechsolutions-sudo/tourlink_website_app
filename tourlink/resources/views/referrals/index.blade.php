@@ -8,7 +8,7 @@
 @endphp
 @extends($layout)
 
-@section('title', 'Referrals | TourLink')
+@section('title', 'Referrals | Havenedge Tourlink')
 
 @section('content')
 <div class="mx-auto max-w-5xl space-y-6 p-4 sm:p-8">
@@ -44,7 +44,7 @@
             <p class="mt-2 break-all text-sm text-slate-700" data-referral-link>{{ $referralLink }}</p>
             <div class="mt-4 grid gap-2 sm:grid-cols-2">
                 <button type="button" data-copy="{{ $referralLink }}" data-copied-label="Link copied" class="min-h-11 rounded border border-slate-300 px-4 text-sm font-bold text-slate-800 hover:bg-slate-50">Copy link</button>
-                <button type="button" data-share data-share-title="Join me on TourLink" data-share-text="I signed up to TourLink with my referral link. Use mine to join:" class="min-h-11 rounded bg-emerald-800 px-4 text-sm font-bold text-white hover:bg-emerald-900">Share referral link</button>
+                <button type="button" data-share data-share-title="Join me on Havenedge Tourlink" data-share-text="I signed up to Havenedge Tourlink with my referral link. Use mine to join:" class="min-h-11 rounded bg-emerald-800 px-4 text-sm font-bold text-white hover:bg-emerald-900">Share referral link</button>
             </div>
             <p class="mt-2 text-xs text-slate-500" data-share-status role="status"></p>
         </div>

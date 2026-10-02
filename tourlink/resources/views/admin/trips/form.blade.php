@@ -14,7 +14,7 @@
     $return = old('return_date', $trip->return_date?->format('Y-m-d\TH:i') ?? '');
 @endphp
 
-@section('title', ($editing ? 'Edit trip' : 'Create trip').' | TourLink')
+@section('title', ($editing ? 'Edit trip' : 'Create trip').' | Havenedge Tourlink')
 
 @section('content')
     <div class="mx-auto max-w-5xl px-5 py-10 sm:px-8">

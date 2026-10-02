@@ -204,7 +204,7 @@ class OtpDeliveryService
         $body = strip_tags($html);
 
         if ($this->logDelivery()) {
-            Log::notice('TourLink email delivery', ['recipient' => $recipient, 'subject' => $subject, 'body' => $body]);
+            Log::notice('Havenedge Tourlink email delivery', ['recipient' => $recipient, 'subject' => $subject, 'body' => $body]);
 
             return;
         }
@@ -221,7 +221,7 @@ class OtpDeliveryService
 
         if ($transport !== 'resend') {
             if ($this->developmentMode()) {
-                Log::debug('TourLink development email', ['recipient' => $recipient, 'subject' => $subject, 'body' => $body]);
+                Log::debug('Havenedge Tourlink development email', ['recipient' => $recipient, 'subject' => $subject, 'body' => $body]);
 
                 return;
             }
@@ -242,7 +242,7 @@ class OtpDeliveryService
     private function sendSms(string $recipient, string $message): void
     {
         if ($this->logDelivery()) {
-            Log::notice('TourLink SMS delivery', ['recipient' => $recipient, 'message' => $message]);
+            Log::notice('Havenedge Tourlink SMS delivery', ['recipient' => $recipient, 'message' => $message]);
 
             return;
         }
@@ -252,7 +252,7 @@ class OtpDeliveryService
 
         if (! $apiKey || ! $username) {
             if ($this->developmentMode()) {
-                Log::debug('TourLink development SMS', ['recipient' => $recipient, 'message' => $message]);
+                Log::debug('Havenedge Tourlink development SMS', ['recipient' => $recipient, 'message' => $message]);
 
                 return;
             }

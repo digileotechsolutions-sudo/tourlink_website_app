@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $vehicle->name.' | TourLink')
+@section('title', $vehicle->name.' | Havenedge Tourlink')
 @section('content')
 <section class="bg-lagoon py-10 text-white"><div class="container-page"><a class="text-xs font-bold text-white/70 hover:text-white" href="{{ route('vehicles.index') }}">Vehicles / {{ $vehicle->location }}</a><h1 class="display mt-8 max-w-3xl text-4xl font-bold sm:text-6xl">{{ $vehicle->name }}</h1><p class="mt-4 text-sm text-white/70">{{ $vehicle->make }} {{ $vehicle->model }} · {{ $vehicle->location }}</p></div></section>
 <section class="container-page grid gap-10 py-10 lg:grid-cols-[1.5fr_.7fr]">

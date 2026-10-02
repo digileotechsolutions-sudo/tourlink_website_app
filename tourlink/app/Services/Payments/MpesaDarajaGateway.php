@@ -36,7 +36,7 @@ class MpesaDarajaGateway
             'PhoneNumber' => $phoneNumber,
             'CallBackURL' => $callbackUrl,
             'AccountReference' => $payment->merchant_reference,
-            'TransactionDesc' => 'TourLink booking '.$payment->merchant_reference,
+            'TransactionDesc' => 'Havenedge Tourlink booking '.$payment->merchant_reference,
         ])->throw()->json();
 
         if (($response['ResponseCode'] ?? null) !== '0'

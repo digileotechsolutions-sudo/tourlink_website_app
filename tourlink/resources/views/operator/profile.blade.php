@@ -1,5 +1,5 @@
 @extends('layouts.operator')
-@section('title', 'Company profile | TourLink')
+@section('title', 'Company profile | Havenedge Tourlink')
 @section('content')
 <div class="mx-auto max-w-3xl space-y-6 p-4 sm:p-8">
     <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">Company profile</p><h1 class="mt-2 text-3xl font-black">Present your business</h1></div>
@@ -27,7 +27,7 @@
         <div>
             <p class="text-xs font-bold uppercase tracking-wider text-amber-900">Business verification</p>
             <h2 id="operator-verification-heading" class="mt-1 text-xl font-black text-slate-950">Submit your documents</h2>
-            <p class="mt-2 text-sm leading-6 text-amber-950">Upload clear, current copies. Documents are private and only available to TourLink reviewers.</p>
+            <p class="mt-2 text-sm leading-6 text-amber-950">Upload clear, current copies. Documents are private and only available to Havenedge Tourlink reviewers.</p>
         </div>
 
         @if (session('status'))

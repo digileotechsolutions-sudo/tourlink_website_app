@@ -1,5 +1,5 @@
 @extends('layouts.operator')
-@section('title', 'Operator overview | TourLink')
+@section('title', 'Operator overview | Havenedge Tourlink')
 @section('content')
 <div class="mx-auto max-w-7xl space-y-8 p-4 sm:p-8">
     <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">Operator overview</p><h1 class="mt-2 text-3xl font-black text-slate-950">Run your travel business</h1><p class="mt-2 text-slate-600">Manage trips, travelers, bookings, and company verification from one workspace.</p></div>

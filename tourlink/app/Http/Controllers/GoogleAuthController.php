@@ -83,11 +83,11 @@ class GoogleAuthController extends Controller
             }
 
             if ($user->account_status !== AccountStatus::Active) {
-                return $this->failure($returnRoute, 'This account is not currently available. Contact TourLink support.');
+                return $this->failure($returnRoute, 'This account is not currently available. Contact Havenedge Tourlink support.');
             }
 
             if ($user->approval_status === AccountApprovalStatus::Rejected) {
-                return $this->failure($returnRoute, 'This account was not approved. Contact TourLink support.');
+                return $this->failure($returnRoute, 'This account was not approved. Contact Havenedge Tourlink support.');
             }
 
             try {
@@ -309,7 +309,7 @@ class GoogleAuthController extends Controller
         if ($user->approval_status !== AccountApprovalStatus::Approved) {
             $message = $user->approval_status === AccountApprovalStatus::Pending
                 ? 'Your account is waiting for admin approval.'
-                : 'Your account was not approved. Please contact TourLink support.';
+                : 'Your account was not approved. Please contact Havenedge Tourlink support.';
 
             return redirect()->route('login')->withErrors(['email' => $message]);
         }

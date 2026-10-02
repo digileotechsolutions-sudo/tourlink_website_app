@@ -1,7 +1,7 @@
 @php
     $user = auth()->user();
     $role = $user->role;
-    $pageTitle = str($__env->yieldContent('title', 'TourLink'))->before('|')->trim();
+    $pageTitle = str($__env->yieldContent('title', 'Havenedge Tourlink'))->before('|')->trim();
     $dashboardRoute = match ($role) {
         \App\Role::Operator => 'operator.dashboard',
         \App\Role::VehicleOwner => 'vehicle-owner.dashboard',
@@ -149,7 +149,7 @@
 
 <div class="dashboard-chrome">
     <aside class="portal-sidebar" data-portal-sidebar aria-label="Application sidebar">
-        <a href="{{ route($dashboardRoute) }}" class="portal-brand" aria-label="TourLink {{ $displayRole }} dashboard"><span class="portal-brand__mark" aria-hidden="true">TL</span><span class="portal-brand__name">TourLink</span></a>
+        <a href="{{ route($dashboardRoute) }}" class="portal-brand" aria-label="Havenedge Tourlink {{ $displayRole }} dashboard"><span class="portal-brand__mark" aria-hidden="true">HT</span><span class="portal-brand__name">Havenedge Tourlink</span></a>
         <nav class="portal-sidebar__nav" aria-label="Main navigation">@include('components.portal-navigation-links', ['groups' => $groups])</nav>
         <div class="portal-sidebar__bottom">
             <div class="portal-sidebar__identity"><span class="portal-avatar" aria-hidden="true">{{ str($user->name)->substr(0, 1)->upper() }}</span><span class="portal-sidebar__identity-copy"><strong>{{ $user->name }}</strong><small>{{ $displayRole }}</small></span></div>
@@ -160,7 +160,7 @@
     <header class="portal-topbar {{ $role === \App\Role::Admin ? 'portal-topbar--search' : '' }}">
         <div class="portal-topbar__row">
             <button class="portal-icon-button portal-menu-button" type="button" data-drawer-open aria-controls="portal-drawer" aria-expanded="false" aria-label="Open navigation"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-            <a href="{{ route($dashboardRoute) }}" class="portal-mobile-brand" aria-label="TourLink dashboard"><span class="portal-brand__mark" aria-hidden="true">TL</span></a>
+            <a href="{{ route($dashboardRoute) }}" class="portal-mobile-brand" aria-label="Havenedge Tourlink dashboard"><span class="portal-brand__mark" aria-hidden="true">HT</span></a>
             <h1 class="portal-page-title">{{ $pageTitle }}</h1>
             <div class="portal-topbar__actions">
                 @if ($role === \App\Role::Admin)
@@ -193,7 +193,7 @@
     </header>
 
     <dialog class="portal-drawer" id="portal-drawer" data-portal-drawer aria-label="Main navigation">
-        <div class="portal-drawer__head"><a href="{{ route($dashboardRoute) }}" class="portal-brand" aria-label="TourLink {{ $displayRole }} dashboard"><span class="portal-brand__mark" aria-hidden="true">TL</span><span class="portal-brand__name">TourLink</span></a><form method="dialog"><button class="portal-icon-button" aria-label="Close navigation"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></form></div>
+        <div class="portal-drawer__head"><a href="{{ route($dashboardRoute) }}" class="portal-brand" aria-label="Havenedge Tourlink {{ $displayRole }} dashboard"><span class="portal-brand__mark" aria-hidden="true">HT</span><span class="portal-brand__name">Havenedge Tourlink</span></a><form method="dialog"><button class="portal-icon-button" aria-label="Close navigation"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></form></div>
         <nav class="portal-sidebar__nav" aria-label="Main navigation">@include('components.portal-navigation-links', ['groups' => $groups])</nav>
         <div class="portal-drawer__foot"><strong>{{ $user->name }}</strong><span>{{ $displayRole }}</span></div>
     </dialog>

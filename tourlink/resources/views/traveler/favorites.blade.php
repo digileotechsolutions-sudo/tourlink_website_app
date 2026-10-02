@@ -1,5 +1,5 @@
 @extends('layouts.traveler')
-@section('title', 'Favorites | TourLink')
+@section('title', 'Favorites | Havenedge Tourlink')
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6 p-4 sm:p-8"><div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">Saved journeys</p><h1 class="mt-2 text-3xl font-black">Favorites</h1></div><div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">@forelse($favorites as $favorite)<article class="rounded border border-slate-200 bg-white p-5"><a href="{{ route('trips.show', $favorite->trip) }}" class="text-lg font-black text-emerald-800">{{ $favorite->trip->name }}</a><p class="mt-2 text-sm text-slate-500">{{ $favorite->trip->destination->name }} · KES {{ number_format($favorite->trip->price_per_person) }} per traveler</p><form method="POST" action="{{ route('traveler.favorites.toggle', $favorite->trip) }}" class="mt-5">@csrf<button class="text-sm font-bold text-red-700">Remove favorite</button></form></article>@empty<div class="rounded border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500 md:col-span-2 xl:col-span-3">No saved trips yet.</div>@endforelse</div>{{ $favorites->links() }}</div>
 @endsection

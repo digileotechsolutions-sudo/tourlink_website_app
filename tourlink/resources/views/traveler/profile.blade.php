@@ -1,5 +1,5 @@
 @extends('layouts.traveler')
-@section('title', 'Traveler profile | TourLink')
+@section('title', 'Traveler profile | Havenedge Tourlink')
 @section('content')
 <div class="mx-auto max-w-3xl space-y-6 p-4 sm:p-8">
     <header>

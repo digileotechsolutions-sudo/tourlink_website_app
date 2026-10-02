@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'My bookings | TourLink')
+@section('title', 'My bookings | Havenedge Tourlink')
 @section('content')
 <section class="bg-ink py-12 text-white"><div class="container-page"><p class="eyebrow text-sun">Your journeys</p><h1 class="display mt-2 text-4xl font-bold sm:text-6xl">My bookings</h1><p class="mt-4 max-w-xl text-sm text-white/70">Keep every request, payment and trip detail in one place.</p></div></section>
 <section class="container-page py-10">

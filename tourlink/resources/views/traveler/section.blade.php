@@ -1,5 +1,5 @@
 @extends('layouts.traveler')
-@section('title', $title.' | TourLink')
+@section('title', $title.' | Havenedge Tourlink')
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6 p-4 sm:p-8">
     <div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">Traveler workspace</p><h1 class="mt-2 text-3xl font-black">{{ $title }}</h1><p class="mt-2 text-slate-600">{{ $description }}</p></div>@if($type === 'notifications')<form method="POST" action="{{ route('traveler.notifications.read') }}">@csrf<button class="rounded border border-slate-300 px-4 py-2 text-sm font-bold">Mark all read</button></form>@endif</div>

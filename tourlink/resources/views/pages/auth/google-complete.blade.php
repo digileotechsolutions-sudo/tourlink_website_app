@@ -1,11 +1,11 @@
 @extends('layouts.auth')
-@section('title', 'Complete your account | TourLink')
+@section('title', 'Complete your account | Havenedge Tourlink')
 @section('content')
 <div class="auth-wrapper auth-compact-shell">
     <section class="auth-card auth-compact-card" aria-labelledby="google-complete-heading">
         <header class="auth-compact-header">
             <h1 id="google-complete-heading">Complete your account</h1>
-            <p>One more detail before we set up your TourLink account.</p>
+            <p>One more detail before we set up your Havenedge Tourlink account.</p>
         </header>
 
         <div class="google-profile-summary">

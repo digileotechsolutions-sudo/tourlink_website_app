@@ -1,5 +1,5 @@
 @extends('layouts.auth')
-@section('title', 'Reset your password | TourLink')
+@section('title', 'Reset your password | Havenedge Tourlink')
 @section('content')
 <div class="auth-wrapper auth-compact-shell auth-forgot-shell">
     <section class="auth-card auth-compact-card" aria-labelledby="forgot-heading">

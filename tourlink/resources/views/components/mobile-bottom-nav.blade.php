@@ -4,7 +4,7 @@
     @endif
     @php
         $role = auth()->user()->role;
-        $pageTitle = str($__env->yieldContent('title', 'TourLink'))->before('|')->trim();
+        $pageTitle = str($__env->yieldContent('title', 'Havenedge Tourlink'))->before('|')->trim();
         $dashboardRoute = match ($role) {
             \App\Role::Operator => 'operator.dashboard',
             \App\Role::VehicleOwner => 'vehicle-owner.dashboard',
@@ -39,8 +39,8 @@
     @endphp
 
     <header class="mobile-app-header lg:hidden" aria-label="App navigation">
-        <a class="mobile-app-brand" href="{{ route($dashboardRoute) }}" aria-label="TourLink dashboard">
-            <span class="mobile-app-brand__mark">TL</span>
+        <a class="mobile-app-brand" href="{{ route($dashboardRoute) }}" aria-label="Havenedge Tourlink dashboard">
+            <span class="mobile-app-brand__mark">HT</span>
         </a>
         <h1 class="mobile-app-title">{{ $pageTitle }}</h1>
         <div class="mobile-app-actions">

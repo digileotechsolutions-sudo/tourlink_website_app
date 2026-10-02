@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Booking '.$booking->reference.' | TourLink Admin')
+@section('title', 'Booking '.$booking->reference.' | Havenedge Tourlink Admin')
 
 @section('content')
     @php

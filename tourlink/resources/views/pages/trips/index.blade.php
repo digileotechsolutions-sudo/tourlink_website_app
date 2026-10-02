@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Find a trip | TourLink')
+@section('title', 'Find a trip | Havenedge Tourlink')
 @section('content')
 <section class="bg-ink py-12 text-white sm:py-16"><div class="container-page"><p class="eyebrow text-sun">Find your next story</p><h1 class="display mt-2 text-4xl font-bold sm:text-6xl">Trips, made memorable.</h1><div class="mt-8 max-w-4xl"><x-search-panel mode="trips" :search="$filters['search'] ?? ''" /></div></div></section>
 <section class="container-page min-h-[55vh] py-10">

@@ -1,13 +1,13 @@
 @extends('layouts.admin')
 
-@section('title', 'Admin review | TourLink')
+@section('title', 'Admin review | Havenedge Tourlink')
 
 @section('content')
     <div class="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
         <div class="mx-auto max-w-[1600px]">
         <header class="flex flex-wrap items-end justify-between gap-5 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
             <div>
-                <p class="text-xs font-bold uppercase tracking-[0.12em] text-emerald-800">TourLink administration</p>
+                <p class="text-xs font-bold uppercase tracking-[0.12em] text-emerald-800">Havenedge Tourlink administration</p>
                 <h1 class="mt-2 text-3xl font-black text-slate-950">Dashboard</h1>
                 <p class="mt-1 text-sm text-slate-600">Welcome back, {{ auth()->user()->name }}.</p>
             </div>
@@ -34,7 +34,7 @@
             <div class="dashboard-kpi-card min-h-28 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm"><p class="text-xs font-semibold text-slate-500">Total users</p><p class="mt-2 text-2xl font-black text-slate-950">{{ number_format($statistics['totalUsers']) }}</p><p class="mt-1 text-[11px] text-slate-500">{{ number_format($statistics['activeUsers']) }} active</p></div>
             <div class="dashboard-kpi-card min-h-28 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm"><p class="text-xs font-semibold text-slate-500">Bookings</p><p class="mt-2 text-2xl font-black text-slate-950">{{ number_format($statistics['totalBookings']) }}</p><p class="mt-1 text-[11px] text-slate-500">{{ number_format($statistics['completedBookings']) }} completed · {{ number_format($statistics['cancelledBookings']) }} cancelled</p></div>
             <div class="dashboard-kpi-card min-h-28 rounded-2xl bg-ink p-5 text-white shadow-sm"><p class="text-xs font-semibold text-white/70">Revenue collected</p><p class="mt-2 text-2xl font-black">KES {{ number_format($statistics['revenue']) }}</p><p class="mt-1 text-[11px] text-white/70">Successful payments</p></div>
-            <div class="dashboard-kpi-card min-h-28 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm"><p class="text-xs font-semibold text-slate-500">TourLink commission</p><p class="mt-2 text-2xl font-black text-slate-950">KES {{ number_format($statistics['tourlinkCommission']) }}</p><p class="mt-1 text-[11px] text-slate-500">From paid bookings</p></div>
+            <div class="dashboard-kpi-card min-h-28 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm"><p class="text-xs font-semibold text-slate-500">Havenedge Tourlink commission</p><p class="mt-2 text-2xl font-black text-slate-950">KES {{ number_format($statistics['tourlinkCommission']) }}</p><p class="mt-1 text-[11px] text-slate-500">From paid bookings</p></div>
             <div class="dashboard-kpi-card min-h-28 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm"><p class="text-xs font-semibold text-slate-500">Marketplace supply</p><p class="mt-2 text-2xl font-black text-slate-950">{{ number_format($statistics['totalTrips'] + $statistics['totalVehicles']) }}</p><p class="mt-1 text-[11px] text-slate-500">{{ number_format($statistics['totalTrips']) }} trips · {{ number_format($statistics['totalVehicles']) }} vehicles</p></div>
             <div class="dashboard-kpi-card min-h-28 rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm"><p class="text-xs font-semibold text-orange-900">Pending verification</p><p class="mt-2 text-2xl font-black text-slate-950">{{ number_format($statistics['pendingVerification']) }}</p><a href="{{ route('admin.verification.index') }}" class="mt-1 inline-block text-[11px] font-bold text-orange-900 hover:underline">Open review queue</a></div>
         </section>
