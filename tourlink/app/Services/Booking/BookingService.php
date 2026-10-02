@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\PaymentMethod;
 use App\PaymentStatus;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
@@ -191,6 +192,14 @@ class BookingService
                 throw new RuntimeException('PAYMENT_REQUIRES_REFUND');
             }
 
+            if ($this->hasSuccessfulPayment($booking)) {
+                throw new RuntimeException('PAYMENT_REQUIRES_REFUND');
+            }
+
+            if ($this->hasPaymentInFlight($booking)) {
+                throw new RuntimeException('PAYMENT_PROCESSING');
+            }
+
             return $this->cancelLocked($booking, $reason, false);
         }, attempts: 3);
     }
@@ -214,6 +223,10 @@ class BookingService
                 PaymentStatus::PartiallyRefunded->value,
             ])->exists()) {
                 throw new RuntimeException('PAYMENT_REQUIRES_REFUND');
+            }
+
+            if ($this->hasPaymentInFlight($booking)) {
+                throw new RuntimeException('PAYMENT_PROCESSING');
             }
 
             return $this->cancelLocked($booking, $reason, true);
@@ -266,6 +279,37 @@ class BookingService
         }
 
         return $booking->refresh();
+    }
+
+    private function hasSuccessfulPayment(Booking $booking): bool
+    {
+        return $booking->payments()->whereIn('status', [
+            PaymentStatus::Successful->value,
+            PaymentStatus::Refunded->value,
+            PaymentStatus::PartiallyRefunded->value,
+        ])->exists();
+    }
+
+    private function hasPaymentInFlight(Booking $booking): bool
+    {
+        return $booking->payments()
+            ->where(function ($query): void {
+                $query->where('status', PaymentStatus::Processing->value)
+                    ->orWhere(function ($pending): void {
+                        $pending->where('status', PaymentStatus::Pending->value)
+                            ->where(function ($actionable): void {
+                                $actionable->whereIn('payment_method', [
+                                    PaymentMethod::Card->value,
+                                    PaymentMethod::BankTransfer->value,
+                                ])
+                                    ->orWhereNotNull('phone_number')
+                                    ->orWhereNotNull('transaction_reference')
+                                    ->orWhereNotNull('daraja_checkout_request_id')
+                                    ->orWhereNotNull('provider_response');
+                            });
+                    });
+            })
+            ->exists();
     }
 
     private function createPaymentAndCommission(Booking $booking, int $total): void

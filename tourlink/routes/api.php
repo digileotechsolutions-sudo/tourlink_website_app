@@ -11,3 +11,6 @@ Route::post('/mpesa/callback', MpesaCallbackController::class)
 Route::middleware(['auth:sanctum', 'account.access'])->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::get('/pesapal/ipn', \App\Http\Controllers\PesapalNotificationController::class)
+    ->middleware('throttle:60,1')
+    ->name('pesapal.ipn');

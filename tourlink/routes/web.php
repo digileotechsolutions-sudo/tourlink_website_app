@@ -21,6 +21,9 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MpesaPaymentController;
+use App\Http\Controllers\AdminPaymentController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentReceiptController;
 use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ReferralController;
@@ -90,6 +93,8 @@ Route::post('/verify', [VerificationController::class, 'verify'])->middleware('t
 Route::post('/verify/resend', [VerificationController::class, 'resend'])->middleware('throttle:auth-otp')->name('verification.resend');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::middleware('auth')->group(function (): void {
+    Route::get('/payments/{payment}/receipt', [PaymentReceiptController::class, 'show'])->name('payments.receipt');
+    Route::get('/payments/{payment}/receipt/download', [PaymentReceiptController::class, 'download'])->name('payments.receipt.download');
     Route::get('/account/password', [PasswordController::class, 'changeForm'])->name('password.change');
     Route::put('/account/password', [PasswordController::class, 'change'])->name('password.change.update');
 });
@@ -114,6 +119,10 @@ Route::middleware(['auth', 'account.access:TRAVELER'])->group(function (): void 
     Route::post('/traveler/notifications/read', [TravelerController::class, 'markNotificationsRead'])->name('traveler.notifications.read');
     Route::get('/traveler/bookings/{booking}/review', [TravelerController::class, 'review'])->name('traveler.reviews.create');
     Route::post('/traveler/bookings/{booking}/review', [TravelerController::class, 'storeReview'])->name('traveler.reviews.store');
+    Route::get('/traveler/bookings/{booking}/payment', [PaymentController::class, 'show'])->name('payments.show');
+    Route::post('/traveler/bookings/{booking}/payment/mpesa', [PaymentController::class, 'startMpesa'])->middleware('throttle:payments')->name('payments.mpesa');
+    Route::post('/traveler/bookings/{booking}/payment/card', [PaymentController::class, 'startCard'])->middleware('throttle:payments')->name('payments.card');
+    Route::get('/traveler/payments/pesapal/return/{payment}', [PaymentController::class, 'pesapalReturn'])->name('payments.pesapal.return');
     Route::get('/traveler/{section}', [TravelerController::class, 'section'])->whereIn('section', ['upcoming', 'past', 'payments', 'receipts', 'messages', 'reviews', 'settings'])->name('traveler.section');
 });
 
@@ -186,6 +195,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
     Route::patch('/bookings/{booking}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
+    Route::post('/bookings/{booking}/cash-payments', [AdminPaymentController::class, 'recordCash'])->name('bookings.cash-payments.store');
+    Route::post('/bookings/{booking}/bank-transfers', [AdminPaymentController::class, 'recordBankTransfer'])->name('bookings.bank-transfers.store');
+    Route::patch('/payments/{payment}/verify-bank-transfer', [AdminPaymentController::class, 'verifyBankTransfer'])->name('payments.verify-bank-transfer');
+    Route::post('/payments/{payment}/verify-pesapal', [AdminPaymentController::class, 'verifyPesapal'])->name('payments.verify-pesapal');
+    Route::post('/payments/{payment}/refunds', [AdminPaymentController::class, 'requestRefund'])->name('payments.refunds.store');
+    Route::patch('/refunds/{refund}/complete', [AdminPaymentController::class, 'completeRefund'])->name('refunds.complete');
     Route::get('/payments', [AdminFinanceController::class, 'payments'])->name('payments.index');
     Route::get('/refunds', [AdminFinanceController::class, 'refunds'])->name('refunds.index');
     Route::get('/commissions', [AdminFinanceController::class, 'commissions'])->name('commissions.index');

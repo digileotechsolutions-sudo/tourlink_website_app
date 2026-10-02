@@ -10,6 +10,7 @@ use App\Models\Notification;
 use App\Models\Review;
 use App\Models\Trip;
 use App\Services\Booking\BookingService;
+use App\Services\Payments\PaymentService;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -55,9 +56,18 @@ class TravelerController extends Controller
         return back()->with('status', 'Profile updated.');
     }
 
-    public function bookings(Request $request): View
+    public function bookings(Request $request, PaymentService $payments): View
     {
-        return view('traveler.bookings', ['bookings' => $this->travelerBookings($request)->with(['trip.destination', 'vehicle', 'payments'])->latest('start_date')->paginate(12)]);
+        $bookings = $this->travelerBookings($request)
+            ->with(['trip.destination', 'vehicle', 'payments.refunds'])
+            ->latest('start_date')
+            ->paginate(12);
+        $bookings->getCollection()->each(function ($booking) use ($payments): void {
+            $booking->setAttribute('payment_summary', $payments->summary($booking));
+            $booking->setAttribute('payment_in_flight', $payments->hasPaymentInFlight($booking));
+        });
+
+        return view('traveler.bookings', compact('bookings'));
     }
 
     public function cancelBooking(Request $request, Booking $booking, BookingService $bookingService): RedirectResponse
@@ -67,7 +77,10 @@ class TravelerController extends Controller
             $bookingService->cancel($request->user(), $booking->id, $request->input('reason'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['booking' => match ($exception->getMessage()) {
-                'PAYMENT_REQUIRES_REFUND' => 'Paid bookings require a refund review before cancellation.', 'NOT_CANCELLABLE' => 'This booking can no longer be cancelled.', default => 'The booking could not be cancelled.'
+                'PAYMENT_REQUIRES_REFUND' => 'Paid bookings require a refund review before cancellation.',
+                'PAYMENT_PROCESSING' => 'A payment is processing or awaiting bank verification. Resolve it before cancelling the booking.',
+                'NOT_CANCELLABLE' => 'This booking can no longer be cancelled.',
+                default => 'The booking could not be cancelled.',
             }]);
         }
 

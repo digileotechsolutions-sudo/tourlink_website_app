@@ -25,8 +25,40 @@ const portalDrawer = document.querySelector('[data-portal-drawer]');
 const drawerOpenButton = document.querySelector('[data-drawer-open]');
 const profileReminder = document.querySelector('[data-profile-reminder]');
 const printTermsButton = document.querySelector('[data-print-terms]');
+const signInPrompt = document.querySelector('[data-sign-in-prompt]');
 
 printTermsButton?.addEventListener('click', () => window.print());
+
+if (signInPrompt && 'showModal' in signInPrompt) {
+    const storageKey = 'tourlink:sign-in-prompt-shown';
+    let hasBeenShown = false;
+
+    try {
+        hasBeenShown = sessionStorage.getItem(storageKey) === 'true';
+    } catch {}
+
+    if (!hasBeenShown) {
+        window.setTimeout(() => {
+            if (signInPrompt.open) {
+                return;
+            }
+
+            signInPrompt.showModal();
+            try {
+                sessionStorage.setItem(storageKey, 'true');
+            } catch {}
+        }, 700);
+    }
+
+    signInPrompt.querySelector('[data-sign-in-prompt-close]')?.addEventListener('click', () => {
+        signInPrompt.close();
+    });
+    signInPrompt.addEventListener('click', (event) => {
+        if (event.target === signInPrompt) {
+            signInPrompt.close();
+        }
+    });
+}
 
 const howSections = document.querySelectorAll('.how-page .how-section');
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

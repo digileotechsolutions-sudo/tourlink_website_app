@@ -41,11 +41,12 @@ class AdminBookingController extends Controller
         return view('admin.bookings.index', compact('bookings', 'filters'));
     }
 
-    public function show(Booking $booking): View
+    public function show(Booking $booking, \App\Services\Payments\PaymentService $payments): View
     {
-        $booking->load(['traveler', 'trip.destination', 'vehicle.destination', 'payments.refunds', 'passengers']);
+        $booking->load(['traveler', 'trip.destination', 'vehicle.destination', 'payments.refunds.authorizer', 'payments.receiver', 'passengers']);
+        $paymentSummary = $payments->summary($booking);
 
-        return view('admin.bookings.show', compact('booking'));
+        return view('admin.bookings.show', compact('booking', 'paymentSummary'));
     }
 
     public function cancel(Request $request, Booking $booking, BookingService $bookingService): RedirectResponse
@@ -57,6 +58,7 @@ class AdminBookingController extends Controller
         } catch (RuntimeException $exception) {
             $message = match ($exception->getMessage()) {
                 'PAYMENT_REQUIRES_REFUND' => 'This booking has a settled payment. Review it through the refund workflow instead of cancelling it here.',
+                'PAYMENT_PROCESSING' => 'A payment is processing or awaiting bank verification. Resolve that payment before cancelling the booking.',
                 'BOOKING_STATE_REQUIRES_FINANCE_REVIEW' => 'This booking is not in a cancellable state.',
                 default => 'The booking could not be cancelled.',
             };

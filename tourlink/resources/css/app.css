@@ -43,6 +43,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 @media (max-width: 640px) { .container-page { width: min(100% - 28px, 1180px); } }
 
+.sign-in-prompt { width: min(420px, calc(100vw - 32px)); max-width: none; padding: 0; overflow: visible; border: 0; border-radius: 22px; color: #172033; background: #fff; box-shadow: 0 24px 80px rgb(15 23 42 / 30%); }
+.sign-in-prompt::backdrop { background: rgb(9 21 41 / 60%); backdrop-filter: blur(2px); }
+.sign-in-prompt[open] { animation: sign-in-prompt-enter .2s ease-out both; }
+.sign-in-prompt__card { position: relative; padding: 34px 28px 26px; text-align: center; }
+.sign-in-prompt__close { position: absolute; top: 12px; right: 12px; display: grid; width: 40px; height: 40px; place-items: center; border: 0; border-radius: 50%; color: #475569; background: transparent; cursor: pointer; }
+.sign-in-prompt__close:hover { background: #f1f5f9; }
+.sign-in-prompt__close svg { width: 20px; height: 20px; }
+.sign-in-prompt__mark { display: grid; width: 58px; height: 58px; margin: 0 auto 13px; place-items: center; border-radius: 18px; color: #1F0052; background: #FFD51E; font-size: 18px; font-weight: 950; letter-spacing: -.06em; }
+.sign-in-prompt__eyebrow { margin: 0; color: #64748b; font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.sign-in-prompt h2 { margin: 10px 0 0; color: #111827; font-size: 24px; font-weight: 850; letter-spacing: -.03em; line-height: 1.2; }
+.sign-in-prompt__card > p:not(.sign-in-prompt__eyebrow, .sign-in-prompt__signup) { margin: 12px 0 22px; color: #475569; font-size: 14px; line-height: 1.6; }
+.sign-in-prompt__primary { display: flex; min-height: 48px; align-items: center; justify-content: center; border-radius: 10px; color: #fff; background: #1F0052; font-size: 14px; font-weight: 800; }
+.sign-in-prompt__primary:hover { background: #35116e; }
+.sign-in-prompt__signup { margin: 18px 0 0; color: #64748b; font-size: 13px; }
+.sign-in-prompt__signup a { color: #1F0052; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+@keyframes sign-in-prompt-enter { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (max-width: 480px) { .sign-in-prompt__card { padding: 32px 20px 22px; } .sign-in-prompt h2 { font-size: 22px; } }
+@media (prefers-reduced-motion: reduce) { .sign-in-prompt[open] { animation: none; } }
+
 .mobile-bottom-nav { position: fixed; right: 0; bottom: 0; left: 0; z-index: 50; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid rgba(15, 23, 42, .1); background: rgba(255, 255, 255, .96); box-shadow: 0 -8px 24px rgba(15, 23, 42, .08); backdrop-filter: blur(14px); }
 .mobile-bottom-nav__item { min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 10px; color: #64748b; font-size: 10px; font-weight: 700; text-align: center; }
 .mobile-bottom-nav__item svg { width: 19px; height: 19px; flex: none; }

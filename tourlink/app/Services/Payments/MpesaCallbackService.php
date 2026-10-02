@@ -2,7 +2,6 @@
 
 namespace App\Services\Payments;
 
-use App\BookingStatus;
 use App\Models\Payment;
 use App\Models\PaymentAudit;
 use App\PaymentStatus;
@@ -14,7 +13,11 @@ use Throwable;
 
 class MpesaCallbackService
 {
-    public function __construct(private readonly PhoneNumberNormalizer $phoneNormalizer) {}
+    public function __construct(
+        private readonly PhoneNumberNormalizer $phoneNormalizer,
+        private readonly MpesaDarajaGateway $gateway,
+        private readonly PaymentService $payments,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $payload
@@ -26,9 +29,32 @@ class MpesaCallbackService
         $callback = data_get($payload, 'Body.stkCallback');
         $checkoutRequestId = is_array($callback) ? ($callback['CheckoutRequestID'] ?? null) : null;
         $callbackHash = hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+        if (PaymentAudit::query()->where('callback_hash', $callbackHash)->exists()) {
+            return 'duplicate';
+        }
+
+        $payment = is_string($checkoutRequestId)
+            ? Payment::query()->where('daraja_checkout_request_id', $checkoutRequestId)->first()
+            : null;
+        $providerVerification = null;
+
+        if ($payment && is_array($callback)) {
+            $providerVerification = $this->gateway->queryStkStatus($payment);
+            $providerResultCode = $providerVerification['ResultCode'] ?? null;
+            $callbackResultCode = $callback['ResultCode'] ?? null;
+            $providerCheckoutId = $providerVerification['CheckoutRequestID'] ?? null;
+
+            if (! is_numeric($providerResultCode)
+                || ! is_numeric($callbackResultCode)
+                || (int) $providerResultCode !== (int) $callbackResultCode
+                || (is_string($providerCheckoutId)
+                    && (! is_string($checkoutRequestId) || ! hash_equals($checkoutRequestId, $providerCheckoutId)))) {
+                return 'verification_pending';
+            }
+        }
 
         try {
-            return DB::transaction(function () use ($payload, $callback, $checkoutRequestId, $callbackHash): string {
+            return DB::transaction(function () use ($payload, $callback, $checkoutRequestId, $callbackHash, $providerVerification): string {
                 if (PaymentAudit::query()->where('callback_hash', $callbackHash)->exists()) {
                     return 'duplicate';
                 }
@@ -42,7 +68,7 @@ class MpesaCallbackService
                     'event_type' => 'CALLBACK_RECEIVED',
                     'checkout_request_id' => is_string($checkoutRequestId) ? $checkoutRequestId : null,
                     'callback_hash' => $callbackHash,
-                    'payload' => $payload,
+                    'payload' => ['callback' => $payload, 'provider_verification' => $providerVerification],
                 ]);
 
                 if (! $payment || ! is_array($callback)) {
@@ -62,19 +88,19 @@ class MpesaCallbackService
                 $callbackMerchantRequestId = $callback['MerchantRequestID'] ?? null;
 
                 if (is_string($storedMerchantRequestId)
-                    && is_string($callbackMerchantRequestId)
-                    && ! hash_equals($storedMerchantRequestId, $callbackMerchantRequestId)) {
+                    && (! is_string($callbackMerchantRequestId)
+                        || ! hash_equals($storedMerchantRequestId, $callbackMerchantRequestId))) {
                     $audit->forceFill(['event_type' => 'CALLBACK_MERCHANT_MISMATCH'])->save();
 
                     return 'mismatch';
                 }
 
                 if ((int) ($callback['ResultCode'] ?? -1) !== 0) {
-                    $payment->forceFill([
-                        'status' => PaymentStatus::Failed,
-                        'failure_reason' => (string) ($callback['ResultDesc'] ?? 'M-Pesa payment failed.'),
-                        'provider_response' => array_merge($storedResponse, ['callback' => $payload]),
-                    ])->save();
+                    $this->payments->markFailed(
+                        $payment,
+                        (string) ($callback['ResultDesc'] ?? 'M-Pesa payment failed.'),
+                        ['callback' => $payload, 'daraja_verification' => $providerVerification],
+                    );
                     $audit->forceFill(['event_type' => 'CALLBACK_FAILED'])->save();
 
                     return 'failed';
@@ -93,6 +119,12 @@ class MpesaCallbackService
                     return 'mismatch';
                 }
 
+                if ($payment->phone_number && ! is_numeric($phone)) {
+                    $audit->forceFill(['event_type' => 'CALLBACK_PHONE_MISSING'])->save();
+
+                    return 'mismatch';
+                }
+
                 if ($payment->phone_number && is_numeric($phone)) {
                     try {
                         if (! hash_equals($payment->phone_number, $this->phoneNormalizer->normalize((string) $phone))) {
@@ -107,14 +139,12 @@ class MpesaCallbackService
                     }
                 }
 
-                $payment->forceFill([
-                    'status' => PaymentStatus::Successful,
-                    'transaction_reference' => $receipt,
-                    'provider_response' => array_merge($storedResponse, ['callback' => $payload]),
-                    'failure_reason' => null,
-                    'paid_at' => now(),
-                ])->save();
-                $payment->booking()->update(['status' => BookingStatus::Paid]);
+                $this->payments->markSuccessful(
+                    $payment,
+                    null,
+                    $receipt,
+                    ['callback' => $payload, 'daraja_verification' => $providerVerification],
+                );
                 $audit->forceFill(['event_type' => 'CALLBACK_PAYMENT_CONFIRMED'])->save();
 
                 return 'successful';

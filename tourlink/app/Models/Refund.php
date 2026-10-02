@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Refund extends TourLinkModel
 {
-    protected $fillable = ['payment_id', 'amount', 'reason'];
+    protected $fillable = ['payment_id', 'amount', 'reason', 'status', 'reference', 'provider_reference', 'authorized_by', 'metadata'];
 
     public const UPDATED_AT = null;
 
@@ -16,6 +16,7 @@ class Refund extends TourLinkModel
     {
         return [
             'amount' => 'integer',
+            'metadata' => 'array',
             'created_at' => 'datetime',
         ];
     }
@@ -23,5 +24,10 @@ class Refund extends TourLinkModel
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);
+    }
+
+    public function authorizer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'authorized_by');
     }
 }
