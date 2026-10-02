@@ -1,10 +1,10 @@
 <header class="site-header sticky top-0 z-40 border-b border-white/10 bg-ink text-white">
     <div class="container-page flex h-[76px] items-center justify-between gap-6">
-        <a class="flex items-center gap-2.5" href="{{ route('home') }}" aria-label="Havenedge Tourlink home">
-            <span class="grid size-9 place-items-center rounded-xl bg-sun text-ink" aria-hidden="true">
+        <a class="site-header__brand flex items-center gap-2.5" href="{{ route('home') }}" aria-label="Havenedge Tourlink home">
+            <span class="site-header__brand-icon grid size-9 place-items-center rounded-xl bg-sun text-ink" aria-hidden="true">
                 <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z"/></svg>
             </span>
-            <span><span class="block text-lg font-black">Havenedge <span class="text-sun">Tourlink</span></span><span class="hidden text-[8px] font-bold uppercase tracking-[.18em] text-white/50 sm:block">Trips · Vehicles · Together</span></span>
+            <span><span class="site-header__brand-name block text-lg font-black">Havenedge <span class="text-sun">Tourlink</span></span><span class="hidden text-[8px] font-bold uppercase tracking-[.18em] text-white/50 sm:block">Trips · Vehicles · Together</span></span>
         </a>
         <nav class="hidden items-center gap-7 text-sm font-semibold text-white/75 lg:flex" aria-label="Main navigation">
             <a class="hover:text-white" href="{{ route('trips.index') }}">Find a trip</a>

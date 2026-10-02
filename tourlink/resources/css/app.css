@@ -647,6 +647,10 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 .contact-method__arrow { color: #D83B69; font-size: 19px; font-weight: 700; }
 .contact-method--location { background: #F8FAFC; }
 .contact-page__note { margin: 24px 0 0; padding-top: 16px; border-top: 1px solid #E2E8F0; color: #64748B; font-size: 12px; line-height: 1.6; }
+.site-header__brand-icon { box-shadow: 0 0 14px rgb(255 213 30 / 18%); transition: box-shadow .2s ease; }
+.site-header__brand-name { text-shadow: 0 0 16px rgb(255 255 255 / 12%); transition: text-shadow .2s ease; }
+.site-header__brand:hover .site-header__brand-icon, .site-header__brand:focus-visible .site-header__brand-icon { box-shadow: 0 0 19px rgb(255 213 30 / 28%); }
+.site-header__brand:hover .site-header__brand-name, .site-header__brand:focus-visible .site-header__brand-name { text-shadow: 0 0 19px rgb(255 213 30 / 24%); }
 
 @media (min-width: 640px) {
     .contact-page__hero { padding-block: 58px; }
