@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureAccountAccess;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\MarkPublicPwaPages;
+use App\Http\Middleware\RequireTermsAcceptance;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withBroadcasting(__DIR__.'/../routes/channels.php')
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->appendToGroup('web', RequireTermsAcceptance::class);
         $middleware->alias([
             'account.access' => EnsureAccountAccess::class,
             'admin' => EnsureAdmin::class,

@@ -17,6 +17,8 @@
         @yield('content')
     </main>
     <x-site-footer />
-    <x-mobile-bottom-nav />
+    @unless (request()->routeIs('terms'))
+        <x-mobile-bottom-nav />
+    @endunless
 </body>
 </html>

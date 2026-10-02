@@ -29,8 +29,33 @@ use App\Http\Controllers\TripController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\VehicleOwnerController;
 use App\Http\Controllers\VerificationController;
+use App\Http\Middleware\RequireTermsAcceptance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/terms', fn () => view('pages.terms'))->name('terms');
+Route::post('/terms/accept', function (Request $request) {
+    $request->validate(['accepted' => ['accepted']]);
+    $cookie = cookie(
+        RequireTermsAcceptance::COOKIE_NAME,
+        RequireTermsAcceptance::tokenFor(),
+        60 * 24 * 365,
+        '/',
+        null,
+        config('session.secure') ?? $request->isSecure(),
+        true,
+        false,
+        'lax',
+    );
+    $destination = $request->session()->pull('terms.intended', route('home'));
+    if (! is_string($destination) || ! str_starts_with($destination, '/') || str_starts_with($destination, '//')) {
+        $destination = route('home');
+    }
+
+    return redirect()->to($destination)->withCookie($cookie);
+})->name('terms.accept');
+
+Route::view('/about', 'pages.about')->name('about');
 
 Route::get('/', HomeController::class)->middleware('pwa.public')->name('home');
 Route::get('/trips', [TripController::class, 'index'])->middleware('pwa.public')->name('trips.index');

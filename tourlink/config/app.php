@@ -15,6 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'Havenedge Tourlink'),
 
+    'terms_version' => env('TERMS_VERSION', '2026-10-02'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

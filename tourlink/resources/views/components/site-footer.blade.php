@@ -32,7 +32,7 @@
         <nav class="grid content-start gap-3" aria-labelledby="footer-quick-links-heading">
             <h2 id="footer-quick-links-heading" class="text-sm font-extrabold text-white">Quick links</h2>
             <a class="footer-link" href="{{ route('home') }}">Home</a>
-            <a class="footer-link" href="{{ route('home') }}#about-us">About us</a>
+            <a class="footer-link" href="{{ route('about') }}">About us</a>
             <a class="footer-link" href="{{ route('home') }}#destinations">Destinations</a>
             <a class="footer-link" href="{{ route('blog.index') }}">Travel journal</a>
         </nav>
@@ -57,7 +57,7 @@
         <nav class="grid content-start gap-3" aria-labelledby="footer-legal-heading">
             <h2 id="footer-legal-heading" class="text-sm font-extrabold text-white">Legal</h2>
             @if (Route::has('privacy'))<a class="footer-link" href="{{ route('privacy') }}">Privacy policy</a>@else<span class="text-sm text-white/50" aria-disabled="true">Privacy policy</span>@endif
-            @if (Route::has('terms'))<a class="footer-link" href="{{ route('terms') }}">Terms and conditions</a>@else<span class="text-sm text-white/50" aria-disabled="true">Terms and conditions</span>@endif
+            @if (Route::has('terms'))<a class="footer-link" href="{{ route('terms') }}" target="_blank" rel="noopener noreferrer">Terms and conditions <span class="sr-only">(opens in a new tab)</span></a>@else<span class="text-sm text-white/50" aria-disabled="true">Terms and conditions</span>@endif
         </nav>
 
         @if ($socialLinks->isNotEmpty())

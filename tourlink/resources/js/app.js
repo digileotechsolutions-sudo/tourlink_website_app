@@ -5,6 +5,9 @@ const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
 const portalDrawer = document.querySelector('[data-portal-drawer]');
 const drawerOpenButton = document.querySelector('[data-drawer-open]');
 const profileReminder = document.querySelector('[data-profile-reminder]');
+const printTermsButton = document.querySelector('[data-print-terms]');
+
+printTermsButton?.addEventListener('click', () => window.print());
 
 if (profileReminder) {
     const reminderKey = `tourlink:profile-reminder-dismissed:${profileReminder.dataset.userId}`;
