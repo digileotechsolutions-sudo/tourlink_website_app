@@ -42,8 +42,12 @@ class OperatorController extends Controller
         $uploadedDocumentKeys = collect($verificationRequest->documents ?? [])->pluck('key')->all();
         $requiredDocumentKeys = OperatorVerificationDocument::requiredKeys();
         $completedRequirements = count(array_intersect($requiredDocumentKeys, $uploadedDocumentKeys));
-        $hasCompanyProfile = mb_strlen((string) $operator->operatorProfile?->description) >= 20;
-        $verificationCompletionPercentage = (int) round((($completedRequirements + (int) $hasCompanyProfile) / (count($requiredDocumentKeys) + 1)) * 100);
+        $totalRequirements = count($requiredDocumentKeys);
+        if (mb_strlen((string) $operator->operatorProfile?->description) >= 20) {
+            $completedRequirements++;
+        }
+        $totalRequirements++;
+        $verificationCompletionPercentage = 50 + (int) round(($completedRequirements / $totalRequirements) * 50);
 
         return view('operator.dashboard', [
             'verificationCompletionPercentage' => $verificationCompletionPercentage,

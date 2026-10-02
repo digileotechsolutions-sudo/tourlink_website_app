@@ -7,7 +7,7 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h2 id="verification-reminder-heading" class="text-lg font-black text-slate-950">Company profile: {{ $verificationCompletionPercentage }}% complete</h2>
-                <p class="mt-1 text-sm text-amber-950">{{ $verificationCompletionPercentage < 100 ? 'Submit the required business documents to finish your company verification.' : 'Your required company details and documents are complete.' }}</p>
+                <p class="mt-1 text-sm text-amber-950">{{ $verificationCompletionPercentage < 100 ? 'Your account starts at 50%. Complete your company details and upload each required business document.' : 'Your account, company details, and required business documents are complete.' }}</p>
             </div>
             @if ($verificationCompletionPercentage < 100)
                 <a class="inline-flex min-h-11 items-center rounded bg-amber-800 px-5 py-3 text-sm font-bold text-white hover:bg-amber-900" href="{{ route('operator.profile') }}">Complete profile</a>
