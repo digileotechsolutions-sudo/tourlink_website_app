@@ -1,5 +1,48 @@
 const prefetchedAppRoutes = new Set();
 
+const portalSidebar = document.querySelector('[data-portal-sidebar]');
+const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
+const portalDrawer = document.querySelector('[data-portal-drawer]');
+const drawerOpenButton = document.querySelector('[data-drawer-open]');
+
+if (portalSidebar && sidebarToggle) {
+    const storageKey = 'tourlink:sidebar-collapsed';
+    let isCollapsed = false;
+
+    try {
+        isCollapsed = localStorage.getItem(storageKey) === 'true';
+    } catch {}
+
+    const setSidebarCollapsed = (collapsed) => {
+        portalSidebar.classList.toggle('is-collapsed', collapsed);
+        sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+        sidebarToggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        sidebarToggle.setAttribute('title', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+    };
+
+    setSidebarCollapsed(isCollapsed);
+    sidebarToggle.addEventListener('click', () => {
+        isCollapsed = !portalSidebar.classList.contains('is-collapsed');
+        setSidebarCollapsed(isCollapsed);
+        try {
+            localStorage.setItem(storageKey, String(isCollapsed));
+        } catch {}
+    });
+}
+
+if (portalDrawer && drawerOpenButton && 'showModal' in portalDrawer) {
+    drawerOpenButton.addEventListener('click', () => {
+        portalDrawer.showModal();
+        drawerOpenButton.setAttribute('aria-expanded', 'true');
+    });
+    portalDrawer.addEventListener('close', () => drawerOpenButton.setAttribute('aria-expanded', 'false'));
+    portalDrawer.addEventListener('click', (event) => {
+        if (event.target === portalDrawer) {
+            portalDrawer.close();
+        }
+    });
+}
+
 const prefetchAppRoute = (link) => {
     const destination = new URL(link.href, location.href);
     const connection = navigator.connection ?? navigator.mozConnection ?? navigator.webkitConnection;

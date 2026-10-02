@@ -93,5 +93,8 @@
             </a>
         @endforeach
     </nav>
+    @if (request()->routeIs('admin.*', 'operator.*', 'vehicle-owner.*', 'traveler.*', 'dashboard'))
+        <x-portal-chrome />
+    @endif
 @endauth
 <x-pwa-status />

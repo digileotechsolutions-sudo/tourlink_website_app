@@ -1,8 +1,11 @@
+@php($version = config('app.version'))
 <footer class="portal-footer" aria-label="TourLink information">
     <span>© {{ now()->year }} TourLink</span>
-    <nav aria-label="Footer links">
-        <a href="{{ route('home') }}">Visit website</a>
-        @if (Route::has('privacy'))<a href="{{ route('privacy') }}">Privacy</a>@endif
+    @if ($version)<span class="portal-footer__version">Version {{ $version }}</span>@endif
+    <nav aria-label="Application information">
+        <a href="{{ route('home') }}#how-it-works">Help</a>
+        <a href="{{ route('home') }}#footer-contact">Support</a>
+        @if (Route::has('privacy'))<a href="{{ route('privacy') }}">Privacy policy</a>@endif
         @if (Route::has('terms'))<a href="{{ route('terms') }}">Terms</a>@endif
     </nav>
 </footer>
