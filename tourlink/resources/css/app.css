@@ -354,7 +354,7 @@ th, td { overflow-wrap: anywhere; }
     input, select, textarea { font-size: 16px; }
     .container-page { width: calc(100% - 28px); }
     .admin-app .overflow-x-auto { max-width: 100%; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
-    .admin-app .overflow-x-auto > table { min-width: 720px !important; table-layout: auto; }
+    .admin-app .overflow-x-auto > table:not(.admin-mobile-data-table) { min-width: 720px !important; table-layout: auto; }
     .admin-app details > summary { display: flex; min-height: 44px; align-items: center; cursor: pointer; touch-action: manipulation; }
     .admin-app dialog, .admin-app [role="dialog"] { width: min(100% - 24px, 640px); max-width: calc(100vw - 24px); max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px); overflow: auto; border-radius: 20px; }
 }
@@ -802,7 +802,7 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 @media (max-width: 767px) {
     .admin-app form.grid { grid-template-columns: minmax(0, 1fr); min-width: 0; }
     .admin-app form.grid > input, .admin-app form.grid > select { width: 100%; min-width: 0; }
-    .admin-app table.admin-mobile-data-table { display: block; width: 100%; min-width: 0 !important; border-collapse: separate; border-spacing: 0; }
+    .admin-app .overflow-x-auto > table.admin-mobile-data-table, .admin-app table.admin-mobile-data-table { display: block; width: 100%; min-width: 0 !important; max-width: 100%; border-collapse: separate; border-spacing: 0; }
     .admin-app table.admin-mobile-data-table thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
     .admin-app table.admin-mobile-data-table tbody { display: grid; gap: 12px; }
     .admin-app table.admin-mobile-data-table tbody tr { display: block; min-width: 0; padding: 6px 14px; border: 1px solid #E2E8F0; border-radius: 10px; background: #FFFFFF; box-shadow: 0 2px 8px rgb(15 23 42 / 5%); }
