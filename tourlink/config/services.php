@@ -3,8 +3,9 @@
 return [
 
     'tourlink' => [
-        'support_email' => env('TOURLINK_SUPPORT_EMAIL'),
-        'support_phone' => env('TOURLINK_SUPPORT_PHONE'),
+        'support_email' => env('TOURLINK_SUPPORT_EMAIL') ?: 'tourlink@havenedgerealtors.com',
+        'support_phone' => env('TOURLINK_SUPPORT_PHONE') ?: '+254783366409',
+        'support_phone_secondary' => env('TOURLINK_SUPPORT_PHONE_SECONDARY') ?: '+254799591373',
         'location' => env('TOURLINK_LOCATION'),
         'social' => [
             'facebook' => env('TOURLINK_FACEBOOK_URL'),

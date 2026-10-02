@@ -7,6 +7,7 @@
     ])->filter();
     $supportEmail = config('services.tourlink.support_email');
     $supportPhone = config('services.tourlink.support_phone');
+    $supportPhoneSecondary = config('services.tourlink.support_phone_secondary');
     $supportLocation = config('services.tourlink.location');
 @endphp
 
@@ -18,10 +19,11 @@
                 <span class="text-2xl font-black tracking-[-.05em]">TOUR<span class="text-sun">link</span></span>
             </a>
             <p class="mt-4 max-w-sm text-sm leading-6 text-white/70">Discover memorable trips, hire verified vehicles, and connect with trusted local travel providers across Kenya.</p>
-            @if ($supportEmail || $supportPhone || $supportLocation)
+            @if ($supportEmail || $supportPhone || $supportPhoneSecondary || $supportLocation)
                 <address class="mt-5 grid gap-2 text-sm not-italic text-white/75">
                     @if ($supportEmail)<a class="footer-link w-fit" href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a>@endif
                     @if ($supportPhone)<a class="footer-link w-fit" href="tel:{{ preg_replace('/[^0-9+]/', '', $supportPhone) }}">{{ $supportPhone }}</a>@endif
+                    @if ($supportPhoneSecondary)<a class="footer-link w-fit" href="tel:{{ preg_replace('/[^0-9+]/', '', $supportPhoneSecondary) }}">{{ $supportPhoneSecondary }}</a>@endif
                     @if ($supportLocation)<span>{{ $supportLocation }}</span>@endif
                 </address>
             @endif
@@ -30,6 +32,7 @@
         <nav class="grid content-start gap-3" aria-labelledby="footer-quick-links-heading">
             <h2 id="footer-quick-links-heading" class="text-sm font-extrabold text-white">Quick links</h2>
             <a class="footer-link" href="{{ route('home') }}">Home</a>
+            <a class="footer-link" href="{{ route('home') }}#about-us">About us</a>
             <a class="footer-link" href="{{ route('home') }}#destinations">Destinations</a>
             <a class="footer-link" href="{{ route('blog.index') }}">Travel journal</a>
         </nav>
@@ -76,7 +79,12 @@
 
         <details id="footer-contact" class="footer-details md:col-span-2 xl:col-span-7">
             <summary>Contact us</summary>
-            <p class="border-t border-white/10 pt-4 text-sm leading-6 text-white/65">For help with a booking, sign in and message the provider from your booking. For account and listing support, sign in and open Messages in your dashboard.</p>
+            <div class="grid gap-2 border-t border-white/10 pt-4 text-sm leading-6 text-white/65">
+                <p>For booking help, sign in and message the provider from your booking. For other questions, contact us directly.</p>
+                @if ($supportEmail)<a class="footer-link w-fit" href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a>@endif
+                @if ($supportPhone)<a class="footer-link w-fit" href="tel:{{ preg_replace('/[^0-9+]/', '', $supportPhone) }}">{{ $supportPhone }}</a>@endif
+                @if ($supportPhoneSecondary)<a class="footer-link w-fit" href="tel:{{ preg_replace('/[^0-9+]/', '', $supportPhoneSecondary) }}">{{ $supportPhoneSecondary }}</a>@endif
+            </div>
         </details>
 
         <p class="border-t border-white/15 pt-5 text-xs text-white/55 md:col-span-2 xl:col-span-7">© {{ now()->year }} Havenedge Tourlink. All rights reserved. Made for the journey.</p>

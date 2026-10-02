@@ -46,6 +46,24 @@
      <div class="relative min-h-[390px] overflow-hidden rounded-[28px] bg-ink"><img class="absolute inset-0 size-full object-cover opacity-85" src="https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&fit=crop&w=720&q=75" srcset="https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&fit=crop&w=480&q=70 480w, https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&fit=crop&w=720&q=75 720w, https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&fit=crop&w=1100&q=80 1100w" sizes="(max-width: 1023px) 100vw, 560px" alt="Kenyan safari landscape" loading="lazy" decoding="async"><div class="absolute inset-0 bg-ink/45"></div><p class="display absolute bottom-7 left-7 text-3xl font-bold text-white">One platform.<br><span class="text-sun">Endless journeys.</span></p></div>
 </section>
 
+<section id="about-us" class="bg-white py-20 sm:py-24" aria-labelledby="about-us-heading">
+    <div class="container-page grid gap-10 md:grid-cols-[.8fr_1.2fr] md:gap-16">
+        <div>
+            <p class="eyebrow mb-3">About Havenedge Tourlink</p>
+            <h2 id="about-us-heading" class="display max-w-md text-4xl font-bold leading-tight text-ink sm:text-5xl">A more connected way to explore.</h2>
+        </div>
+        <div class="max-w-2xl">
+            <p class="text-lg leading-8 text-slate-700">Havenedge Tourlink brings travelers together with local tour operators and vehicle owners in one place.</p>
+            <p class="mt-4 text-sm leading-7 text-slate-500">Explore trips, compare vehicles, connect with providers, and keep your bookings organized from your account. Whether you are planning your next journey or sharing local knowledge, start here.</p>
+            <div class="mt-7 flex flex-wrap gap-3">
+                <a class="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-extrabold text-white hover:bg-[#150039]" href="{{ route('trips.index') }}">Explore trips</a>
+                <a class="inline-flex min-h-11 items-center rounded-full border border-slate-300 px-5 text-sm font-bold text-ink hover:bg-slate-50" href="{{ route('vehicles.index') }}">Browse vehicles</a>
+                <a class="inline-flex min-h-11 items-center rounded-full border border-slate-300 px-5 text-sm font-bold text-ink hover:bg-slate-50" href="{{ route('home') }}#footer-contact">Talk to us</a>
+            </div>
+        </div>
+    </div>
+</section>
+
 @if($reviews->isNotEmpty())
 <section class="bg-ink py-20 text-white sm:py-24"><div class="container-page"><div class="mb-10"><p class="eyebrow mb-3 text-sun">Good words from the road</p><h2 class="display text-4xl font-bold sm:text-5xl">Stories they brought home.</h2></div><div class="grid gap-5 md:grid-cols-3">@foreach($reviews as $review)<article class="rounded-2xl border border-white/10 bg-white/5 p-6"><div class="text-sun" aria-label="{{ $review->rating }} out of 5 stars">★★★★★</div><p class="mt-5 min-h-24 text-sm leading-7 text-white/75">“{{ $review->body }}”</p><div class="mt-5 border-t border-white/10 pt-4"><p class="text-xs font-extrabold">{{ $review->author?->name }}</p><p class="mt-1 text-[11px] text-white/45">{{ $review->trip?->name ?? $review->vehicle?->name }}</p></div></article>@endforeach</div></div></section>
 @endif

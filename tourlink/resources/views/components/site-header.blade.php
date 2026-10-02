@@ -10,6 +10,7 @@
             <a class="hover:text-white" href="{{ route('trips.index') }}">Find a trip</a>
             <a class="hover:text-white" href="{{ route('vehicles.index') }}">Hire a vehicle</a>
             <a class="hover:text-white" href="{{ route('blog.index') }}">Journal</a>
+            <a class="hover:text-white" href="{{ route('home') }}#about-us">About us</a>
             <a class="hover:text-white" href="{{ route('home') }}#destinations">Destinations</a>
         </nav>
         <div class="hidden items-center gap-4 sm:flex">
@@ -29,6 +30,7 @@
                 <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('trips.index') }}">Find a trip</a>
                 <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('vehicles.index') }}">Hire a vehicle</a>
                 <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('blog.index') }}">Journal</a>
+                <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('home') }}#about-us">About us</a>
                 <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('home') }}#destinations">Destinations</a>
                 @auth
                     @if(auth()->user()->role === \App\Role::Admin && Route::has('admin.dashboard'))<a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.dashboard') }}">Admin review</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.users.index') }}">Users</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.verification.index') }}">Verification</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.trips.index') }}">Manage trips</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.vehicles.index') }}">Manage vehicles</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.catalog.index') }}">Catalog</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.audit.index') }}">Audit log</a>@endif
