@@ -140,6 +140,8 @@ html:has(.mobile-app-menu[open]), body:has(.mobile-app-menu[open]), html:has(.si
 .auth-login-back { display: inline-flex; min-height: 40px; align-items: center; gap: 8px; margin: -12px 0 18px; color: #53645b; font-size: 12px; font-weight: 700; }
 .auth-login-back:hover { color: #176142; }
 .auth-login-back svg { width: 17px; height: 17px; }
+.auth-terms-check { align-items: flex-start; line-height: 1.5; }
+.auth-terms-check a { color: #1F0052; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
 .auth-login-logo { display: grid; width: 54px; height: 54px; margin: 0 auto 22px; place-items: center; border: 1px solid rgba(31, 105, 73, .14); border-radius: 50%; color: #176142; background: rgba(255, 255, 255, .84); box-shadow: 0 8px 22px rgba(23, 86, 58, .1); }
 .auth-login-logo svg { width: 27px; height: 27px; }
 .auth-login-header { margin-bottom: 27px; text-align: center; }

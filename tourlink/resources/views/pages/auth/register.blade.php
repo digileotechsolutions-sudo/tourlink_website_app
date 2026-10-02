@@ -119,6 +119,11 @@
             </div>
 
             <div class="auth-actions">
+                <label class="auth-form-check auth-terms-check">
+                    <input type="checkbox" name="terms_accepted" value="1" required @checked(old('terms_accepted')) @if ($errors->has('terms_accepted')) aria-invalid="true" aria-describedby="terms-accepted-error" @endif>
+                    <span>I agree to the <a href="{{ route('terms') }}" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>.</span>
+                </label>
+                @error('terms_accepted')<span id="terms-accepted-error" class="field-error" role="alert">{{ $message }}</span>@enderror
                 <button class="auth-btn auth-compact-submit" type="submit" data-auth-submit>
                     <span data-auth-submit-label>Create account</span>
                     <svg data-submit-arrow viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>

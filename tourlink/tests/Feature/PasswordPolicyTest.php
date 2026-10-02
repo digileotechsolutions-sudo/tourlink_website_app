@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\OtpChannel;
+use App\Http\Middleware\RequireTermsAcceptance;
 use App\Services\Verification\AccountVerificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -24,6 +25,7 @@ class PasswordPolicyTest extends TestCase
         config(['services.otp.delivery' => 'log']);
         $this->setReferralSettings();
         Http::fake(['*' => Http::response('', 200)]);
+        $this->withCookie(RequireTermsAcceptance::COOKIE_NAME, RequireTermsAcceptance::tokenFor());
 
         // Registration and reset endpoints are throttled per IP, which a test
         // loop exhausts within a few requests; rate limiting is covered
@@ -37,6 +39,7 @@ class PasswordPolicyTest extends TestCase
             'name' => 'Amina Kariuki',
             'email' => 'amina@example.com',
             'phone' => '0712345678',
+            'terms_accepted' => '1',
             'password' => 'Jungle@Trail29',
             'password_confirmation' => 'Jungle@Trail29',
             'role' => 'TRAVELER',
@@ -47,6 +50,20 @@ class PasswordPolicyTest extends TestCase
         $this->assertTrue(Hash::check('Jungle@Trail29', $user->password));
         $this->assertNotSame('Jungle@Trail29', $user->password);
         $this->assertDatabaseMissing('otp_challenges', ['user_id' => $user->id, 'channel' => OtpChannel::Phone->value]);
+    }
+
+    public function test_registration_rejects_missing_terms_acceptance_without_creating_an_account(): void
+    {
+        $this->post(route('register'), [
+            'name' => 'Amina Kariuki',
+            'email' => 'amina@example.com',
+            'phone' => '0712345678',
+            'password' => 'Jungle@Trail29',
+            'password_confirmation' => 'Jungle@Trail29',
+            'role' => 'TRAVELER',
+        ])->assertSessionHasErrors('terms_accepted');
+
+        $this->assertDatabaseCount('users', 0);
     }
 
     public function test_registration_page_explains_when_verification_delivery_is_unavailable(): void
@@ -64,6 +81,7 @@ class PasswordPolicyTest extends TestCase
             'name' => 'Operator Owner',
             'email' => 'operator@example.com',
             'phone' => '0712345678',
+            'terms_accepted' => '1',
             'password' => 'Jungle@Trail29',
             'password_confirmation' => 'Jungle@Trail29',
             'role' => 'OPERATOR',
@@ -77,6 +95,7 @@ class PasswordPolicyTest extends TestCase
                 'name' => 'Account Owner',
                 'email' => $provider['email'],
                 'phone' => $provider['phone'],
+                'terms_accepted' => '1',
                 'password' => 'Jungle@Trail29',
                 'password_confirmation' => 'Jungle@Trail29',
                 'role' => $provider['role'],
@@ -134,6 +153,7 @@ class PasswordPolicyTest extends TestCase
                 'name' => 'Amina Kariuki',
                 'email' => 'amina@example.com',
                 'phone' => '0712345678',
+                'terms_accepted' => '1',
                 'password' => $password,
                 'password_confirmation' => $password,
                 'role' => 'TRAVELER',
@@ -147,6 +167,7 @@ class PasswordPolicyTest extends TestCase
             'name' => 'Amina Kariuki',
             'email' => 'amina@example.com',
             'phone' => '0712345678',
+            'terms_accepted' => '1',
             'password' => 'Jungle@Trail29',
             'password_confirmation' => 'Different@Trail29',
             'role' => 'TRAVELER',
@@ -166,6 +187,7 @@ class PasswordPolicyTest extends TestCase
             'name' => 'Amina Kariuki',
             'email' => 'amina@example.com',
             'phone' => '0712345678',
+            'terms_accepted' => '1',
             'password' => $password,
             'password_confirmation' => $password,
             'role' => 'TRAVELER',

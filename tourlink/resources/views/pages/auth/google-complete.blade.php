@@ -61,6 +61,11 @@
                         @error('business_description')<span class="field-error">{{ $message }}</span>@enderror
                     </div>
                 </div>
+                <label class="auth-form-check auth-terms-check">
+                    <input type="checkbox" name="terms_accepted" value="1" required @checked(old('terms_accepted')) @if ($errors->has('terms_accepted')) aria-invalid="true" aria-describedby="google-terms-accepted-error" @endif>
+                    <span>I agree to the <a href="{{ route('terms') }}" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>.</span>
+                </label>
+                @error('terms_accepted')<span id="google-terms-accepted-error" class="field-error" role="alert">{{ $message }}</span>@enderror
             @endif
 
             <div class="auth-actions">

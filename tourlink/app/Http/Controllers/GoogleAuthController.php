@@ -171,6 +171,7 @@ class GoogleAuthController extends Controller
             $rules['role'] = ['required', Rule::in([Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value])];
             $rules['business_name'] = ['nullable', 'string', 'min:2', 'max:255', Rule::requiredIf(in_array($request->input('role'), [Role::Operator->value, Role::VehicleOwner->value], true))];
             $rules['business_description'] = ['nullable', 'string', 'max:10000'];
+            $rules['terms_accepted'] = ['accepted'];
         }
         $input = $request->validate($rules);
 

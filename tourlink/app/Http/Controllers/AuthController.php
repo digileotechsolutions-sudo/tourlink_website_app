@@ -124,6 +124,7 @@ class AuthController extends Controller
             'phone' => ['required', 'string', 'min:8', 'max:30'],
             'business_name' => ['nullable', 'string', 'min:2', 'max:255', Rule::requiredIf(in_array($request->input('role'), [Role::Operator->value, Role::VehicleOwner->value], true))],
             'business_description' => ['nullable', 'string', 'max:10000'],
+            'terms_accepted' => ['accepted'],
             'password' => [...PasswordRules::withAccountContext(PasswordRules::rules(), $request), 'confirmed'],
             'role' => ['required', Rule::in([Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value])],
         ], PasswordRules::messages());

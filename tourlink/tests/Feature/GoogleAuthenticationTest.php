@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Role;
+use App\Http\Middleware\RequireTermsAcceptance;
 use App\Services\Auth\GoogleIdTokenVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -27,6 +28,7 @@ class GoogleAuthenticationTest extends TestCase
         ]);
         $this->setReferralSettings();
         Http::fake(['*' => Http::response('', 200)]);
+        $this->withCookie(RequireTermsAcceptance::COOKIE_NAME, RequireTermsAcceptance::tokenFor());
         $this->withoutMiddleware(ThrottleRequests::class);
     }
 
@@ -59,6 +61,7 @@ class GoogleAuthenticationTest extends TestCase
         $this->post(route('google.complete'), [
             'phone' => '0712345678',
             'role' => Role::Operator->value,
+            'terms_accepted' => '1',
             'business_name' => 'Savanna Google Tours',
             'business_description' => 'Small-group wildlife and culture trips.',
         ])->assertRedirect();
