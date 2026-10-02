@@ -38,8 +38,13 @@ class OperatorController extends Controller
         $operator = $request->user();
         $tripIds = $operator->trips()->pluck('id');
         $bookings = Booking::query()->whereIn('trip_id', $tripIds);
+        $verificationRequest = $this->latestVerificationRequest($operator);
+        $uploadedDocumentKeys = collect($verificationRequest->documents ?? [])->pluck('key')->all();
+        $hasIncompleteVerification = mb_strlen((string) $operator->operatorProfile?->description) < 20
+            || array_diff(OperatorVerificationDocument::requiredKeys(), $uploadedDocumentKeys) !== [];
 
         return view('operator.dashboard', [
+            'hasIncompleteVerification' => $hasIncompleteVerification,
             'tripCount' => $operator->trips()->count(),
             'publishedTripCount' => $operator->trips()->where('status', ListingStatus::Published)->count(),
             'bookingCount' => (clone $bookings)->count(),

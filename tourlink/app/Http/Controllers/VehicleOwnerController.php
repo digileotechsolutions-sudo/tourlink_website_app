@@ -29,8 +29,22 @@ class VehicleOwnerController extends Controller
     {
         $owner = $request->user();
         $bookings = Booking::query()->whereIn('vehicle_id', $owner->vehicles()->select('id'));
+        $identityVerificationRequest = $this->latestVerificationRequest($owner, 'VEHICLE_OWNER_IDENTITY');
+        $uploadedIdentityDocumentKeys = collect($identityVerificationRequest->documents ?? [])->pluck('key')->all();
+        $hasIncompleteVerification = ! in_array('owner_id', $uploadedIdentityDocumentKeys, true);
+        $requiredVehicleDocumentKeys = ['logbook', 'insurance', 'front_photo', 'rear_photo', 'left_photo', 'right_photo', 'interior_photo', 'number_plate_photo'];
+
+        foreach ($owner->vehicles()->get() as $vehicle) {
+            $verificationRequest = $this->latestVerificationRequest($owner, 'VEHICLE', $vehicle->id);
+            $uploadedVehicleDocumentKeys = collect($verificationRequest->documents ?? [])->pluck('key')->all();
+            if (array_diff($requiredVehicleDocumentKeys, $uploadedVehicleDocumentKeys) !== []) {
+                $hasIncompleteVerification = true;
+                break;
+            }
+        }
 
         return view('vehicle-owner.dashboard', [
+            'hasIncompleteVerification' => $hasIncompleteVerification,
             'vehicleCount' => $owner->vehicles()->count(),
             'publishedVehicleCount' => $owner->vehicles()->where('status', ListingStatus::Published)->count(),
             'bookingCount' => (clone $bookings)->count(),
