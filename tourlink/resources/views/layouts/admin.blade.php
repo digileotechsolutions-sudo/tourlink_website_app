@@ -44,7 +44,6 @@
                             <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                             <span class="hidden xl:inline">View website</span>
                         </a>
-                        <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="min-h-10 rounded px-3 text-sm font-bold text-slate-600 hover:bg-slate-100">Log out</button></form>
                     </div>
                 </div>
             </header>
