@@ -1,4 +1,7 @@
 @auth
+    @if (request()->routeIs('admin.*', 'operator.*', 'vehicle-owner.*', 'traveler.*', 'dashboard'))
+        <x-portal-footer />
+    @endif
     @php
         $role = auth()->user()->role;
         $pageTitle = str($__env->yieldContent('title', 'TourLink'))->before('|')->trim();

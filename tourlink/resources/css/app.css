@@ -67,6 +67,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .mobile-menu-panel { position: absolute; top: 50px; left: 0; display: grid; width: min(250px, calc(100vw - 20px)); gap: 4px; padding: 8px; border: 1px solid rgba(15, 23, 42, .1); border-radius: 14px; background: #fff; box-shadow: 0 16px 40px rgba(15, 23, 42, .16); }
 .mobile-menu-panel a { min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 9px; color: #0f172a; font-size: 13px; font-weight: 700; }
 .mobile-menu-panel a:hover, .mobile-menu-panel a:focus-visible { color: #1F0052; background: #FFFFFF; }
+.portal-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px; padding: 18px 24px calc(18px + env(safe-area-inset-bottom)); border-top: 1px solid rgb(15 23 42 / 8%); color: #64748b; background: #fff; font-size: 12px; }
+.portal-footer nav { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.portal-footer a { min-height: 36px; display: inline-flex; align-items: center; color: #1F0052; font-weight: 700; }
+.portal-footer a:hover { text-decoration: underline; text-underline-offset: 3px; }
 html:has(.mobile-app-menu[open]), body:has(.mobile-app-menu[open]), html:has(.site-header details[open]), body:has(.site-header details[open]) { overflow: hidden; overscroll-behavior: none; }
 @media (min-width: 1024px) {
     .mobile-app-header, .mobile-bottom-nav { display: none !important; }

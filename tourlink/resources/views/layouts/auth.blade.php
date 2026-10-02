@@ -12,6 +12,7 @@
     <main class="login-page">
         @yield('content')
     </main>
+    <x-portal-footer />
     <x-pwa-status />
 </body>
 </html>
