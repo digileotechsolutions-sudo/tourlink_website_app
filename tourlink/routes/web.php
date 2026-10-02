@@ -72,11 +72,11 @@ Route::get('/journal/{blogPost:slug}', [BlogController::class, 'show'])->middlew
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
-    Route::get('/register', [AuthController::class, 'showRegistration'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
-    Route::post('/auth/google', [GoogleAuthController::class, 'authenticate'])->middleware('throttle:auth-google')->name('google.authenticate');
-    Route::get('/auth/google/complete', [GoogleAuthController::class, 'showCompletion'])->name('google.complete');
-    Route::post('/auth/google/complete', [GoogleAuthController::class, 'complete'])->middleware('throttle:auth-register');
+    Route::get('/register', [AuthController::class, 'showRegistration'])->middleware(RequireTermsAcceptance::class)->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->middleware([RequireTermsAcceptance::class, 'throttle:auth-register']);
+    Route::post('/auth/google', [GoogleAuthController::class, 'authenticate'])->middleware([RequireTermsAcceptance::class, 'throttle:auth-google'])->name('google.authenticate');
+    Route::get('/auth/google/complete', [GoogleAuthController::class, 'showCompletion'])->middleware(RequireTermsAcceptance::class)->name('google.complete');
+    Route::post('/auth/google/complete', [GoogleAuthController::class, 'complete'])->middleware([RequireTermsAcceptance::class, 'throttle:auth-register']);
     Route::get('/forgot-password', [PasswordController::class, 'requestForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordController::class, 'sendResetLink'])->middleware('throttle:password-reset')->name('password.email');
     Route::get('/reset-password/{token}', [PasswordController::class, 'resetForm'])->name('password.reset');

@@ -16,7 +16,7 @@
                     <span>Print / save as PDF</span>
                 </button>
             </div>
-            <p class="terms-document__intro">Please read these Terms and Conditions before using Havenedge Tourlink. You must accept them to continue to the app.</p>
+            <p class="terms-document__intro">Please read these Terms and Conditions before creating a Havenedge Tourlink account. You must accept them to continue with registration.</p>
         </div>
     </header>
 

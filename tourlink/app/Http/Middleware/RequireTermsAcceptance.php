@@ -12,7 +12,7 @@ class RequireTermsAcceptance
 
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->routeIs('terms', 'terms.accept')) {
+        if (! $this->isRegistrationRequest($request)) {
             return $next($request);
         }
 
@@ -29,9 +29,42 @@ class RequireTermsAcceptance
                 $destination .= '?'.$request->getQueryString();
             }
             $request->session()->put('terms.intended', $destination);
+        } else {
+            $request->session()->put('terms.intended', $this->registrationDestination($request));
         }
 
         return redirect()->route('terms');
+    }
+
+    private function isRegistrationRequest(Request $request): bool
+    {
+        if ($request->is('register')) {
+            return true;
+        }
+
+        if ($request->routeIs('google.authenticate')) {
+            return $request->input('mode') === 'register';
+        }
+
+        return $request->routeIs('google.complete')
+            && $request->session()->get('google.pending_profile.mode') === 'register';
+    }
+
+    private function registrationDestination(Request $request): string
+    {
+        if ($request->routeIs('google.complete')) {
+            return route('google.complete');
+        }
+
+        if ($request->is('register')) {
+            $role = $request->input('role');
+
+            return route('register', $role ? ['role' => $role] : []);
+        }
+
+        $role = $request->input('role') ?? $request->session()->get('google.pending_profile.role');
+
+        return route('register', $role ? ['role' => $role] : []);
     }
 
     public static function tokenFor(): string
