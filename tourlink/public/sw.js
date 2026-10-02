@@ -1,4 +1,4 @@
-const VERSION = 'tourlink-pwa-v5';
+const VERSION = 'tourlink-pwa-v6';
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-public-pages`;
 const CACHE_PREFIX = 'tourlink-pwa-';
