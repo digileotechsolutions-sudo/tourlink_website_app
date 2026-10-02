@@ -534,7 +534,8 @@ body:has(.dashboard-chrome) .portal-footer { margin-top: auto; }
     .portal-bottom-nav__item .portal-icon, .portal-bottom-nav__item .portal-icon svg { width: 19px; height: 19px; }
     .portal-bottom-nav__item > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .portal-bottom-nav__item.is-active { color: var(--portal-ink); background: #F5F0FA; }
-    .portal-footer { margin-top: 22px; padding: 13px 16px calc(13px + env(safe-area-inset-bottom)); font-size: 11px; }
+    .portal-footer { flex-direction: column; align-items: center; justify-content: center; gap: 3px; margin-top: 22px; padding: 13px 16px calc(13px + env(safe-area-inset-bottom)); font-size: 11px; line-height: 1.4; text-align: center; }
+    .portal-footer > span { display: block; width: 100%; white-space: nowrap; }
     .portal-footer nav { display: none; }
     .profile-reminder { top: calc(72px + env(safe-area-inset-top)); right: 10px; left: 10px; width: auto; }
     .profile-reminder--search { top: calc(122px + env(safe-area-inset-top)); }
@@ -839,6 +840,9 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
     .auth-wrapper { width: 100%; min-height: 0; border-radius: 20px; }
     .auth-right { width: 100%; padding: 0; }
     .auth-login-card, .auth-compact-card, .auth-card { width: 100%; max-width: none; padding: 28px 20px 24px; border-radius: 18px; }
+    .auth-form-wrapper { display: block; height: auto; overflow: visible; }
+    .auth-form-wrapper > .auth-right { display: block; width: 100%; min-height: 0; }
+    .auth-form-wrapper .auth-card { height: auto; }
     .auth-login-header, .auth-compact-header { margin-bottom: 22px; }
     .auth-login-field { margin-top: 16px; }
     .auth-field { margin-bottom: 14px; }

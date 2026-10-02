@@ -1,9 +1,9 @@
 @extends('layouts.auth')
 @section('title', 'Choose a new password | Havenedge Tourlink')
 @section('content')
-<div class="auth-wrapper">
+<div class="auth-wrapper auth-form-wrapper">
     <section class="auth-left">
-        <a class="auth-brand-mark" href="{{ route('home') }}" aria-label="Havenedge Tourlink home">HT</a
+        <a class="auth-brand-mark" href="{{ route('home') }}" aria-label="Havenedge Tourlink home">HT</a>
         <span class="auth-kicker">Account recovery</span>
         <h1>Choose a new password</h1>
         <p>Use a unique password with at least eight characters.</p>

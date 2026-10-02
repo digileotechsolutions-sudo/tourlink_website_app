@@ -24,6 +24,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontFlash([
+            'mpesa_consumer_key',
+            'mpesa_consumer_secret',
+            'mpesa_passkey',
+            'pesapal_consumer_key',
+            'pesapal_consumer_secret',
+        ]);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

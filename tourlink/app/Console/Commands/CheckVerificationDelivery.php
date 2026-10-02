@@ -78,7 +78,9 @@ class CheckVerificationDelivery extends Command
     private function reportVerificationChannels(OtpDeliveryService $delivery, AccountVerificationService $verification): bool
     {
         $this->write('OTP mode:     '.$delivery->mode());
-        $this->write('Email via:    '.($delivery->emailTransport() ?? 'not configured'));
+        $emailTransport = $delivery->emailTransport();
+        $this->write('Email via:    '.($emailTransport ?? 'not configured'));
+        $this->write('Password reset email: '.($emailTransport ? 'configured via '.$emailTransport : 'not configured'));
         $this->write('SMS via:      '.($delivery->smsConfigured() ? "Africa's Talking" : 'not configured'));
         $this->write('Required:     '.implode(' + ', array_map(
             fn (OtpChannel $channel): string => $channel->value,

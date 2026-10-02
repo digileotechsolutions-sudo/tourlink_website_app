@@ -18,9 +18,11 @@ This application supports M-Pesa through the existing Daraja integration and hos
 
 ## Configure providers
 
+Administrators can enter or rotate credentials in **Admin → System settings → Payment gateway credentials**. Saved values are encrypted with Laravel's application key and never rendered back into the settings page. Credentials can also be provided through the server environment below; a saved admin setting takes precedence. Leave a field blank to keep its existing value; use its explicit remove checkbox to delete a saved override and fall back to the server environment. Restrict access to the admin account and maintain backups of the production `APP_KEY`; changing that key makes encrypted settings unreadable.
+
 ### M-Pesa
 
-Keep the existing Daraja credentials and callback configuration in the server-side environment:
+Alternatively, keep Daraja credentials and callback configuration in the server-side environment:
 
 ```dotenv
 MPESA_ENVIRONMENT=production

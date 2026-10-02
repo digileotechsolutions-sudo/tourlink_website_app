@@ -6,6 +6,7 @@ use App\AccountApprovalStatus;
 use App\AccountStatus;
 use App\Role;
 use App\VerificationLevel;
+use App\Services\Verification\OtpDeliveryService;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -31,6 +32,11 @@ class User extends Authenticatable
     public function getAuthPasswordName(): string
     {
         return 'password';
+    }
+
+    public function sendPasswordResetNotification(string $token): void
+    {
+        app(OtpDeliveryService::class)->sendPasswordResetLink($this, $token);
     }
 
     public function travelerProfile(): HasOne

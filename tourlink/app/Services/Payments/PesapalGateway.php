@@ -9,6 +9,8 @@ use RuntimeException;
 
 class PesapalGateway implements PaymentGatewayInterface
 {
+    public function __construct(private readonly PaymentGatewaySettings $settings) {}
+
     public function initiate(Payment $payment, array $context): array
     {
         $this->assertConfigured();
@@ -21,7 +23,7 @@ class PesapalGateway implements PaymentGatewayInterface
                 'amount' => $payment->amount,
                 'description' => 'Havenedge Tourlink booking '.$payment->booking->reference,
                 'callback_url' => route('payments.pesapal.return', $payment),
-                'notification_id' => config('payments.pesapal.ipn_id'),
+                'notification_id' => $this->settings->get('pesapal', 'ipn_id'),
                 'billing_address' => [
                     'email_address' => $context['email'],
                     'phone_number' => $context['phone_number'],
@@ -61,8 +63,8 @@ class PesapalGateway implements PaymentGatewayInterface
     {
         $response = $this->client()
             ->post($this->baseUrl().'/api/Auth/RequestToken', [
-                'consumer_key' => config('payments.pesapal.consumer_key'),
-                'consumer_secret' => config('payments.pesapal.consumer_secret'),
+                'consumer_key' => $this->settings->get('pesapal', 'consumer_key'),
+                'consumer_secret' => $this->settings->get('pesapal', 'consumer_secret'),
             ])->throw()->json();
 
         $token = is_array($response) ? ($response['token'] ?? null) : null;
@@ -76,7 +78,7 @@ class PesapalGateway implements PaymentGatewayInterface
     private function assertConfigured(): void
     {
         foreach (['consumer_key', 'consumer_secret', 'ipn_id'] as $key) {
-            if (! is_string(config("payments.pesapal.{$key}")) || config("payments.pesapal.{$key}") === '') {
+            if (! $this->settings->isConfigured('pesapal', $key)) {
                 throw new RuntimeException("Pesapal configuration is missing: {$key}.");
             }
         }
@@ -92,7 +94,7 @@ class PesapalGateway implements PaymentGatewayInterface
 
     private function baseUrl(): string
     {
-        return config('payments.pesapal.environment') === 'production'
+        return $this->settings->get('pesapal', 'environment') === 'production'
             ? 'https://pay.pesapal.com/v3'
             : 'https://cybqa.pesapal.com/pesapalv3';
     }
@@ -104,7 +106,7 @@ class PesapalGateway implements PaymentGatewayInterface
         }
 
         $parts = parse_url($url);
-        $allowedHost = config('payments.pesapal.environment') === 'production'
+        $allowedHost = $this->settings->get('pesapal', 'environment') === 'production'
             ? 'pay.pesapal.com'
             : 'cybqa.pesapal.com';
 

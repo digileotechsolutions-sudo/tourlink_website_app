@@ -1,8 +1,8 @@
 @extends('layouts.auth')
 @section('title', 'Change password | Havenedge Tourlink')
 @section('content')
-<div class="auth-wrapper">
-    <section class="auth-left"><a class="auth-brand-mark" href="{{ route('home') }}">HT</a<span class="auth-kicker">Account security</span><h1>Keep your account secure</h1><p>Choose a unique password that is difficult to guess.</p></section>
+<div class="auth-wrapper auth-form-wrapper">
+    <section class="auth-left"><a class="auth-brand-mark" href="{{ route('home') }}">HT</a><span class="auth-kicker">Account security</span><h1>Keep your account secure</h1><p>Choose a unique password that is difficult to guess.</p></section>
     <section class="auth-right"><div class="auth-card">
         <header class="auth-header"><h2>Change password</h2><p class="auth-subtitle">Confirm your current password before choosing a new one.</p></header>
         @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif

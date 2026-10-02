@@ -1,9 +1,9 @@
 @extends('layouts.auth')
 @section('title', 'Verify your account | Havenedge Tourlink')
 @section('content')
-<div class="auth-wrapper auth-verification-wrapper" data-form-draft-clear="register">
+<div class="auth-wrapper auth-form-wrapper auth-verification-wrapper" data-form-draft-clear="register">
     <section class="auth-left">
-        <a class="auth-brand-mark" href="{{ route('home') }}" aria-label="Havenedge Tourlink home">HT</a
+        <a class="auth-brand-mark" href="{{ route('home') }}" aria-label="Havenedge Tourlink home">HT</a>
         <span class="auth-kicker">One more step</span>
         <h1>Verify Your Account</h1>
         <p>Confirm your contact details to keep your Havenedge Tourlink account secure and unlock trusted journeys.</p>

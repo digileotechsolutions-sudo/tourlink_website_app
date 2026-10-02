@@ -9,6 +9,8 @@ use RuntimeException;
 
 class MpesaDarajaGateway
 {
+    public function __construct(private readonly PaymentGatewaySettings $settings) {}
+
     /** @return array{checkoutRequestId: string, merchantRequestId: string, responseDescription: string} */
     public function requestStkPush(Payment $payment, string $phoneNumber): array
     {
@@ -16,8 +18,8 @@ class MpesaDarajaGateway
             throw new RuntimeException('M-Pesa requires a positive payment amount.');
         }
 
-        $shortCode = (string) config('services.mpesa.shortcode');
-        $passkey = (string) config('services.mpesa.passkey');
+        $shortCode = $this->settings->get('mpesa', 'shortcode');
+        $passkey = $this->settings->get('mpesa', 'passkey');
         if ($shortCode === '' || $passkey === '') {
             throw new RuntimeException('M-Pesa Daraja credentials are not configured.');
         }
@@ -59,8 +61,8 @@ class MpesaDarajaGateway
             throw new RuntimeException('The payment has no Daraja CheckoutRequestID.');
         }
 
-        $shortCode = (string) config('services.mpesa.shortcode');
-        $passkey = (string) config('services.mpesa.passkey');
+        $shortCode = $this->settings->get('mpesa', 'shortcode');
+        $passkey = $this->settings->get('mpesa', 'passkey');
         if ($shortCode === '' || $passkey === '') {
             throw new RuntimeException('M-Pesa Daraja credentials are not configured.');
         }
@@ -78,8 +80,8 @@ class MpesaDarajaGateway
 
     private function authorizedClient(): PendingRequest
     {
-        $consumerKey = (string) config('services.mpesa.consumer_key');
-        $consumerSecret = (string) config('services.mpesa.consumer_secret');
+        $consumerKey = $this->settings->get('mpesa', 'consumer_key');
+        $consumerSecret = $this->settings->get('mpesa', 'consumer_secret');
         if ($consumerKey === '' || $consumerSecret === '') {
             throw new RuntimeException('M-Pesa Daraja credentials are not configured.');
         }
@@ -103,19 +105,19 @@ class MpesaDarajaGateway
 
     private function apiBase(): string
     {
-        return config('services.mpesa.environment') === 'production'
+        return $this->settings->get('mpesa', 'environment') === 'production'
             ? 'https://api.safaricom.co.ke'
             : 'https://sandbox.safaricom.co.ke';
     }
 
     private function callbackUrl(): string
     {
-        $url = (string) config('services.mpesa.callback_url');
+        $url = $this->settings->get('mpesa', 'callback_url');
         if ($url === '') {
             $url = rtrim((string) config('app.url'), '/').'/api/mpesa/callback';
         }
 
-        if (config('services.mpesa.environment') === 'production'
+        if ($this->settings->get('mpesa', 'environment') === 'production'
             && parse_url($url, PHP_URL_SCHEME) !== 'https') {
             throw new RuntimeException('The production M-Pesa callback URL must use HTTPS.');
         }

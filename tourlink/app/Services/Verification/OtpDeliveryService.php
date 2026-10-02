@@ -124,6 +124,56 @@ class OtpDeliveryService
         $this->sendSms($user->phone, $message);
     }
 
+    public function sendPasswordResetLink(User $user, string $token): void
+    {
+        $transport = $this->emailTransport();
+        $resetUrl = e(route('password.reset', [
+            'token' => $token,
+            'email' => $user->getEmailForPasswordReset(),
+        ]));
+        $minutes = (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
+        $html = '<p>Hello '.e($user->name).',</p>'
+            .'<p>We received a request to reset your '.e((string) config('app.name')).' password.</p>'
+            .'<p><a href="'.$resetUrl.'">Reset your password</a></p>'
+            .'<p>This link expires in '.$minutes.' minutes. If you did not request a password reset, you can ignore this email.</p>';
+        $subject = 'Reset your '.config('app.name').' password';
+
+        if ($transport === null) {
+            if (app()->environment('testing')) {
+                Mail::html($html, fn (Message $message) => $message->to($user->email)->subject($subject));
+
+                return;
+            }
+
+            if ($this->developmentMode()) {
+                Log::debug('Havenedge Tourlink development password reset email', [
+                    'recipient' => $user->email,
+                    'subject' => $subject,
+                    'body' => strip_tags($html),
+                ]);
+
+                return;
+            }
+
+            throw new RuntimeException('Password reset email delivery is not configured. Configure authenticated SMTP or Resend.');
+        }
+
+        if ($transport === 'smtp') {
+            Mail::mailer('smtp')->html($html, fn (Message $message) => $message->to($user->email)->subject($subject));
+
+            return;
+        }
+
+        $this->resendClient((string) config('services.resend.key'))
+            ->post('https://api.resend.com/emails', [
+                'from' => config('services.resend.from'),
+                'to' => [$user->email],
+                'subject' => $subject,
+                'html' => $html,
+            ])
+            ->throw();
+    }
+
     /**
      * Confirms a verified email address. Once no verification steps remain the
      * message also announces the wait for admin approval; while another channel

@@ -4,9 +4,11 @@
 
 @section('content')
     <div class="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <header class="border-b border-slate-200 pb-6"><p class="text-xs font-bold uppercase tracking-wider text-emerald-800">Administration</p><h1 class="mt-2 text-3xl font-black text-slate-950">System settings</h1><p class="mt-1 text-sm text-slate-600">Manage application key/value settings. Stored values are never displayed.</p></header>
+        <header class="border-b border-slate-200 pb-6"><p class="text-xs font-bold uppercase tracking-wider text-emerald-800">Administration</p><h1 class="mt-2 text-3xl font-black text-slate-950">System settings</h1><p class="mt-1 text-sm text-slate-600">Configure payment providers and manage application settings. Stored values are never displayed.</p></header>
         @if(session('status'))<p role="status" class="mt-5 border-l-4 border-emerald-700 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-950">{{ session('status') }}</p>@endif
         @if($errors->any())<div role="alert" class="mt-5 border-l-4 border-red-700 bg-red-50 px-4 py-3 text-sm text-red-950"><p class="font-bold">The setting could not be saved.</p>@foreach($errors->all() as $error)<p class="mt-1">{{ $error }}</p>@endforeach</div>@endif
+
+        @include('admin.settings.payment-gateways')
 
         <section class="mt-7 border-b border-slate-200 pb-7" aria-labelledby="create-setting-heading">
             <h2 id="create-setting-heading" class="text-lg font-extrabold text-slate-950">Add setting</h2>

@@ -219,6 +219,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::patch('/blog/{blogPost}/publish', [AdminContentController::class, 'togglePost'])->name('blog.publish');
     Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [AdminSettingsController::class, 'store'])->name('settings.store');
+    Route::put('/settings/payment-gateways', [AdminSettingsController::class, 'updatePaymentGateways'])->name('settings.payment-gateways.update');
     Route::put('/settings/{setting}', [AdminSettingsController::class, 'update'])->name('settings.update');
     Route::get('/reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');

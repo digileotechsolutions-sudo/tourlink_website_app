@@ -6,12 +6,15 @@ use App\Models\User;
 use App\OtpChannel;
 use App\Http\Middleware\RequireTermsAcceptance;
 use App\Services\Verification\AccountVerificationService;
+use App\Services\Verification\OtpDeliveryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use RuntimeException;
 use Tests\TestCase;
 
 class PasswordPolicyTest extends TestCase
@@ -231,6 +234,47 @@ class PasswordPolicyTest extends TestCase
         ])->assertRedirect(route('login'));
 
         $this->assertTrue(Hash::check('Jungle@Trail29', $user->refresh()->password));
+    }
+
+    public function test_password_reset_request_sends_email_through_the_configured_resend_transport(): void
+    {
+        config([
+            'services.otp.delivery' => 'auto',
+            'services.otp.email_transport' => 'resend',
+            'services.resend.key' => 'test-resend-key',
+            'services.resend.from' => 'Havenedge Tourlink <reset@example.com>',
+        ]);
+        $user = User::factory()->create(['email' => 'reset@example.com']);
+
+        $this->post(route('password.email'), ['email' => $user->email])
+            ->assertRedirect()
+            ->assertSessionHas('status');
+
+        Http::assertSent(function ($request): bool {
+            $payload = $request->data();
+
+            return $request->url() === 'https://api.resend.com/emails'
+                && $payload['to'] === ['reset@example.com']
+                && $payload['subject'] === 'Reset your '.config('app.name').' password'
+                && Str::contains($payload['html'], '/reset-password/')
+                && Str::contains($payload['html'], 'email=reset%40example.com');
+        });
+    }
+
+    public function test_password_reset_delivery_fails_explicitly_when_no_transport_is_configured(): void
+    {
+        config([
+            'app.env' => 'production',
+            'services.otp.email_transport' => 'auto',
+            'services.resend.key' => null,
+            'services.resend.from' => null,
+            'mail.default' => 'log',
+        ]);
+
+        $this->expectException(RuntimeException::class);
+
+        app(OtpDeliveryService::class)
+            ->sendPasswordResetLink(new User(['name' => 'Test User', 'email' => 'test@example.com']), 'test-token');
     }
 
     public function test_password_reset_rejects_an_invalid_password(): void

@@ -33,6 +33,12 @@ TourLink uses Google Identity Services to receive an ID token and verifies that 
 
 New Google users must provide a phone number and account type, then complete TourLink's existing verification and approval process. Existing accounts are linked only when Google reports a verified email matching the stored address.
 
+## Email Delivery and Password Resets
+
+Password-reset links use the same configured email transport as account-verification email: authenticated SMTP (`MAIL_MAILER=smtp`, with host, username, password, and sender configured) or Resend (`RESEND_API_KEY` and `EMAIL_FROM`, with `OTP_EMAIL_TRANSPORT=resend` or `auto`). Configure these values in the deployed application's environment and refresh Laravel's cached configuration after changing them. Password reset requests fail explicitly when no real delivery transport is configured; they are not silently reported as sent.
+
+Use `php artisan tourlink:check-verification` to check the effective email transport on the server. For an end-to-end reset check, submit the forgot-password form using an account you control and check its inbox and spam folder.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
