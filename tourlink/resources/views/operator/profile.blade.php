@@ -23,7 +23,7 @@
         ]);
         $uploadedOperatorDocuments = collect($verificationRequest->documents ?? [])->pluck('key')->all();
     @endphp
-    <section class="grid gap-5 rounded bg-white p-5 shadow-soft transition duration-300 ease-out hover:-translate-y-0.5 hover:shadow-card sm:p-6" aria-labelledby="operator-verification-heading">
+    <section class="grid gap-5 rounded bg-white p-5 shadow-soft transition-shadow duration-300 ease-out hover:shadow-card sm:p-6" aria-labelledby="operator-verification-heading">
         <div>
             <p class="text-xs font-bold uppercase tracking-wider text-amber-900">Business verification</p>
             <h2 id="operator-verification-heading" class="mt-1 text-xl font-black text-slate-950">Submit your documents</h2>
