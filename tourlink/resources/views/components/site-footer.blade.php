@@ -34,6 +34,7 @@
             <a class="footer-link" href="{{ route('home') }}">Home</a>
             <a class="footer-link" href="{{ route('about') }}">About us</a>
             <a class="footer-link" href="{{ route('home') }}#destinations">Destinations</a>
+            <a class="footer-link" href="{{ route('contact') }}">Talk to us</a>
             <a class="footer-link" href="{{ route('blog.index') }}">Travel journal</a>
         </nav>
 
@@ -51,7 +52,7 @@
             <h2 id="footer-support-heading" class="text-sm font-extrabold text-white">Customer support</h2>
             <a class="footer-link" href="{{ route('home') }}#how-it-works">Help center</a>
             <a class="footer-link" href="#footer-faqs">FAQs</a>
-            <a class="footer-link" href="#footer-contact">Contact us</a>
+            <a class="footer-link" href="{{ route('contact') }}">Contact us</a>
         </section>
 
         <nav class="grid content-start gap-3" aria-labelledby="footer-legal-heading">
@@ -74,16 +75,6 @@
             <div class="grid gap-4 border-t border-white/10 pt-4 sm:grid-cols-2">
                 <div><h3 class="text-sm font-bold text-white">How do I book a trip or vehicle?</h3><p class="mt-1 text-sm leading-6 text-white/65">Browse a listing, choose your dates and details, then send a booking request. You can follow its status from your account.</p></div>
                 <div><h3 class="text-sm font-bold text-white">How do I list a trip or vehicle?</h3><p class="mt-1 text-sm leading-6 text-white/65">Create a provider account, complete your profile, and submit the required listing and verification information for review.</p></div>
-            </div>
-        </details>
-
-        <details id="footer-contact" class="footer-details md:col-span-2 xl:col-span-7">
-            <summary>Contact us</summary>
-            <div class="grid gap-2 border-t border-white/10 pt-4 text-sm leading-6 text-white/65">
-                <p>For booking help, sign in and message the provider from your booking. For other questions, contact us directly.</p>
-                @if ($supportEmail)<a class="footer-link w-fit" href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a>@endif
-                @if ($supportPhone)<a class="footer-link w-fit" href="tel:{{ preg_replace('/[^0-9+]/', '', $supportPhone) }}">{{ $supportPhone }}</a>@endif
-                @if ($supportPhoneSecondary)<a class="footer-link w-fit" href="tel:{{ preg_replace('/[^0-9+]/', '', $supportPhoneSecondary) }}">{{ $supportPhoneSecondary }}</a>@endif
             </div>
         </details>
 

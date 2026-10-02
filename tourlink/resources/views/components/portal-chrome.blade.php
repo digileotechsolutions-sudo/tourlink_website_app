@@ -175,7 +175,7 @@
                         @if (Route::has($settingsRoute[0]))<a href="{{ route($settingsRoute[0], $settingsRoute[1]) }}">{{ $role === \App\Role::Admin ? 'System settings' : 'Settings' }}</a>@endif
                         <a href="{{ route('password.change') }}">Password and security</a>
                         <a href="{{ route('home') }}#how-it-works">Help</a>
-                        <a href="{{ route('home') }}#footer-contact">Support</a>
+                        <a href="{{ route('contact') }}">Support</a>
                         @if (Route::has('privacy'))<a href="{{ route('privacy') }}">Privacy policy</a>@endif
                         @if (Route::has('terms'))<a href="{{ route('terms') }}" target="_blank" rel="noopener noreferrer">Terms</a>@endif
                         <form method="POST" action="{{ route('logout') }}" class="portal-profile-menu__logout">@csrf<button type="submit">Log out</button></form>

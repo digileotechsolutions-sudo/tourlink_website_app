@@ -73,13 +73,7 @@
                 <h2 id="about-contact-heading">Talk to Havenedge Tourlink.</h2>
                 <p>For questions, complaints, support, or other concerns, contact us using the details below.</p>
             </div>
-            <address>
-                <a href="mailto:tourlink@havenedgerealtors.com">tourlink@havenedgerealtors.com</a>
-                <a href="tel:+254783366409">+254 783 366 409</a>
-                <a href="tel:+254799591373">+254 799 591 373</a>
-                <a href="https://havenedgerealtors.com">havenedgerealtors.com</a>
-                <span>Nairobi, Kenya</span>
-            </address>
+            <a class="about-page__contact-link" href="{{ route('contact') }}">Visit our contact page <span aria-hidden="true">&rarr;</span></a>
         </section>
     </main>
 </div>

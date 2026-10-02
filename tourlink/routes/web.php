@@ -56,6 +56,7 @@ Route::post('/terms/accept', function (Request $request) {
 })->name('terms.accept');
 
 Route::view('/about', 'pages.about')->name('about');
+Route::view('/contact', 'pages.contact')->name('contact');
 
 Route::get('/', HomeController::class)->middleware('pwa.public')->name('home');
 Route::get('/trips', [TripController::class, 'index'])->middleware('pwa.public')->name('trips.index');

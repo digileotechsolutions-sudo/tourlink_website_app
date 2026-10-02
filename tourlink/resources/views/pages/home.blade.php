@@ -58,7 +58,7 @@
             <div class="mt-7 flex flex-wrap gap-3">
                 <a class="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-extrabold text-white hover:bg-[#150039]" href="{{ route('trips.index') }}">Explore trips</a>
                 <a class="inline-flex min-h-11 items-center rounded-full border border-slate-300 px-5 text-sm font-bold text-ink hover:bg-slate-50" href="{{ route('vehicles.index') }}">Browse vehicles</a>
-                <a class="inline-flex min-h-11 items-center rounded-full border border-slate-300 px-5 text-sm font-bold text-ink hover:bg-slate-50" href="{{ route('home') }}#footer-contact">Talk to us</a>
+                <a class="inline-flex min-h-11 items-center rounded-full border border-slate-300 px-5 text-sm font-bold text-ink hover:bg-slate-50" href="{{ route('contact') }}">Talk to us</a>
                 <a class="inline-flex min-h-11 items-center rounded-full border border-slate-300 px-5 text-sm font-bold text-ink hover:bg-slate-50" href="{{ route('about') }}">About Havenedge Tourlink</a>
             </div>
         </div>
