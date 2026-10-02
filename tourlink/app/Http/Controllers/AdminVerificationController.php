@@ -180,18 +180,41 @@ class AdminVerificationController extends Controller
      */
     public function document(VerificationRequest $verificationRequest, string $document): StreamedResponse
     {
+        $stored = $this->storedDocument($verificationRequest, $document);
+
+        return Storage::disk('local')->response(
+            $stored['path'],
+            $stored['original_name'] ?? $document,
+            ['Content-Type' => $stored['mime_type'] ?? 'application/octet-stream'],
+            'inline'
+        );
+    }
+
+    public function downloadDocument(VerificationRequest $verificationRequest, string $document): StreamedResponse
+    {
+        $stored = $this->storedDocument($verificationRequest, $document);
+
+        return Storage::disk('local')->download(
+            $stored['path'],
+            $stored['original_name'] ?? $document,
+            ['Content-Type' => $stored['mime_type'] ?? 'application/octet-stream'],
+        );
+    }
+
+    /**
+     * Resolve only a document attached to this request and stored on the private disk.
+     *
+     * @return array{path: string, original_name?: string, mime_type?: string}
+     */
+    private function storedDocument(VerificationRequest $verificationRequest, string $document): array
+    {
         $stored = collect($verificationRequest->documents ?? [])->firstWhere('key', $document);
         $stored = is_array($stored) ? $stored : [];
         $path = $stored['path'] ?? null;
 
         abort_unless(is_string($path) && Storage::disk('local')->exists($path), 404);
 
-        return Storage::disk('local')->response(
-            $path,
-            $stored['original_name'] ?? $document,
-            ['Content-Type' => $stored['mime_type'] ?? 'application/octet-stream'],
-            'inline'
-        );
+        return [...$stored, 'path' => $path];
     }
 
     /**

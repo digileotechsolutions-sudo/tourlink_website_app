@@ -219,6 +219,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/verification/{verificationRequest}/documents/{document}', [AdminVerificationController::class, 'document'])
         ->where('document', '[A-Za-z0-9_-]+')
         ->name('verification.document');
+    Route::get('/verification/{verificationRequest}/documents/{document}/download', [AdminVerificationController::class, 'downloadDocument'])
+        ->where('document', '[A-Za-z0-9_-]+')
+        ->name('verification.document.download');
     Route::patch('/vehicles/{vehicle}', [AdminModerationController::class, 'updateVehicle'])->name('vehicles.update');
 });
 

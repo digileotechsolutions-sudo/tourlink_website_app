@@ -64,7 +64,10 @@
                                     <li class="flex flex-wrap items-center justify-between gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2">
                                         <span class="text-sm font-semibold text-slate-700">{{ $label }}@if (! empty($document['size'])) <span class="font-normal text-slate-500">({{ number_format($document['size'] / 1024, 0) }} KB)</span>@endif</span>
                                         @if (Route::has('admin.verification.document'))
-                                            <a href="{{ route('admin.verification.document', [$verificationRequest, $document['key'] ?? '']) }}" target="_blank" rel="noopener" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100">Open</a>
+                                            <div class="flex flex-wrap gap-2">
+                                                <a href="{{ route('admin.verification.document', [$verificationRequest, $document['key'] ?? '']) }}" target="_blank" rel="noopener" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100">Open</a>
+                                                <a href="{{ route('admin.verification.document.download', [$verificationRequest, $document['key'] ?? '']) }}" class="rounded bg-ink px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-950">Download</a>
+                                            </div>
                                         @endif
                                     </li>
                                 @endforeach

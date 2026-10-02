@@ -60,6 +60,9 @@ class VehicleOwnerVerificationDocumentsTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.verification.document', [$verificationRequest, 'driving_license']))
             ->assertOk();
+
+        $this->get(route('admin.verification.document.download', [$verificationRequest, 'driving_license']))
+            ->assertDownload('driving-licence.pdf');
     }
 
     public function test_vehicle_packet_stores_private_documents_against_owned_vehicle(): void
