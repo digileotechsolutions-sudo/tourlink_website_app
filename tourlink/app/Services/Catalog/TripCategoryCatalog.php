@@ -9,18 +9,18 @@ use Illuminate\Support\Str;
 class TripCategoryCatalog
 {
     public const DEFAULT_CATEGORIES = [
-        'Safari & Wildlife 🦁',
-        'Beach & Coastal Tours 🏖️',
-        'Mountain & Hiking ⛰️',
-        'Cultural & Heritage Tours 🏛️',
-        'City Tours 🏙️',
-        'Nature & Adventure 🌿',
-        'Food & Culinary Tours 🍽️',
-        'Photography Tours 📸',
-        'Family Tours 👨‍👩‍👧‍👦',
-        'Luxury Tours ✨',
-        'Budget Tours 🎒',
-        'Camping & Outdoor ⛺',
+        'Safari & Wildlife',
+        'Beach & Coastal Tours',
+        'Mountain & Hiking',
+        'Cultural & Heritage Tours',
+        'City Tours',
+        'Nature & Adventure',
+        'Food & Culinary Tours',
+        'Photography Tours',
+        'Family Tours',
+        'Luxury Tours',
+        'Budget Tours',
+        'Camping & Outdoor',
         'Weekend Getaways',
         'Scenic Drives',
         'Safari Road Trips',
@@ -38,7 +38,7 @@ class TripCategoryCatalog
     public function all(): Collection
     {
         foreach (self::DEFAULT_CATEGORIES as $name) {
-            TripCategory::query()->firstOrCreate(
+            TripCategory::query()->updateOrCreate(
                 ['slug' => Str::slug($name)],
                 ['name' => $name],
             );

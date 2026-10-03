@@ -16,18 +16,18 @@ class TripCategoryCatalogTest extends TestCase
     public function test_tour_and_road_trip_categories_are_available_for_trip_discovery(): void
     {
         $expectedCategories = [
-            'Safari & Wildlife 🦁',
-            'Beach & Coastal Tours 🏖️',
-            'Mountain & Hiking ⛰️',
-            'Cultural & Heritage Tours 🏛️',
-            'City Tours 🏙️',
-            'Nature & Adventure 🌿',
-            'Food & Culinary Tours 🍽️',
-            'Photography Tours 📸',
-            'Family Tours 👨‍👩‍👧‍👦',
-            'Luxury Tours ✨',
-            'Budget Tours 🎒',
-            'Camping & Outdoor ⛺',
+            'Safari & Wildlife',
+            'Beach & Coastal Tours',
+            'Mountain & Hiking',
+            'Cultural & Heritage Tours',
+            'City Tours',
+            'Nature & Adventure',
+            'Food & Culinary Tours',
+            'Photography Tours',
+            'Family Tours',
+            'Luxury Tours',
+            'Budget Tours',
+            'Camping & Outdoor',
             'Weekend Getaways',
             'Scenic Drives',
             'Safari Road Trips',
@@ -51,7 +51,7 @@ class TripCategoryCatalogTest extends TestCase
 
         $this->get(route('trips.index'))
             ->assertOk()
-            ->assertSee('Safari &amp; Wildlife 🦁')
+            ->assertSee('Safari &amp; Wildlife')
             ->assertSee('Weekend Getaways');
     }
 
@@ -61,7 +61,7 @@ class TripCategoryCatalogTest extends TestCase
 
         $this->get(route('trips.index'))
             ->assertOk()
-            ->assertSee('Safari &amp; Wildlife 🦁')
+            ->assertSee('Safari &amp; Wildlife')
             ->assertSee('Cross-Country Trips');
 
         $this->assertDatabaseCount('trip_categories', 24);
@@ -75,7 +75,7 @@ class TripCategoryCatalogTest extends TestCase
         $this->actingAs($operator)
             ->get(route('operator.trips.create'))
             ->assertOk()
-            ->assertSee('Safari &amp; Wildlife 🦁')
+            ->assertSee('Safari &amp; Wildlife')
             ->assertSee('Cross-Country Trips');
 
         $this->assertDatabaseCount('trip_categories', 24);
@@ -89,9 +89,25 @@ class TripCategoryCatalogTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.trips.create'))
             ->assertOk()
-            ->assertSee('Safari &amp; Wildlife 🦁')
+            ->assertSee('Safari &amp; Wildlife')
             ->assertSee('Cross-Country Trips');
 
         $this->assertDatabaseCount('trip_categories', 24);
+    }
+
+    public function test_category_catalog_removes_emojis_from_existing_default_category_names(): void
+    {
+        TripCategory::query()->create([
+            'name' => 'Safari & Wildlife 🦁',
+            'slug' => Str::slug('Safari & Wildlife'),
+        ]);
+
+        app(\App\Services\Catalog\TripCategoryCatalog::class)->all();
+
+        $this->assertDatabaseHas('trip_categories', [
+            'name' => 'Safari & Wildlife',
+            'slug' => Str::slug('Safari & Wildlife'),
+        ]);
+        $this->assertDatabaseMissing('trip_categories', ['name' => 'Safari & Wildlife 🦁']);
     }
 }

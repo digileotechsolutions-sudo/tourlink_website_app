@@ -12,15 +12,14 @@ return new class extends Migration
         foreach (TripCategoryCatalog::DEFAULT_CATEGORIES as $name) {
             $slug = Str::slug($name);
 
-            if (DB::table('trip_categories')->where('slug', $slug)->exists()) {
-                continue;
-            }
-
-            DB::table('trip_categories')->insert([
-                'id' => (string) Str::ulid(),
-                'name' => $name,
-                'slug' => $slug,
-            ]);
+            DB::table('trip_categories')->updateOrInsert(
+                ['slug' => $slug],
+                [
+                    'id' => DB::table('trip_categories')->where('slug', $slug)->value('id') ?? (string) Str::ulid(),
+                    'name' => $name,
+                    'slug' => $slug,
+                ],
+            );
         }
     }
 
