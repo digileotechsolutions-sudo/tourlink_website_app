@@ -30,6 +30,7 @@
 
         <form id="register-form" method="POST" action="{{ route('register') }}" data-auth-form data-form-draft="register" data-provider-role-fields data-auth-loading-label="Creating account...">
             @csrf
+            @if ($continueToSupport)<input type="hidden" name="continue" value="support">@endif
 
             <div class="auth-field">
                 <label for="name">Your name</label>

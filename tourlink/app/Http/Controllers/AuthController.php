@@ -34,29 +34,34 @@ class AuthController extends Controller
 {
     public function showLogin(Request $request): View
     {
+        $this->rememberSupportDestination($request);
+        $continueToSupport = $request->session()->get('url.intended') === route('support.index');
         $googleClientId = (string) config('services.google.client_id');
         $googleNonce = $this->issueGoogleNonce($request, 'login', Role::Traveler->value);
 
-        return view('pages.auth.login', compact('googleClientId', 'googleNonce'));
+        return view('pages.auth.login', compact('googleClientId', 'googleNonce', 'continueToSupport'));
     }
 
     public function showRegistration(Request $request, ReferralService $referrals, AccountVerificationService $verification): View
     {
+        $this->rememberSupportDestination($request);
         $role = $request->query('role');
         $initialRole = in_array($role, [Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value], true)
             ? $role
             : Role::Traveler->value;
+        $continueToSupport = $request->session()->get('url.intended') === route('support.index');
 
         $referrer = $referrals->captureReferrer($request);
         $verificationAvailable = $verification->canDeliver(OtpChannel::Email);
         $googleClientId = (string) config('services.google.client_id');
         $googleNonce = $this->issueGoogleNonce($request, 'register', $initialRole);
 
-        return view('pages.auth.register', compact('initialRole', 'referrer', 'verificationAvailable', 'googleClientId', 'googleNonce'));
+        return view('pages.auth.register', compact('initialRole', 'referrer', 'verificationAvailable', 'googleClientId', 'googleNonce', 'continueToSupport'));
     }
 
     public function login(Request $request, AccountVerificationService $verification): mixed
     {
+        $this->rememberSupportDestination($request);
         $credentials = $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'max:255'],
@@ -75,15 +80,25 @@ class AuthController extends Controller
                 ? 'Your account has been suspended. Please contact Havenedge Tourlink support.'
                 : 'Your account is inactive. Please contact Havenedge Tourlink support.';
 
+            $continueToSupport = $request->session()->get('url.intended') === route('support.index');
             $this->discardSession($request);
+            if ($continueToSupport) {
+                $request->session()->put('url.intended', route('support.index'));
+            }
 
-            return back()->withErrors(['email' => $message])->onlyInput('email');
+            return redirect()->route('login', $continueToSupport ? ['continue' => 'support'] : [])
+                ->withErrors(['email' => $message])
+                ->onlyInput('email');
         }
 
         if (! $verification->isFullyVerified($user)) {
+            $continueToSupport = $request->session()->get('url.intended') === route('support.index');
             $this->discardSession($request);
+            if ($continueToSupport) {
+                $request->session()->put('url.intended', route('support.index'));
+            }
 
-            return redirect()->route('verification.notice', ['user' => $user->id])
+            return redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))
                 ->with('status', 'Verify your '.$verification->describeChannels($verification->pendingChannels($user)).' before signing in.');
         }
 
@@ -92,9 +107,15 @@ class AuthController extends Controller
                 ? 'Your account is waiting for admin approval.'
                 : 'Your account was not approved. Please contact Havenedge Tourlink support.';
 
+            $continueToSupport = $request->session()->get('url.intended') === route('support.index');
             $this->discardSession($request);
+            if ($continueToSupport) {
+                $request->session()->put('url.intended', route('support.index'));
+            }
 
-            return back()->withErrors(['email' => $message])->onlyInput('email');
+            return redirect()->route('login', $continueToSupport ? ['continue' => 'support'] : [])
+                ->withErrors(['email' => $message])
+                ->onlyInput('email');
         }
 
         $request->session()->regenerate();
@@ -116,6 +137,7 @@ class AuthController extends Controller
         AccountVerificationService $verification,
         ReferralService $referrals,
     ): mixed {
+        $this->rememberSupportDestination($request);
         Log::info('Registration pipeline: request received.');
 
         $input = $request->validate([
@@ -182,7 +204,7 @@ class AuthController extends Controller
             $status = 'Your account was created, but a verification message could not be delivered. Use resend to try again.';
         }
 
-        $redirect = redirect()->route('verification.notice', ['user' => $user->id])
+        $redirect = redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))
             ->with('status', $status)
             ->with('referred_by', $referral?->referrer?->name);
 
@@ -317,6 +339,27 @@ class AuthController extends Controller
         }
 
         return $user->role === Role::Traveler || ! Route::has('dashboard') ? route('home') : route('dashboard');
+    }
+
+    private function rememberSupportDestination(Request $request): void
+    {
+        if ($request->input('continue', $request->query('continue')) === 'support' && Route::has('support.index')) {
+            $request->session()->put('url.intended', route('support.index'));
+        }
+    }
+
+    /**
+     * @return array{user: string, continue?: string}
+     */
+    private function verificationRouteParameters(Request $request, string $userId): array
+    {
+        $parameters = ['user' => $userId];
+
+        if ($request->session()->get('url.intended') === route('support.index')) {
+            $parameters['continue'] = 'support';
+        }
+
+        return $parameters;
     }
 
     private function canVisitIntendedPath(User $user, mixed $intendedUrl): bool

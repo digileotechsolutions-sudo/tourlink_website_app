@@ -19,6 +19,9 @@
 
             @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
             @if(session('referred_by'))<p class="auth-msg auth-msg-notice" role="status"><strong>{{ session('referred_by') }}</strong> referred you. Your referral is credited once your account is approved.</p>@endif
+            @if($user->email_verified_at && $user->approval_status === \App\AccountApprovalStatus::Pending)
+                <p class="auth-msg auth-msg-notice" role="status">Your email is verified. Please wait for an administrator to approve your account. Once approved, sign in to continue to support chat.</p>
+            @endif
             <p class="auth-msg auth-msg-notice pwa-online-only" data-online-only-notice hidden>Email OTP verification requires an internet connection. Please reconnect and retry.</p>
             @error('code')<p id="verification-code-error" class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
             @error('user_id')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
@@ -49,6 +52,7 @@
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{ $user->id }}">
                                 <input type="hidden" name="channel" value="{{ $channel->value }}">
+                                @if ($continueToSupport)<input type="hidden" name="continue" value="support">@endif
                                 <input type="hidden" name="code" data-otp-value>
                                 <div class="auth-otp-inputs" role="group" aria-label="{{ $verification['label'] }} verification code">
                                     @for($digit = 0; $digit < 6; $digit++)
@@ -61,6 +65,7 @@
                                 @csrf
                                 <input type="hidden" name="user_id" value="{{ $user->id }}">
                                 <input type="hidden" name="channel" value="{{ $channel->value }}">
+                                @if ($continueToSupport)<input type="hidden" name="continue" value="support">@endif
                                 <button class="auth-resend" type="submit" data-resend-button>Resend {{ $isEmail ? 'email' : 'SMS' }} code <span data-resend-countdown></span></button>
                             </form>
                         @else
@@ -74,7 +79,7 @@
                 <p class="auth-msg auth-msg-error" role="alert">Account verification delivery is not configured. Please contact Havenedge Tourlink support.</p>
             @endif
 
-            <p class="auth-footer"><a href="{{ route('register') }}">Return to registration</a><span aria-hidden="true"> · </span><a href="{{ route('login') }}">Go to sign in</a></p>
+            <p class="auth-footer"><a href="{{ route('register', $continueToSupport ? ['continue' => 'support'] : []) }}">Return to registration</a><span aria-hidden="true"> · </span><a href="{{ route('login', $continueToSupport ? ['continue' => 'support'] : []) }}">Go to sign in</a></p>
         </div>
     </section>
 </div>

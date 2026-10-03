@@ -20,12 +20,14 @@ use Throwable;
 
 class VerificationController extends Controller
 {
-    public function show(string $user, AccountVerificationService $verification): View
+    public function show(Request $request, string $user, AccountVerificationService $verification): View
     {
         $user = User::query()->findOrFail($user);
         $verificationMethods = $verification->methodsFor($user);
+        $continueToSupport = $request->query('continue') === 'support'
+            || $request->session()->get('url.intended') === route('support.index');
 
-        return view('pages.auth.verification', compact('user', 'verificationMethods'));
+        return view('pages.auth.verification', compact('user', 'verificationMethods', 'continueToSupport'));
     }
 
     public function verify(Request $request, OtpService $otpService, OtpDeliveryService $delivery, AccountVerificationService $verification, ReferralService $referrals): mixed
@@ -34,7 +36,12 @@ class VerificationController extends Controller
             'user_id' => ['required', 'string', 'exists:users,id'],
             'channel' => ['required', Rule::in([OtpChannel::Email->value])],
             'code' => ['required', 'digits:6'],
+            'continue' => ['nullable', Rule::in(['support'])],
         ]);
+
+        if (($input['continue'] ?? null) === 'support') {
+            $request->session()->put('url.intended', route('support.index'));
+        }
 
         $user = User::query()->findOrFail($input['user_id']);
         $channel = OtpChannel::from($input['channel']);
@@ -48,7 +55,7 @@ class VerificationController extends Controller
                 default => 'That verification code is incorrect.',
             };
 
-            return redirect()->route('verification.notice', ['user' => $user->id])->withErrors(['code' => $message]);
+            return redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))->withErrors(['code' => $message]);
         }
 
         $user->refresh();
@@ -86,7 +93,7 @@ class VerificationController extends Controller
             ? 'All contact methods verified. Your account is now waiting for admin approval.'
             : 'Contact verified. Verify your remaining '.$verification->describeChannels($pending).'.';
 
-        return redirect()->route('verification.notice', ['user' => $user->id])->with('status', $status);
+        return redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))->with('status', $status);
     }
 
     public function resend(Request $request, OtpService $otpService, AccountVerificationService $verification): mixed
@@ -94,18 +101,23 @@ class VerificationController extends Controller
         $input = $request->validate([
             'user_id' => ['required', 'string', 'exists:users,id'],
             'channel' => ['required', Rule::in([OtpChannel::Email->value])],
+            'continue' => ['nullable', Rule::in(['support'])],
         ]);
+
+        if (($input['continue'] ?? null) === 'support') {
+            $request->session()->put('url.intended', route('support.index'));
+        }
 
         $user = User::query()->findOrFail($input['user_id']);
         $channel = OtpChannel::from($input['channel']);
         $verified = $channel === OtpChannel::Email ? $user->email_verified_at : $user->phone_verified_at;
 
         if ($verified) {
-            return redirect()->route('verification.notice', ['user' => $user->id])->withErrors(['code' => 'That contact method is already verified.']);
+            return redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))->withErrors(['code' => 'That contact method is already verified.']);
         }
 
         if (! $verification->canDeliver($channel)) {
-            return redirect()->route('verification.notice', ['user' => $user->id])
+            return redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))
                 ->withErrors(['code' => 'Verification codes cannot currently be sent to your '.$verification->label($channel).'.']);
         }
 
@@ -114,10 +126,10 @@ class VerificationController extends Controller
         } catch (Throwable $exception) {
             report($exception);
 
-            return redirect()->route('verification.notice', ['user' => $user->id])->withErrors(['code' => 'We could not resend that verification code.']);
+            return redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))->withErrors(['code' => 'We could not resend that verification code.']);
         }
 
-        $redirect = redirect()->route('verification.notice', ['user' => $user->id])
+        $redirect = redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))
             ->with('status', 'A new verification code was sent.');
 
         if ($code) {
@@ -125,5 +137,19 @@ class VerificationController extends Controller
         }
 
         return $redirect;
+    }
+
+    /**
+     * @return array{user: string, continue?: string}
+     */
+    private function verificationRouteParameters(Request $request, string $userId): array
+    {
+        $parameters = ['user' => $userId];
+
+        if ($request->session()->get('url.intended') === route('support.index')) {
+            $parameters['continue'] = 'support';
+        }
+
+        return $parameters;
     }
 }

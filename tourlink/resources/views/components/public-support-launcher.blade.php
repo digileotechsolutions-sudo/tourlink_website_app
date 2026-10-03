@@ -21,8 +21,8 @@
                 <p class="public-support-launcher__note">Customer support chat is available from a traveler account.</p>
             @endif
         @else
-            <a class="public-support-launcher__action" href="{{ route('support.index') }}">Sign in to chat</a>
-            <a class="public-support-launcher__register" href="{{ route('register') }}">Create an account</a>
+            <a class="public-support-launcher__action" href="{{ route('login', ['continue' => 'support']) }}">Sign in to chat</a>
+            <a class="public-support-launcher__register" href="{{ route('register', ['continue' => 'support']) }}">Create an account</a>
         @endauth
     </section>
 </details>

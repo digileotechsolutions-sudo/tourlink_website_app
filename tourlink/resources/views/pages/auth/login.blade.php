@@ -15,6 +15,7 @@
         @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
         @error('google')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
         <form method="POST" action="{{ route('login') }}" data-auth-form data-auth-loading-label="Signing in...">@csrf
+            @if ($continueToSupport)<input type="hidden" name="continue" value="support">@endif
             <div class="auth-login-field">
                 <label for="email">Email address</label>
                 <div class="auth-login-control">
@@ -46,7 +47,7 @@
             </div>
         </form>
         @include('components.google-auth-button', ['googleClientId' => $googleClientId, 'googleNonce' => $googleNonce, 'mode' => 'login'])
-        <p class="auth-login-footer">New to Havenedge Tourlink? <a href="{{ route('register') }}">Create an account</a></p>
+        <p class="auth-login-footer">New to Havenedge Tourlink? <a href="{{ route('register', $continueToSupport ? ['continue' => 'support'] : []) }}">Create an account</a></p>
     </section>
 </div>
 @endsection
