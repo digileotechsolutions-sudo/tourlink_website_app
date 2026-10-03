@@ -14,7 +14,7 @@
             <header class="auth-header">
                 <div class="auth-verification-icon" aria-hidden="true">✓</div>
                 <h2>Check your contacts</h2>
-                <p class="auth-subtitle">We sent a six-digit verification code. Each code expires after five minutes.</p>
+                <p class="auth-subtitle">Enter the six-digit code from your verification email. Each code expires after five minutes. If it has not arrived, check your spam folder or request another code.</p>
             </header>
 
             @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif

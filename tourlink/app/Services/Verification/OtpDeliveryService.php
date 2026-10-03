@@ -28,7 +28,8 @@ class OtpDeliveryService
 
     public function logDelivery(): bool
     {
-        return $this->mode() === self::MODE_LOG;
+        return $this->mode() === self::MODE_LOG
+            && (app()->isLocal() || app()->environment('testing'));
     }
 
     public function developmentMode(): bool
@@ -262,7 +263,7 @@ class OtpDeliveryService
         $transport = $this->emailTransport();
 
         if ($transport === 'smtp') {
-            Mail::html($html, function (Message $message) use ($recipient, $subject): void {
+            Mail::mailer('smtp')->html($html, function (Message $message) use ($recipient, $subject): void {
                 $message->to($recipient)->subject($subject);
             });
 

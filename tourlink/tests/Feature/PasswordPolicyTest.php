@@ -86,6 +86,35 @@ class PasswordPolicyTest extends TestCase
             ->assertSee('Signup is temporarily unavailable because email verification delivery is not configured.');
     }
 
+    public function test_log_only_otp_delivery_is_not_available_in_production(): void
+    {
+        app()->detectEnvironment(fn (): string => 'production');
+        config([
+            'app.env' => 'production',
+            'services.otp.delivery' => 'log',
+            'services.resend.key' => null,
+            'services.resend.from' => null,
+            'mail.default' => 'log',
+        ]);
+
+        $delivery = app(OtpDeliveryService::class);
+
+        $this->assertFalse($delivery->logDelivery());
+        $this->assertFalse($delivery->canDeliver(OtpChannel::Email));
+
+        $this->post(route('register'), [
+            'name' => 'Nelson Kwoba',
+            'email' => 'nelson@example.com',
+            'phone' => '0705359472',
+            'terms_accepted' => '1',
+            'password' => 'Jungle@Trail29',
+            'password_confirmation' => 'Jungle@Trail29',
+            'role' => 'TRAVELER',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertDatabaseMissing('users', ['email' => 'nelson@example.com']);
+    }
+
     public function test_provider_registration_requires_and_saves_business_details(): void
     {
         $this->from(route('register'))->post(route('register'), [

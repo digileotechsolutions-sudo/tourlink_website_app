@@ -118,7 +118,7 @@ class VerificationController extends Controller
 
         if (! $verification->canDeliver($channel)) {
             return redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))
-                ->withErrors(['code' => 'Verification codes cannot currently be sent to your '.$verification->label($channel).'.']);
+                ->withErrors(['code' => 'Email delivery is not configured on the server, so a verification code cannot be sent. Please contact Havenedge Tourlink support.']);
         }
 
         try {
@@ -126,11 +126,12 @@ class VerificationController extends Controller
         } catch (Throwable $exception) {
             report($exception);
 
-            return redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))->withErrors(['code' => 'We could not resend that verification code.']);
+            return redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))
+                ->withErrors(['code' => 'The email provider could not accept the verification email. Please contact Havenedge Tourlink support.']);
         }
 
         $redirect = redirect()->route('verification.notice', $this->verificationRouteParameters($request, $user->id))
-            ->with('status', 'A new verification code was sent.');
+            ->with('status', 'A new verification email was accepted by the mail provider. Check your inbox and spam folder.');
 
         if ($code) {
             $redirect->with($channel === OtpChannel::Email ? 'dev_otp_email' : 'dev_otp_phone', $code);

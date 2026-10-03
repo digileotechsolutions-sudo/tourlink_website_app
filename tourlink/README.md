@@ -37,7 +37,11 @@ New Google users must provide a phone number and account type, then complete Tou
 
 Password-reset links use the same configured email transport as account-verification email: authenticated SMTP (`MAIL_MAILER=smtp`, with host, username, password, and sender configured) or Resend (`RESEND_API_KEY` and `EMAIL_FROM`, with `OTP_EMAIL_TRANSPORT=resend` or `auto`). Configure these values in the deployed application's environment and refresh Laravel's cached configuration after changing them. Password reset requests fail explicitly when no real delivery transport is configured; they are not silently reported as sent.
 
-Use `php artisan tourlink:check-verification` to check the effective email transport on the server. For an end-to-end reset check, submit the forgot-password form using an account you control and check its inbox and spam folder.
+`OTP_DELIVERY=log` is restricted to local/testing environments and is not a production email transport. Production registrations and resend requests require working authenticated SMTP or Resend configuration.
+
+Use `php artisan tourlink:check-verification` to check the effective email transport on the server. For an end-to-end delivery test, run `php artisan tourlink:check-verification --email=you@example.com` with an inbox you control, then check its inbox and spam folder. The command prints a temporary test code; do not share it.
+
+After changing deployed mail configuration, refresh cached configuration with `php artisan config:clear` (or rebuild the config cache during deployment).
 
 ## Learning Laravel
 
