@@ -13,7 +13,7 @@
                 <p>We bring together <strong>tourists, travellers, vehicle owners, tour operators, drivers, and towing/recovery operators</strong> on one convenient platform, making it easier for users to discover services, connect with service providers, and arrange the support they need.</p>
             </div>
             <div class="about-page__hero-media">
-                <img src="https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&fit=crop&w=900&q=78" srcset="https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&fit=crop&w=600&q=74 600w, https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&fit=crop&w=900&q=78 900w, https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&fit=crop&w=1200&q=82 1200w" sizes="(max-width: 767px) 100vw, 48vw" alt="Kenyan safari landscape" fetchpriority="high" decoding="async">
+                <img src="{{ asset('images/about-kenya-journey.svg') }}" alt="Illustration of a safari vehicle travelling across the Kenyan savannah" fetchpriority="high" decoding="async">
                 <span>Travel, transport and local connections</span>
             </div>
         </div>
