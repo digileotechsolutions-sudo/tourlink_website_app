@@ -34,7 +34,7 @@ class PasswordController extends Controller
 
         $request->user()->forceFill(['password' => $input['password']])->save();
 
-        return back()->with('status', 'Your password has been changed.');
+        return back()->with('status', __('Your password has been changed.'));
     }
 
     public function sendResetLink(Request $request): mixed
@@ -43,7 +43,7 @@ class PasswordController extends Controller
 
         Password::sendResetLink(['email' => Str::lower(trim($input['email']))]);
 
-        return back()->with('status', 'If that email is registered, password reset instructions have been sent.');
+        return back()->with('status', __('If that email is registered, password reset instructions have been sent.'));
     }
 
     public function resetForm(string $token, Request $request): View
@@ -84,9 +84,9 @@ class PasswordController extends Controller
         );
 
         if ($status !== Password::PASSWORD_RESET) {
-            return back()->withErrors(['email' => 'That password reset link is invalid or expired.']);
+            return back()->withErrors(['email' => __('That password reset link is invalid or expired.')]);
         }
 
-        return redirect()->route('login')->with('status', 'Your password has been reset. You can now sign in.');
+        return redirect()->route('login')->with('status', __('Your password has been reset. You can now sign in.'));
     }
 }

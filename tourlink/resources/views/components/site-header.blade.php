@@ -1,51 +1,95 @@
-<header class="site-header sticky top-0 z-40 border-b border-white/10 bg-ink text-white">
-    <div class="container-page flex h-[76px] items-center justify-between gap-6">
-        <a class="site-header__brand flex items-center gap-2.5" href="{{ route('home') }}" aria-label="Havenedge Tourlink home">
-            <span class="site-header__brand-icon grid size-9 place-items-center rounded-xl bg-sun text-ink" aria-hidden="true">
-                <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z"/></svg>
+@php
+    $dashboardRoute = match (auth()->user()?->role) {
+        \App\Role::Admin => 'admin.dashboard',
+        \App\Role::Operator => 'operator.dashboard',
+        \App\Role::VehicleOwner => 'vehicle-owner.dashboard',
+        \App\Role::Traveler => 'dashboard',
+        default => 'home',
+    };
+@endphp
+
+<header class="site-header">
+    <div class="site-header__inner container-page">
+        <a class="site-header__brand" href="{{ route('home') }}" aria-label="{{ __('Havenedge Tourlink home') }}">
+            <span class="site-header__brand-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z"></path>
+                </svg>
             </span>
-            <span><span class="site-header__brand-name block text-lg font-black">Havenedge <span class="text-sun">Tourlink</span></span><span class="hidden text-[8px] font-bold uppercase tracking-[.18em] text-white/50 sm:block">Trips · Vehicles · Together</span></span>
+            <span class="site-header__brand-copy">
+                <span class="site-header__brand-name">Havenedge <strong>Tourlink</strong></span>
+                <span class="site-header__tagline">{{ __('Trips · Vehicles · Together') }}</span>
+            </span>
         </a>
-        <nav class="hidden items-center gap-1 text-sm font-semibold text-white/75 lg:flex xl:gap-2" aria-label="Main navigation">
-            <a class="hover:text-white" href="{{ route('trips.index') }}">Find a trip</a>
-            <a class="hover:text-white" href="{{ route('vehicles.index') }}">Hire a vehicle</a>
-            <a class="hover:text-white" href="{{ route('blog.index') }}">Journal</a>
-            <a class="hover:text-white" href="{{ route('about') }}">About us</a>
-            <a class="hover:text-white" href="{{ route('contact') }}">Talk to us</a>
-            <a class="hover:text-white" href="{{ route('home') }}#destinations">Destinations</a>
+
+        <nav class="site-header__nav" aria-label="{{ __('Main navigation') }}">
+            <a href="{{ route('trips.index') }}" @class(['is-active' => request()->routeIs('trips.*')])>{{ __('Find a trip') }}</a>
+            <a href="{{ route('vehicles.index') }}" @class(['is-active' => request()->routeIs('vehicles.*')])>{{ __('Hire a vehicle') }}</a>
+            <a href="{{ route('blog.index') }}" @class(['is-active' => request()->routeIs('blog.*')])>{{ __('Journal') }}</a>
+            <a href="{{ route('about') }}" @class(['is-active' => request()->routeIs('about')])>{{ __('About') }}</a>
+            <a href="{{ route('home') }}#destinations">{{ __('Destinations') }}</a>
         </nav>
-        <div class="hidden items-center gap-4 sm:flex">
-            @auth
-                @if(auth()->user()->role === \App\Role::Admin && Route::has('admin.dashboard'))<a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('admin.dashboard') }}">Admin dashboard</a>@elseif(Route::has('dashboard'))<a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('dashboard') }}">Dashboard</a>@endif
-                @if(Route::has('logout'))<form method="POST" action="{{ route('logout') }}">@csrf<button class="rounded-full bg-sun px-5 py-3 text-sm font-extrabold text-ink hover:bg-orange-300" type="submit">Log out</button></form>@endif
-            @else
-                @if(Route::has('login'))<a class="text-sm font-bold text-white/80 hover:text-white" href="{{ route('login') }}">Log in</a>@endif
-                @if(Route::has('register'))<a class="rounded-full bg-sun px-5 py-3 text-sm font-extrabold text-ink hover:bg-orange-300" href="{{ route('register') }}">Join Havenedge Tourlink</a>@endif
-            @endauth
-        </div>
-        <x-language-switcher />
-        <details class="relative lg:hidden">
-            <summary class="grid size-11 cursor-pointer list-none place-items-center rounded-lg p-2 hover:bg-white/10" aria-label="Open navigation menu">
-                <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-            </summary>
-            <div class="absolute right-0 top-14 z-50 grid min-w-56 gap-2 rounded-xl border border-white/10 bg-ink p-4 shadow-xl">
-                <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('trips.index') }}">Find a trip</a>
-                <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('vehicles.index') }}">Hire a vehicle</a>
-                <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('blog.index') }}">Journal</a>
-                <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('about') }}">About us</a>
-                <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('contact') }}">Talk to us</a>
-                <a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('home') }}#destinations">Destinations</a>
+
+        <div class="site-header__actions">
+            <x-language-switcher />
+            <div class="site-header__account-actions">
                 @auth
-                    @if(auth()->user()->role === \App\Role::Admin && Route::has('admin.dashboard'))<a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.dashboard') }}">Admin review</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.users.index') }}">Users</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.verification.index') }}">Verification</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.trips.index') }}">Manage trips</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.vehicles.index') }}">Manage vehicles</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.catalog.index') }}">Catalog</a><a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('admin.audit.index') }}">Audit log</a>@endif
+                    @if (Route::has($dashboardRoute))
+                        <a class="site-header__account-link" href="{{ route($dashboardRoute) }}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="8" r="4"></circle>
+                                <path d="M4 21a8 8 0 0 1 16 0"></path>
+                            </svg>
+                            <span>{{ __('My account') }}</span>
+                        </a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="site-header__join" type="submit">{{ __('Log out') }}</button>
+                    </form>
+                @else
+                    <a class="site-header__login" href="{{ route('login') }}">{{ __('Log in') }}</a>
+                    <a class="site-header__join" href="{{ route('register') }}">{{ __('Join Tourlink') }}</a>
                 @endauth
-                @guest
-                    @if(Route::has('login'))<a class="rounded-lg px-3 py-3 font-semibold text-white/85 hover:bg-white/10" href="{{ route('login') }}">Log in</a>@endif
-                    @if(Route::has('register'))<a class="rounded-full bg-sun px-4 py-3 text-center text-sm font-extrabold text-ink" href="{{ route('register') }}">Join Havenedge Tourlink</a>@endif
-                @endguest
+            </div>
+        </div>
+
+        <details class="site-header__mobile">
+            <summary aria-label="{{ __('Open navigation menu') }}">
+                <svg class="site-header__menu-open" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+                <svg class="site-header__menu-close" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="m6 6 12 12M18 6 6 18"></path>
+                </svg>
+                <span class="sr-only">{{ __('Toggle navigation menu') }}</span>
+            </summary>
+            <div class="site-header__mobile-panel">
+                <p class="site-header__mobile-eyebrow">{{ __('Explore Havenedge Tourlink') }}</p>
+                <nav aria-label="{{ __('Mobile navigation') }}">
+                    <a href="{{ route('trips.index') }}">{{ __('Find a trip') }} <span aria-hidden="true">→</span></a>
+                    <a href="{{ route('vehicles.index') }}">{{ __('Hire a vehicle') }} <span aria-hidden="true">→</span></a>
+                    <a href="{{ route('blog.index') }}">{{ __('Journal') }} <span aria-hidden="true">→</span></a>
+                    <a href="{{ route('about') }}">{{ __('About us') }} <span aria-hidden="true">→</span></a>
+                    <a href="{{ route('contact') }}">{{ __('Talk to us') }} <span aria-hidden="true">→</span></a>
+                    <a href="{{ route('home') }}#destinations">{{ __('Destinations') }} <span aria-hidden="true">→</span></a>
+                </nav>
+                <div class="site-header__mobile-account">
+                    @auth
+                        @if (Route::has($dashboardRoute))
+                            <a class="site-header__mobile-primary" href="{{ route($dashboardRoute) }}">{{ __('My account') }}</a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit">{{ __('Log out') }}</button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}">{{ __('Log in') }}</a>
+                        <a class="site-header__mobile-primary" href="{{ route('register') }}">{{ __('Join Tourlink') }}</a>
+                    @endauth
+                </div>
             </div>
         </details>
     </div>
 </header>
-<div>
-    <!-- We must ship. - Taylor Otwell -->
-</div>

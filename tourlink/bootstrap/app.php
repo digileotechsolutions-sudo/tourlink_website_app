@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureAccountAccess;
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\ApplyLocale;
 use App\Http\Middleware\MarkPublicPwaPages;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureAdmin::class,
             'pwa.public' => MarkPublicPwaPages::class,
         ]);
+        $middleware->appendToGroup('web', ApplyLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash([

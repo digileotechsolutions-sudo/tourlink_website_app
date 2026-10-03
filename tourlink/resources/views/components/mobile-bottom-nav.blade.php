@@ -51,46 +51,47 @@
         };
     @endphp
 
-    <header class="mobile-app-header lg:hidden" aria-label="App navigation">
-        <a class="mobile-app-brand" href="{{ route($dashboardRoute) }}" aria-label="Havenedge Tourlink dashboard">
+    <header class="mobile-app-header lg:hidden" aria-label="{{ __('App navigation') }}">
+        <a class="mobile-app-brand" href="{{ route($dashboardRoute) }}" aria-label="Havenedge Tourlink {{ __('Dashboard') }}">
             <span class="mobile-app-brand__mark">HT</span>
         </a>
-        <h1 class="mobile-app-title">{{ $pageTitle }}</h1>
+        <h1 class="mobile-app-title">{{ __($pageTitle) }}</h1>
         <div class="mobile-app-actions">
             @if ($role === \App\Role::Admin)
-                <a class="mobile-app-icon" href="{{ route('admin.users.index') }}" aria-label="Search users">
+                <a class="mobile-app-icon" href="{{ route('admin.users.index') }}" aria-label="{{ __('Search users') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
                 </a>
             @endif
-            <a class="mobile-app-icon" href="{{ route($notificationsRoute, $notificationsParameters) }}" aria-label="Notifications">
+            <a class="mobile-app-icon" href="{{ route($notificationsRoute, $notificationsParameters) }}" aria-label="{{ __('Notifications') }}">
                 <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
             </a>
-            <a class="mobile-app-icon" href="{{ route($profileRoute) }}" aria-label="Profile">
+            <a class="mobile-app-icon" href="{{ route($profileRoute) }}" aria-label="{{ __('Profile') }}">
                 <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
             </a>
             <details class="mobile-app-menu">
-                <summary class="mobile-app-icon" aria-label="Open app menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary>
+                <summary class="mobile-app-icon" aria-label="{{ __('Open app menu') }}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary>
                 <div class="mobile-menu-panel">
+                    <x-language-switcher />
                     @foreach ($menuLinks as $menuLink)
-                        @if (Route::has($menuLink[0]))<a href="{{ route($menuLink[0], $menuLink[2] ?? []) }}">{{ $menuLink[1] }}@if($menuLink[1] === 'Support' && $supportUnreadCount > 0)<span class="ml-2 rounded-full bg-pink-600 px-2 py-0.5 text-[10px] font-bold text-white">{{ min(99, $supportUnreadCount) }}</span>@endif</a>@endif
+                        @if (Route::has($menuLink[0]))<a href="{{ route($menuLink[0], $menuLink[2] ?? []) }}">{{ __($menuLink[1]) }}@if($menuLink[1] === 'Support' && $supportUnreadCount > 0)<span class="ml-2 rounded-full bg-pink-600 px-2 py-0.5 text-[10px] font-bold text-white">{{ min(99, $supportUnreadCount) }}</span>@endif</a>@endif
                     @endforeach
                     <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-200 pt-2">
                         @csrf
-                        <button type="submit" class="w-full px-4 py-3 text-left font-bold text-red-700">Log out</button>
+                        <button type="submit" class="w-full px-4 py-3 text-left font-bold text-red-700">{{ __('Log out') }}</button>
                     </form>
                 </div>
             </details>
         </div>
         @if ($role === \App\Role::Admin)
             <form class="mobile-admin-search" method="GET" action="{{ route('admin.users.index') }}" role="search">
-                <label class="sr-only" for="mobile-admin-search">Search admin users</label>
-                <input id="mobile-admin-search" name="search" type="search" inputmode="search" value="{{ request()->routeIs('admin.users.*') ? request('search') : '' }}" placeholder="Search users...">
-                <button type="submit" aria-label="Search users"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg></button>
+                <label class="sr-only" for="mobile-admin-search">{{ __('Search admin users') }}</label>
+                <input id="mobile-admin-search" name="search" type="search" inputmode="search" value="{{ request()->routeIs('admin.users.*') ? request('search') : '' }}" placeholder="{{ __('Search users...') }}">
+                <button type="submit" aria-label="{{ __('Search users') }}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg></button>
             </form>
         @endif
     </header>
 
-    <nav class="mobile-bottom-nav lg:hidden" aria-label="Main navigation">
+    <nav class="mobile-bottom-nav lg:hidden" aria-label="{{ __('Main navigation') }}">
         @foreach ($links as $link)
             @php($icon = match ($link[1]) { 'Dashboard' => 'dashboard', 'Trips' => 'trips', 'Bookings' => 'bookings', 'Messages', 'Chat' => 'messages', 'Profile' => 'profile', default => 'dashboard' })
             <a href="{{ route($link[0], $link[2] ?? []) }}" class="mobile-bottom-nav__item {{ request()->routeIs($link[0]) ? 'is-active' : '' }}">
@@ -102,7 +103,7 @@
                     @else<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>
                     @endif
                 </svg>
-                <span>{{ $link[1] }}</span>
+                <span>{{ __($link[1]) }}</span>
             </a>
         @endforeach
     </nav>

@@ -29,47 +29,6 @@ const signInPrompt = document.querySelector('[data-sign-in-prompt]');
 
 printTermsButton?.addEventListener('click', () => window.print());
 
-const googleTranslateMounts = [...document.querySelectorAll('[data-google-translate-mount]')];
-if (googleTranslateMounts.length > 0) {
-    const showGoogleTranslateError = () => {
-        document.querySelectorAll('[data-google-translate-error]').forEach((message) => {
-            message.hidden = false;
-        });
-    };
-    const initializeGoogleTranslate = () => {
-        if (!window.google?.translate?.TranslateElement) {
-            showGoogleTranslateError();
-            return;
-        }
-
-        googleTranslateMounts.forEach((mount, index) => {
-            mount.id = `google-translate-mount-${index}`;
-            try {
-                new window.google.translate.TranslateElement({
-                    pageLanguage: 'en',
-                    autoDisplay: false,
-                }, mount.id);
-            } catch (error) {
-                showGoogleTranslateError();
-                console.error('Google Translate could not initialize.', error);
-            }
-        });
-    };
-
-    window.googleTranslateElementInit = initializeGoogleTranslate;
-    const translateScript = document.createElement('script');
-    translateScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-    translateScript.async = true;
-    translateScript.onerror = showGoogleTranslateError;
-    document.head.append(translateScript);
-
-    window.setTimeout(() => {
-        if (!window.google?.translate?.TranslateElement) {
-            showGoogleTranslateError();
-        }
-    }, 12000);
-}
-
 if (signInPrompt && 'showModal' in signInPrompt) {
     const storageKey = 'tourlink:sign-in-prompt-shown';
     let hasBeenShown = false;
@@ -255,7 +214,9 @@ document.addEventListener('click', (event) => {
     const label = toggle.querySelector('[data-password-toggle-label]');
     const eye = toggle.querySelector('[data-password-eye]');
     const eyeOff = toggle.querySelector('[data-password-eye-off]');
-    const nextLabel = reveal ? 'Hide password' : 'Show password';
+    const nextLabel = reveal
+        ? (toggle.dataset.hideLabel ?? 'Hide password')
+        : (toggle.dataset.showLabel ?? 'Show password');
 
     if (label) {
         label.textContent = nextLabel;
@@ -553,9 +514,10 @@ document.querySelectorAll('[data-otp-form]').forEach((form) => {
             const remaining = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
             const minutes = Math.floor(remaining / 60);
             const seconds = String(remaining % 60).padStart(2, '0');
+            const time = `${minutes}:${seconds}`;
             countdown.textContent = remaining > 0
-                ? `This code expires in ${minutes}:${seconds}.`
-                : 'This code has expired. Request a new code to continue.';
+                ? (countdown.dataset.expiryTemplate ?? 'This code expires in :time.').replace(':time', time)
+                : (countdown.dataset.expiredMessage ?? 'This code has expired. Request a new code to continue.');
 
             if (remaining > 0) {
                 window.setTimeout(tick, 1000);

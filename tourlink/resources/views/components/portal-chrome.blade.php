@@ -162,37 +162,38 @@
 
 <div class="dashboard-chrome">
     <aside class="portal-sidebar" data-portal-sidebar aria-label="Application sidebar">
-        <a href="{{ route($dashboardRoute) }}" class="portal-brand" aria-label="Havenedge Tourlink {{ $displayRole }} dashboard"><span class="portal-brand__mark" aria-hidden="true">HT</span><span class="portal-brand__name">Havenedge Tourlink</span></a>
+        <a href="{{ route($dashboardRoute) }}" class="portal-brand" aria-label="Havenedge Tourlink {{ __($displayRole) }} {{ __('Dashboard') }}"><span class="portal-brand__mark" aria-hidden="true">HT</span><span class="portal-brand__name">Havenedge Tourlink</span></a>
         <nav class="portal-sidebar__nav" aria-label="Main navigation">@include('components.portal-navigation-links', ['groups' => $groups])</nav>
         <div class="portal-sidebar__bottom">
-            <div class="portal-sidebar__identity"><span class="portal-avatar" aria-hidden="true">{{ str($user->name)->substr(0, 1)->upper() }}</span><span class="portal-sidebar__identity-copy"><strong>{{ $user->name }}</strong><small>{{ $displayRole }}</small></span></div>
+            <div class="portal-sidebar__identity"><span class="portal-avatar" aria-hidden="true">{{ str($user->name)->substr(0, 1)->upper() }}</span><span class="portal-sidebar__identity-copy"><strong>{{ $user->name }}</strong><small>{{ __($displayRole) }}</small></span></div>
             <button class="portal-collapse-button" type="button" data-sidebar-toggle aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m15 18-6-6 6-6M4 4v16"/></svg><span class="portal-nav-label">Collapse sidebar</span></button>
         </div>
     </aside>
 
     <header class="portal-topbar {{ $role === \App\Role::Admin ? 'portal-topbar--search' : '' }}">
         <div class="portal-topbar__row">
-            <button class="portal-icon-button portal-menu-button" type="button" data-drawer-open aria-controls="portal-drawer" aria-expanded="false" aria-label="Open navigation"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-            <a href="{{ route($dashboardRoute) }}" class="portal-mobile-brand" aria-label="Havenedge Tourlink dashboard"><span class="portal-brand__mark" aria-hidden="true">HT</span></a>
-            <h1 class="portal-page-title">{{ $pageTitle }}</h1>
+            <button class="portal-icon-button portal-menu-button" type="button" data-drawer-open aria-controls="portal-drawer" aria-expanded="false" aria-label="{{ __('Open navigation') }}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+            <a href="{{ route($dashboardRoute) }}" class="portal-mobile-brand" aria-label="Havenedge Tourlink {{ __('Dashboard') }}"><span class="portal-brand__mark" aria-hidden="true">HT</span></a>
+            <h1 class="portal-page-title">{{ __($pageTitle) }}</h1>
             <div class="portal-topbar__actions">
+                <x-language-switcher />
                 @if ($role === \App\Role::Admin)
                     <a class="portal-icon-button portal-settings-shortcut" href="{{ route('admin.settings.index') }}" aria-label="System settings" title="System settings"><span class="portal-icon" aria-hidden="true">@include('components.portal-icon', ['name' => 'settings'])</span></a>
                 @endif
-                <a class="portal-icon-button portal-notifications" href="{{ route($notifications[0], $notifications[1]) }}" aria-label="{{ $notifications[2] }}" title="{{ $notifications[2] }}"><span class="portal-icon" aria-hidden="true">@include('components.portal-icon', ['name' => 'bell'])</span>@if ($pendingVerifications > 0)<span class="portal-notification-count">{{ min(99, $pendingVerifications) }}</span>@endif</a>
+                <a class="portal-icon-button portal-notifications" href="{{ route($notifications[0], $notifications[1]) }}" aria-label="{{ __($notifications[2]) }}" title="{{ __($notifications[2]) }}"><span class="portal-icon" aria-hidden="true">@include('components.portal-icon', ['name' => 'bell'])</span>@if ($pendingVerifications > 0)<span class="portal-notification-count">{{ min(99, $pendingVerifications) }}</span>@endif</a>
                 <details class="portal-profile-menu">
-                    <summary class="portal-profile-menu__trigger" aria-label="Open profile menu"><span class="portal-avatar" aria-hidden="true">{{ str($user->name)->substr(0, 1)->upper() }}</span><span class="portal-profile-menu__name">{{ $user->name }}</span><svg class="portal-profile-menu__chevron" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m5 7 5 5 5-5"/></svg></summary>
+                    <summary class="portal-profile-menu__trigger" aria-label="{{ __('Open profile menu') }}"><span class="portal-avatar" aria-hidden="true">{{ str($user->name)->substr(0, 1)->upper() }}</span><span class="portal-profile-menu__name">{{ $user->name }}</span><svg class="portal-profile-menu__chevron" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m5 7 5 5 5-5"/></svg></summary>
                     <div class="portal-profile-menu__panel">
-                        <div class="portal-profile-menu__identity"><strong>{{ $user->name }}</strong><span>{{ $displayRole }}</span></div>
-                        @if ($profileRoute && Route::has($profileRoute))<a href="{{ route($profileRoute) }}">Profile</a>@endif
-                        @if (Route::has($settingsRoute[0]))<a href="{{ route($settingsRoute[0], $settingsRoute[1]) }}">{{ $role === \App\Role::Admin ? 'System settings' : 'Settings' }}</a>@endif
-                        <a href="{{ route('password.change') }}">Password and security</a>
-                        <a href="{{ route('home') }}">View website</a>
-                        <a href="{{ route('home') }}#how-it-works">Help</a>
-                        <a href="{{ route('contact') }}">Support</a>
-                        @if (Route::has('privacy'))<a href="{{ route('privacy') }}">Privacy policy</a>@endif
-                        @if (Route::has('terms'))<a href="{{ route('terms') }}" target="_blank" rel="noopener noreferrer">Terms</a>@endif
-                        <form method="POST" action="{{ route('logout') }}" class="portal-profile-menu__logout">@csrf<button type="submit">Log out</button></form>
+                        <div class="portal-profile-menu__identity"><strong>{{ $user->name }}</strong><span>{{ __($displayRole) }}</span></div>
+                        @if ($profileRoute && Route::has($profileRoute))<a href="{{ route($profileRoute) }}">{{ __('Profile') }}</a>@endif
+                        @if (Route::has($settingsRoute[0]))<a href="{{ route($settingsRoute[0], $settingsRoute[1]) }}">{{ __($role === \App\Role::Admin ? 'System settings' : 'Settings') }}</a>@endif
+                        <a href="{{ route('password.change') }}">{{ __('Password and security') }}</a>
+                        <a href="{{ route('home') }}">{{ __('View website') }}</a>
+                        <a href="{{ route('home') }}#how-it-works">{{ __('Help') }}</a>
+                        <a href="{{ route('contact') }}">{{ __('Support') }}</a>
+                        @if (Route::has('privacy'))<a href="{{ route('privacy') }}">{{ __('Privacy policy') }}</a>@endif
+                        @if (Route::has('terms'))<a href="{{ route('terms') }}" target="_blank" rel="noopener noreferrer">{{ __('Terms') }}</a>@endif
+                        <form method="POST" action="{{ route('logout') }}" class="portal-profile-menu__logout">@csrf<button type="submit">{{ __('Log out') }}</button></form>
                     </div>
                 </details>
             </div>
@@ -207,16 +208,16 @@
     </header>
 
     <dialog class="portal-drawer" id="portal-drawer" data-portal-drawer aria-label="Main navigation">
-        <div class="portal-drawer__head"><a href="{{ route($dashboardRoute) }}" class="portal-brand" aria-label="Havenedge Tourlink {{ $displayRole }} dashboard"><span class="portal-brand__mark" aria-hidden="true">HT</span><span class="portal-brand__name">Havenedge Tourlink</span></a><form method="dialog"><button class="portal-icon-button" aria-label="Close navigation"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></form></div>
+        <div class="portal-drawer__head"><a href="{{ route($dashboardRoute) }}" class="portal-brand" aria-label="Havenedge Tourlink {{ __($displayRole) }} {{ __('Dashboard') }}"><span class="portal-brand__mark" aria-hidden="true">HT</span><span class="portal-brand__name">Havenedge Tourlink</span></a><form method="dialog"><button class="portal-icon-button" aria-label="{{ __('Close navigation') }}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></form></div>
         <nav class="portal-sidebar__nav" aria-label="Main navigation">@include('components.portal-navigation-links', ['groups' => $groups])</nav>
-        <div class="portal-drawer__foot"><strong>{{ $user->name }}</strong><span>{{ $displayRole }}</span></div>
+        <div class="portal-drawer__foot"><strong>{{ $user->name }}</strong><span>{{ __($displayRole) }}</span></div>
     </dialog>
 
     <nav class="portal-bottom-nav" aria-label="Frequently used modules">
         @foreach ($bottomLinks as $link)
             @if (Route::has($link[1]))
                 @php($active = request()->routeIs($link[1]) && (! isset($link[3]) || request()->route('section') === ($link[3]['section'] ?? null)))
-                <a href="{{ route($link[1], $link[3] ?? []) }}" class="portal-bottom-nav__item {{ $active ? 'is-active' : '' }}" @if ($active) aria-current="page" @endif title="{{ $link[0] }}"><span class="portal-icon" aria-hidden="true">@include('components.portal-icon', ['name' => $link[2]])</span><span>{{ $link[0] }}</span></a>
+                <a href="{{ route($link[1], $link[3] ?? []) }}" class="portal-bottom-nav__item {{ $active ? 'is-active' : '' }}" @if ($active) aria-current="page" @endif title="{{ __($link[0]) }}"><span class="portal-icon" aria-hidden="true">@include('components.portal-icon', ['name' => $link[2]])</span><span>{{ __($link[0]) }}</span></a>
             @endif
         @endforeach
     </nav>
@@ -225,11 +226,11 @@
         <aside class="profile-reminder {{ $role === \App\Role::Admin ? 'profile-reminder--search' : '' }}" data-profile-reminder data-user-id="{{ $user->id }}" role="status" aria-labelledby="profile-reminder-title">
             <span class="profile-reminder__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0m-4-7 2 2 4-4"/></svg></span>
             <div class="profile-reminder__content">
-                <strong id="profile-reminder-title">Complete your profile</strong>
-                <p>{{ $profileReminderMessage }}</p>
-                <a href="{{ route($profileRoute) }}">Go to profile <span aria-hidden="true">&rarr;</span></a>
+                <strong id="profile-reminder-title">{{ __('Complete your profile') }}</strong>
+                <p>{{ __($profileReminderMessage) }}</p>
+                <a href="{{ route($profileRoute) }}">{{ __('Go to profile') }} <span aria-hidden="true">&rarr;</span></a>
             </div>
-            <button class="profile-reminder__dismiss" type="button" data-profile-reminder-dismiss aria-label="Dismiss profile reminder" title="Dismiss">&times;</button>
+            <button class="profile-reminder__dismiss" type="button" data-profile-reminder-dismiss aria-label="{{ __('Dismiss profile reminder') }}" title="{{ __('Dismiss') }}">&times;</button>
         </aside>
     @endif
 </div>

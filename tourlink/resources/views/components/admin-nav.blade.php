@@ -33,13 +33,13 @@
         : 'block rounded-r px-3 py-2.5 text-sm font-semibold';
 @endphp
 
-<nav aria-label="Admin navigation" class="grid gap-1">
+<nav aria-label="{{ __('Admin navigation') }}" class="grid gap-1">
     @foreach ($items as $item)
         @php($active = request()->routeIs($item['active']))
         @if (Route::has($item['route']))
-            <a href="{{ route($item['route']) }}" @if($active) aria-current="page" @endif class="{{ $itemClass }} {{ $active ? 'border-l-2 border-sun bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">{{ $item['label'] }}@if($item['label'] === 'Support' && $unreadSupportCount > 0)<span class="ml-2 rounded-full bg-pink-600 px-2 py-0.5 text-[10px] font-bold text-white">{{ min(99, $unreadSupportCount) }}</span>@endif</a>
+            <a href="{{ route($item['route']) }}" @if($active) aria-current="page" @endif class="{{ $itemClass }} {{ $active ? 'border-l-2 border-sun bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">{{ __($item['label']) }}@if($item['label'] === 'Support' && $unreadSupportCount > 0)<span class="ml-2 rounded-full bg-pink-600 px-2 py-0.5 text-[10px] font-bold text-white">{{ min(99, $unreadSupportCount) }}</span>@endif</a>
         @else
-            <span aria-disabled="true" title="This admin section is not available yet" class="{{ $itemClass }} cursor-not-allowed text-white/35">{{ $item['label'] }}</span>
+            <span aria-disabled="true" title="{{ __('This admin section is not available yet') }}" class="{{ $itemClass }} cursor-not-allowed text-white/35">{{ __($item['label']) }}</span>
         @endif
     @endforeach
 
@@ -47,7 +47,7 @@
     @foreach ($supportItems as $item)
         @php($active = request()->routeIs($item['active']))
         @if (Route::has($item['route']))
-            <a href="{{ route($item['route']) }}" @if($active) aria-current="page" @endif class="{{ $itemClass }} {{ $active ? 'border-l-2 border-sun bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">{{ $item['label'] }}</a>
+            <a href="{{ route($item['route']) }}" @if($active) aria-current="page" @endif class="{{ $itemClass }} {{ $active ? 'border-l-2 border-sun bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">{{ __($item['label']) }}</a>
         @endif
     @endforeach
 </nav>

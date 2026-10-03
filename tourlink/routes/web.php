@@ -36,7 +36,40 @@ use App\Http\Controllers\VehicleOwnerController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Middleware\RequireTermsAcceptance;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/language', function (Request $request) {
+    $data = $request->validate([
+        'locale' => ['required', 'string', Rule::in(array_keys(config('localization.languages', [])))],
+        'return_to' => ['nullable', 'string', 'max:2048'],
+    ]);
+    $returnTo = $data['return_to'] ?? '/';
+    $parsedReturnTo = parse_url($returnTo);
+    if (
+        ! str_starts_with($returnTo, '/')
+        || str_starts_with($returnTo, '//')
+        || str_contains($returnTo, '\\')
+        || ! is_array($parsedReturnTo)
+        || isset($parsedReturnTo['host'])
+    ) {
+        $returnTo = '/';
+    }
+
+    $request->session()->put('locale', $data['locale']);
+
+    return redirect()->to($returnTo)->withCookie(cookie(
+        config('localization.cookie'),
+        $data['locale'],
+        60 * 24 * 365,
+        '/',
+        null,
+        config('session.secure') === true || $request->isSecure(),
+        true,
+        false,
+        'lax',
+    ));
+})->middleware('throttle:locale-change')->name('locale.update');
 
 Route::get('/terms', fn () => view('pages.terms'))->name('terms');
 Route::post('/terms/accept', function (Request $request) {

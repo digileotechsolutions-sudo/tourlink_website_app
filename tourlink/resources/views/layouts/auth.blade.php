@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ config('localization.languages.'.app()->getLocale().'.direction', 'ltr') }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -9,12 +9,12 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="app-page auth-page">
+    <div class="auth-language-switcher"><x-language-switcher /></div>
     <main class="login-page">
         @yield('content')
     </main>
     <x-portal-footer />
     <x-pwa-status />
     <x-public-support-launcher />
-    <x-google-translate-runtime />
 </body>
 </html>

@@ -65,6 +65,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->user()?->getAuthIdentifier() ?? $request->ip());
         });
 
+        RateLimiter::for('locale-change', function (Request $request): Limit {
+            return Limit::perMinute(20)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
+        });
+
         RateLimiter::for('mpesa-callback', function (Request $request): Limit {
             return Limit::perMinute(60)->by($request->ip());
         });
