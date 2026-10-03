@@ -89,6 +89,22 @@ class OtpDeliveryService
         $mailer = strtolower(trim((string) config('mail.default')));
         $configuration = config('mail.mailers.'.$mailer);
 
+        $configuredMailer = $this->usableMailer($mailer, $configuration);
+        if ($configuredMailer !== null) {
+            return $configuredMailer;
+        }
+
+        $sendmail = config('mail.mailers.sendmail');
+        $path = is_array($sendmail) ? trim((string) ($sendmail['path'] ?? '')) : '';
+        $binary = $path !== '' ? (preg_split('/\s+/', $path, 2)[0] ?? '') : '';
+
+        return $binary !== '' && is_executable($binary) && $this->usableMailer('sendmail', $sendmail) !== null
+            ? 'sendmail'
+            : null;
+    }
+
+    private function usableMailer(string $mailer, mixed $configuration): ?string
+    {
         if ($mailer === '' || in_array($mailer, ['log', 'array', 'failover', 'roundrobin'], true) || ! is_array($configuration)) {
             return null;
         }
