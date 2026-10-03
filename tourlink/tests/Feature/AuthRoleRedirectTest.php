@@ -11,6 +11,19 @@ class AuthRoleRedirectTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_authenticated_pages_configure_fifteen_minute_idle_logout(): void
+    {
+        $traveler = User::factory()->create(['role' => 'TRAVELER']);
+
+        $this->actingAs($traveler)
+            ->get(route('traveler.favorites'))
+            ->assertOk()
+            ->assertSee('data-idle-logout', false)
+            ->assertSee('data-idle-timeout-ms="900000"', false)
+            ->assertSee('data-logout-url="'.route('logout').'"', false)
+            ->assertSee('data-idle-login-url="'.route('login').'"', false);
+    }
+
     public function test_admin_login_ignores_a_stale_traveler_dashboard_destination(): void
     {
         $admin = User::factory()->create(['role' => 'ADMIN']);

@@ -8,7 +8,7 @@
     <title>@yield('title', 'Admin | Havenedge Tourlink')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="admin-app min-h-screen bg-slate-50 text-slate-900">
+<body class="admin-app min-h-screen bg-slate-50 text-slate-900" @auth data-idle-logout data-idle-timeout-ms="{{ config('session.lifetime') * 60 * 1000 }}" data-idle-user="{{ auth()->id() }}" data-logout-url="{{ route('logout') }}" data-idle-login-url="{{ route('login') }}" data-idle-csrf="{{ csrf_token() }}" @endauth>
     <a class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-white focus:p-3" href="#admin-main">Skip to content</a>
     <div class="flex min-h-screen">
         <aside class="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-ink px-4 py-5 text-white lg:flex">

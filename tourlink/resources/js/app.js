@@ -1,5 +1,88 @@
 const prefetchedAppRoutes = new Set();
 
+const idleLogoutPage = document.body.hasAttribute('data-idle-logout');
+
+if (idleLogoutPage) {
+    const timeoutMs = Number(document.body.dataset.idleTimeoutMs);
+    const activityKey = `tourlink:last-activity:${document.body.dataset.idleUser}`;
+    let lastActivityAt = Date.now();
+    let lastPersistedAt = 0;
+    let timeoutHandle;
+
+    const readLastActivity = () => {
+        try {
+            const storedActivity = Number(localStorage.getItem(activityKey));
+            if (Number.isFinite(storedActivity)) {
+                lastActivityAt = Math.max(lastActivityAt, storedActivity);
+            }
+        } catch {
+            // In-memory activity tracking remains available when browser storage is disabled.
+        }
+    };
+
+    const scheduleLogout = () => {
+        window.clearTimeout(timeoutHandle);
+        const remainingMs = timeoutMs - (Date.now() - lastActivityAt);
+        if (remainingMs > 0) {
+            timeoutHandle = window.setTimeout(scheduleLogout, remainingMs);
+            return;
+        }
+
+        readLastActivity();
+        if (Date.now() - lastActivityAt < timeoutMs) {
+            scheduleLogout();
+            return;
+        }
+
+        const controller = new AbortController();
+        const requestTimeout = window.setTimeout(() => controller.abort(), 5000);
+
+        window.fetch(document.body.dataset.logoutUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { Accept: 'text/html' },
+            body: new URLSearchParams({ _token: document.body.dataset.idleCsrf }),
+            signal: controller.signal,
+        }).catch(() => {}).finally(() => {
+            window.clearTimeout(requestTimeout);
+            window.location.assign(document.body.dataset.idleLoginUrl);
+        });
+    };
+
+    const recordActivity = () => {
+        lastActivityAt = Date.now();
+        if (lastActivityAt - lastPersistedAt >= 5000) {
+            try {
+                localStorage.setItem(activityKey, String(lastActivityAt));
+                lastPersistedAt = lastActivityAt;
+            } catch {
+                // In-memory activity tracking remains available when browser storage is disabled.
+            }
+        }
+        scheduleLogout();
+    };
+
+    try {
+        localStorage.setItem(activityKey, String(lastActivityAt));
+        lastPersistedAt = lastActivityAt;
+    } catch {
+        // In-memory activity tracking remains available when browser storage is disabled.
+    }
+
+    window.addEventListener('storage', (event) => {
+        if (event.key === activityKey) {
+            readLastActivity();
+            scheduleLogout();
+        }
+    });
+
+    ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel', 'mousemove'].forEach((eventName) => {
+        document.addEventListener(eventName, recordActivity, { passive: true });
+    });
+
+    scheduleLogout();
+}
+
 if (document.body.classList.contains('admin-app')) {
     document.querySelectorAll('table:not([data-mobile-table="exclude"])').forEach((table) => {
         const headers = [...table.querySelectorAll('thead th')].map((header) => header.textContent.trim());

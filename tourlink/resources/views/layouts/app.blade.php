@@ -13,7 +13,7 @@
     <title>@yield('title', 'Havenedge Tourlink | One Platform. Endless Journeys.')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="app-page">
+<body class="app-page" @auth data-idle-logout data-idle-timeout-ms="{{ config('session.lifetime') * 60 * 1000 }}" data-idle-user="{{ auth()->id() }}" data-logout-url="{{ route('logout') }}" data-idle-login-url="{{ route('login') }}" data-idle-csrf="{{ csrf_token() }}" @endauth>
     <a class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-white focus:p-3" href="#main-content">Skip to content</a>
     <x-site-header />
     <main id="main-content">
