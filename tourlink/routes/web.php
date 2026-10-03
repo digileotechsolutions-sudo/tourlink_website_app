@@ -91,8 +91,8 @@ Route::middleware('guest')->group(function (): void {
 });
 
 Route::get('/verify/{user}', [VerificationController::class, 'show'])->name('verification.notice');
-Route::post('/verify', [VerificationController::class, 'verify'])->middleware('throttle:auth-otp')->name('verification.verify');
-Route::post('/verify/resend', [VerificationController::class, 'resend'])->middleware('throttle:auth-otp')->name('verification.resend');
+Route::post('/verify', [VerificationController::class, 'verify'])->middleware('throttle:auth-otp-verify')->name('verification.verify');
+Route::post('/verify/resend', [VerificationController::class, 'resend'])->middleware('throttle:auth-otp-resend')->name('verification.resend');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::middleware('auth')->group(function (): void {
     Route::get('/payments/{payment}/receipt', [PaymentReceiptController::class, 'show'])->name('payments.receipt');

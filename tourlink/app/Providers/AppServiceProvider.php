@@ -35,11 +35,22 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by($request->ip());
         });
 
-        RateLimiter::for('auth-otp', function (Request $request): Limit {
+        RateLimiter::for('auth-otp-verify', function (Request $request): Limit {
             $userId = $request->string('user_id')->toString();
             $channel = $request->string('channel')->toString();
 
             return Limit::perMinute(8)->by($userId.'|'.$channel.'|'.$request->ip());
+        });
+
+        RateLimiter::for('auth-otp-resend', function (Request $request): array {
+            $userId = $request->string('user_id')->toString();
+            $channel = $request->string('channel')->toString();
+
+            return [
+                Limit::perMinute(1)->by($userId.'|'.$channel.'|'.$request->ip()),
+                Limit::perHour(5)->by($userId.'|'.$channel),
+                Limit::perHour(20)->by($request->ip()),
+            ];
         });
 
         RateLimiter::for('password-reset', function (Request $request): Limit {

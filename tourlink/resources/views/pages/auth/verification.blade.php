@@ -14,10 +14,13 @@
             <header class="auth-header">
                 <div class="auth-verification-icon" aria-hidden="true">✓</div>
                 <h2>Check your contacts</h2>
-                <p class="auth-subtitle">Enter the six-digit code from your verification email. Each code expires after five minutes. If it has not arrived, check your spam folder or request another code.</p>
+                <p class="auth-subtitle">Enter the six-digit code from your verification email. Each code expires after ten minutes. If it has not arrived, check your spam folder or request another code.</p>
             </header>
 
             @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
+            @if (app()->isLocal() && config('services.otp.dev_mode') && session('dev_otp_email'))
+                <p class="auth-dev-code" role="status">Local development code: <strong>{{ session('dev_otp_email') }}</strong></p>
+            @endif
             @if(session('referred_by'))<p class="auth-msg auth-msg-notice" role="status"><strong>{{ session('referred_by') }}</strong> referred you. Your referral is credited once your account is approved.</p>@endif
             @if($user->email_verified_at && $user->approval_status === \App\AccountApprovalStatus::Pending)
                 <p class="auth-msg auth-msg-notice" role="status">Your email is verified. Please wait for an administrator to approve your account. Once approved, sign in to continue to support chat.</p>
@@ -54,6 +57,9 @@
                                 <input type="hidden" name="channel" value="{{ $channel->value }}">
                                 @if ($continueToSupport)<input type="hidden" name="continue" value="support">@endif
                                 <input type="hidden" name="code" data-otp-value>
+                                @if ($isEmail && $otpExpiresAt)
+                                    <p class="auth-otp-countdown" data-otp-expires-at="{{ $otpExpiresAt }}" aria-live="polite"></p>
+                                @endif
                                 <div class="auth-otp-inputs" role="group" aria-label="{{ $verification['label'] }} verification code">
                                     @for($digit = 0; $digit < 6; $digit++)
                                         <input class="auth-otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="{{ $digit === 0 ? 'one-time-code' : 'off' }}" data-otp-digit data-otp-index="{{ $digit }}" aria-label="Code digit {{ $digit + 1 }}" @if ($errors->has('code')) aria-invalid="true" aria-describedby="verification-code-error" @endif required>

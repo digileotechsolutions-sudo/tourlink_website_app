@@ -256,6 +256,7 @@ html:has(.mobile-app-menu[open]), body:has(.mobile-app-menu[open]), html:has(.si
 .auth-verification-icon { display: grid; width: 38px; height: 38px; margin-bottom: 14px; place-items: center; border-radius: 12px; color: #216b42; background: #e9f5ec; font-weight: 900; }
 .auth-verify-group.is-complete { opacity: .82; }
 .auth-otp-inputs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; grid-column: 1 / -1; }
+.auth-otp-countdown { grid-column: 1 / -1; margin: 0; color: #718279; font-size: 12px; text-align: center; }
 .auth-otp-digit { width: 100%; min-height: 52px; padding: 8px 4px; border: 1px solid #cfe1d4; border-radius: 10px; color: #173b2a; background: #fbfdfb; font-size: 21px; font-weight: 800; text-align: center; }
 .auth-otp-digit:focus { outline: none; border-color: #247346; box-shadow: 0 0 0 4px rgba(36, 115, 70, .12); }
 .auth-verify-button { grid-column: 1 / -1; position: relative; }

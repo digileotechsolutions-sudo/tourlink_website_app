@@ -24,10 +24,17 @@ class VerificationController extends Controller
     {
         $user = User::query()->findOrFail($user);
         $verificationMethods = $verification->methodsFor($user);
+        $activeChallenge = $user->otpChallenges()
+            ->where('purpose', OtpService::ACCOUNT_VERIFICATION_PURPOSE)
+            ->where('channel', OtpChannel::Email->value)
+            ->whereNull('consumed_at')
+            ->latest('created_at')
+            ->first();
+        $otpExpiresAt = $activeChallenge?->expires_at?->timestamp;
         $continueToSupport = $request->query('continue') === 'support'
             || $request->session()->get('url.intended') === route('support.index');
 
-        return view('pages.auth.verification', compact('user', 'verificationMethods', 'continueToSupport'));
+        return view('pages.auth.verification', compact('user', 'verificationMethods', 'continueToSupport', 'otpExpiresAt'));
     }
 
     public function verify(Request $request, OtpService $otpService, OtpDeliveryService $delivery, AccountVerificationService $verification, ReferralService $referrals): mixed

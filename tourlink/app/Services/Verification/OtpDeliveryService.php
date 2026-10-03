@@ -2,6 +2,8 @@
 
 namespace App\Services\Verification;
 
+use App\Mail\PasswordResetMail;
+use App\Mail\VerificationCodeMail;
 use App\Models\User;
 use App\OtpChannel;
 use Illuminate\Http\Client\PendingRequest;
@@ -181,7 +183,16 @@ class OtpDeliveryService
         $message = 'Your '.config('app.name').' verification code is '.$code.'. It expires in '.OtpService::EXPIRY_MINUTES.' minutes.';
 
         if ($channel === OtpChannel::Email) {
-            $this->sendEmail($user->email, 'Your '.config('app.name').' verification code', '<p>'.e($message).'</p>');
+            $this->sendAuthEmail(
+                $user->email,
+                new VerificationCodeMail($user->name, $code, OtpService::EXPIRY_MINUTES),
+                'emails.auth.verification-code',
+                [
+                    'name' => $user->name,
+                    'code' => $code,
+                    'expiresInMinutes' => OtpService::EXPIRY_MINUTES,
+                ],
+            );
 
             return;
         }
@@ -195,52 +206,21 @@ class OtpDeliveryService
 
     public function sendPasswordResetLink(User $user, string $token): void
     {
-        $transport = $this->emailTransport();
-        $resetUrl = e(route('password.reset', [
+        $resetUrl = route('password.reset', [
             'token' => $token,
             'email' => $user->getEmailForPasswordReset(),
-        ]));
+        ]);
         $minutes = (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
-        $html = '<p>Hello '.e($user->name).',</p>'
-            .'<p>We received a request to reset your '.e((string) config('app.name')).' password.</p>'
-            .'<p><a href="'.$resetUrl.'">Reset your password</a></p>'
-            .'<p>This link expires in '.$minutes.' minutes. If you did not request a password reset, you can ignore this email.</p>';
-        $subject = 'Reset your '.config('app.name').' password';
-
-        if ($transport === null) {
-            if (app()->environment('testing')) {
-                Mail::html($html, fn (Message $message) => $message->to($user->email)->subject($subject));
-
-                return;
-            }
-
-            if ($this->developmentMode()) {
-                Log::debug('Havenedge Tourlink development password reset email', [
-                    'recipient' => $user->email,
-                    'subject' => $subject,
-                    'body' => strip_tags($html),
-                ]);
-
-                return;
-            }
-
-            throw new RuntimeException('Password reset email delivery is not configured. Configure authenticated SMTP or Resend.');
-        }
-
-        if ($transport === 'smtp') {
-            Mail::mailer('smtp')->html($html, fn (Message $message) => $message->to($user->email)->subject($subject));
-
-            return;
-        }
-
-        $this->resendClient((string) config('services.resend.key'))
-            ->post('https://api.resend.com/emails', [
-                'from' => config('services.resend.from'),
-                'to' => [$user->email],
-                'subject' => $subject,
-                'html' => $html,
-            ])
-            ->throw();
+        $this->sendAuthEmail(
+            $user->email,
+            new PasswordResetMail($user->name, $resetUrl, $minutes),
+            'emails.auth.password-reset',
+            [
+                'name' => $user->name,
+                'resetUrl' => $resetUrl,
+                'expiresInMinutes' => $minutes,
+            ],
+        );
     }
 
     /**
@@ -271,22 +251,17 @@ class OtpDeliveryService
      */
     public function sendRegistrationConfirmation(User $user, string $code): void
     {
-        $site = e((string) config('app.name'));
-        $name = e($user->name);
-        $minutes = OtpService::EXPIRY_MINUTES;
-
-        $html = <<<HTML
-            <p>Hello {$name},</p>
-            <p>Thank you for creating an account with {$site}!</p>
-            <p>Your account has been successfully registered. To verify your email address, please use the One-Time Password (OTP) below:</p>
-            <p><strong>Your Verification Code: {$code}</strong></p>
-            <p>This code is valid for {$minutes} minutes. For your security, please do not share this code with anyone.</p>
-            <p>Once your email address has been verified, your account will be submitted for administrator approval, if required.</p>
-            <p>Thank you for choosing {$site}!</p>
-            <p>Best regards,<br><strong>{$site} Team</strong></p>
-            HTML;
-
-        $this->sendEmail($user->email, 'Welcome to '.config('app.name').' - your verification code', $html);
+        $this->sendAuthEmail(
+            $user->email,
+            new VerificationCodeMail($user->name, $code, OtpService::EXPIRY_MINUTES, true),
+            'emails.auth.verification-code',
+            [
+                'name' => $user->name,
+                'code' => $code,
+                'expiresInMinutes' => OtpService::EXPIRY_MINUTES,
+                'registration' => true,
+            ],
+        );
     }
 
     public function sendAccountApproval(User $user, bool $approved, ?string $note = null): void
@@ -320,10 +295,8 @@ class OtpDeliveryService
 
     private function sendEmail(string $recipient, string $subject, string $html): void
     {
-        $body = strip_tags($html);
-
         if ($this->logDelivery()) {
-            Log::notice('Havenedge Tourlink email delivery', ['recipient' => $recipient, 'subject' => $subject, 'body' => $body]);
+            Log::notice('Havenedge Tourlink email delivery', ['recipient' => $recipient, 'subject' => $subject]);
 
             return;
         }
@@ -332,7 +305,7 @@ class OtpDeliveryService
 
         if ($transport === null) {
             if ($this->developmentMode()) {
-                Log::debug('Havenedge Tourlink development email', ['recipient' => $recipient, 'subject' => $subject, 'body' => $body]);
+                Log::debug('Havenedge Tourlink development email', ['recipient' => $recipient, 'subject' => $subject]);
 
                 return;
             }
@@ -364,10 +337,65 @@ class OtpDeliveryService
             ->throw();
     }
 
+    /**
+     * Sends security-sensitive messages without ever logging their contents.
+     *
+     * @param  array<string, mixed>  $viewData
+     */
+    private function sendAuthEmail(string $recipient, \Illuminate\Mail\Mailable $mail, string $view, array $viewData): void
+    {
+        $subject = $mail->envelope()->subject;
+
+        if ($this->logDelivery()) {
+            Log::notice('Havenedge Tourlink email delivery', ['recipient' => $recipient, 'subject' => $subject]);
+
+            return;
+        }
+
+        $transport = $this->emailTransport();
+
+        if ($transport === null) {
+            if (app()->environment('testing')) {
+                Mail::to($recipient)->send($mail);
+
+                return;
+            }
+
+            if ($this->developmentMode()) {
+                Log::debug('Havenedge Tourlink development email', ['recipient' => $recipient, 'subject' => $subject]);
+
+                return;
+            }
+
+            throw new RuntimeException('Email delivery is not configured. Configure authenticated SMTP or another mail transport.');
+        }
+
+        if ($transport === 'resend') {
+            $this->resendClient((string) config('services.resend.key'))
+                ->post('https://api.resend.com/emails', [
+                    'from' => config('services.resend.from'),
+                    'to' => [$recipient],
+                    'subject' => $subject,
+                    'html' => view($view, $viewData)->render(),
+                ])
+                ->throw();
+
+            return;
+        }
+
+        try {
+            Mail::mailer($transport)->to($recipient)->send($mail);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            throw new RuntimeException('Email could not be sent using the configured '.$transport.' mailer.', previous: $exception);
+        }
+    }
+
     private function sendSms(string $recipient, string $message): void
     {
         if ($this->logDelivery()) {
-            Log::notice('Havenedge Tourlink SMS delivery', ['recipient' => $recipient, 'message' => $message]);
+            Log::notice('Havenedge Tourlink SMS delivery', ['recipient' => $recipient]);
 
             return;
         }
@@ -377,7 +405,7 @@ class OtpDeliveryService
 
         if (! $apiKey || ! $username) {
             if ($this->developmentMode()) {
-                Log::debug('Havenedge Tourlink development SMS', ['recipient' => $recipient, 'message' => $message]);
+                Log::debug('Havenedge Tourlink development SMS', ['recipient' => $recipient]);
 
                 return;
             }

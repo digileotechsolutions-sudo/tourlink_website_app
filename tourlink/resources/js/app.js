@@ -503,6 +503,26 @@ document.querySelectorAll('[data-otp-form]').forEach((form) => {
             submit.disabled = true;
         }
     });
+
+    const countdown = form.querySelector('[data-otp-expires-at]');
+    const expiresAt = Number(countdown?.dataset.otpExpiresAt) * 1000;
+
+    if (countdown && Number.isFinite(expiresAt) && expiresAt > 0) {
+        const tick = () => {
+            const remaining = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+            const minutes = Math.floor(remaining / 60);
+            const seconds = String(remaining % 60).padStart(2, '0');
+            countdown.textContent = remaining > 0
+                ? `This code expires in ${minutes}:${seconds}.`
+                : 'This code has expired. Request a new code to continue.';
+
+            if (remaining > 0) {
+                window.setTimeout(tick, 1000);
+            }
+        };
+
+        tick();
+    }
 });
 
 /**

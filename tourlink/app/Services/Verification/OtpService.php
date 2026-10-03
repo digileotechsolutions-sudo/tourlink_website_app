@@ -13,7 +13,7 @@ class OtpService
 {
     public const ACCOUNT_VERIFICATION_PURPOSE = 'account_verification';
 
-    public const EXPIRY_MINUTES = 5;
+    public const EXPIRY_MINUTES = 10;
 
     public function __construct(private readonly OtpDeliveryService $delivery) {}
 
@@ -49,9 +49,19 @@ class OtpService
             throw new RuntimeException('A phone number is required for phone verification.');
         }
 
-        $code = (string) random_int(100000, 999999);
+        $code = DB::transaction(function () use ($user, $channel): string {
+            User::query()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
+            $previousChallenge = $user->otpChallenges()
+                ->where('purpose', self::ACCOUNT_VERIFICATION_PURPOSE)
+                ->where('channel', $channel->value)
+                ->whereNull('consumed_at')
+                ->lockForUpdate()
+                ->first();
 
-        DB::transaction(function () use ($user, $channel, $code): void {
+            do {
+                $code = (string) random_int(100000, 999999);
+            } while ($previousChallenge && hash_equals($previousChallenge->code_hash, $this->hashCode($code)));
+
             $user->otpChallenges()
                 ->where('purpose', self::ACCOUNT_VERIFICATION_PURPOSE)
                 ->where('channel', $channel->value)
@@ -62,10 +72,12 @@ class OtpService
                 'user_id' => $user->id,
                 'channel' => $channel,
                 'purpose' => self::ACCOUNT_VERIFICATION_PURPOSE,
-                'code_hash' => hash('sha256', $code),
+                'code_hash' => $this->hashCode($code),
                 'expires_at' => now()->addMinutes(self::EXPIRY_MINUTES),
                 'attempts' => 0,
             ]);
+
+            return $code;
         });
 
         return $code;
@@ -94,7 +106,7 @@ class OtpService
                 return 'locked';
             }
 
-            if (! hash_equals($challenge->code_hash, hash('sha256', $code))) {
+            if (! hash_equals($challenge->code_hash, $this->hashCode($code))) {
                 $challenge->increment('attempts');
 
                 return 'invalid';
@@ -111,5 +123,10 @@ class OtpService
     public function newProfileSlug(string $name): string
     {
         return Str::slug($name).'-'.Str::lower(Str::random(8));
+    }
+
+    private function hashCode(string $code): string
+    {
+        return hash_hmac('sha256', $code, (string) config('app.key'));
     }
 }

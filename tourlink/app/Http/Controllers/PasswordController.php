@@ -41,11 +41,7 @@ class PasswordController extends Controller
     {
         $input = $request->validate(['email' => ['required', 'email', 'max:255']]);
 
-        $status = Password::sendResetLink(['email' => Str::lower(trim($input['email']))]);
-
-        if ($status === Password::RESET_THROTTLED) {
-            return back()->withErrors(['email' => 'Please wait before requesting another password reset link.']);
-        }
+        Password::sendResetLink(['email' => Str::lower(trim($input['email']))]);
 
         return back()->with('status', 'If that email is registered, password reset instructions have been sent.');
     }
