@@ -1,10 +1,12 @@
 @props(['variant' => 'sidebar'])
 
 @php
-    $unreadSupportCount = \App\Models\SupportMessage::query()
-        ->where('sender_type', \App\Models\SupportMessage::SENDER_CUSTOMER)
-        ->whereNull('read_at')
-        ->count();
+    $unreadSupportCount = \Illuminate\Support\Facades\Schema::hasTable('support_messages')
+        ? \App\Models\SupportMessage::query()
+            ->where('sender_type', \App\Models\SupportMessage::SENDER_CUSTOMER)
+            ->whereNull('read_at')
+            ->count()
+        : 0;
     $items = [
         ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard'],
         ['label' => 'Users', 'route' => 'admin.users.index', 'active' => 'admin.users.*'],

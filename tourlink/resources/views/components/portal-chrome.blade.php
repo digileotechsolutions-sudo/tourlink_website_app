@@ -15,6 +15,8 @@
         default => 'Administrator',
     };
     $supportUnreadCount = in_array($role, [\App\Role::Traveler, \App\Role::Admin], true)
+        && \Illuminate\Support\Facades\Schema::hasTable('support_messages')
+        && \Illuminate\Support\Facades\Schema::hasTable('support_conversations')
         ? \App\Models\SupportMessage::query()
             ->where('sender_type', $role === \App\Role::Admin ? 'customer' : 'admin')
             ->whereNull('read_at')
