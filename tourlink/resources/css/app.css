@@ -988,12 +988,11 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
     .auth-resend { width: 100%; min-height: 46px; }
 }
 
-.site-header { position: sticky; top: 0; z-index: 80; color: #fff; background: linear-gradient(112deg, #180039 0%, #260956 58%, #32106B 100%); box-shadow: 0 8px 24px rgb(31 0 82 / 14%); }
-.site-header::after { position: absolute; right: 0; bottom: 0; left: 0; height: 1px; background: linear-gradient(90deg, transparent, rgb(255 213 30 / 54%), rgb(255 255 255 / 18%), transparent); content: ''; pointer-events: none; }
+.site-header { position: sticky; top: 0; z-index: 80; color: #fff; background: #1F0052; box-shadow: 0 8px 24px rgb(31 0 82 / 14%); }
+.site-header::after { display: none; }
 .site-header__inner { position: relative; display: grid; min-height: 82px; grid-template-columns: minmax(205px, auto) minmax(0, 1fr) auto; align-items: center; gap: clamp(14px, 2.2vw, 32px); }
 .site-header__brand { display: inline-flex; min-width: 0; align-items: center; gap: 11px; color: #fff; }
-.site-header__brand-icon { display: grid; width: 44px; height: 44px; flex: none; place-items: center; border: 1px solid rgb(255 213 30 / 66%); border-radius: 15px; color: #1F0052; background: linear-gradient(145deg, #FFE983, #FFD51E); box-shadow: 0 5px 16px rgb(255 213 30 / 18%); transition: transform .2s ease, box-shadow .2s ease; }
-.site-header__brand-icon svg { width: 23px; height: 23px; }
+.site-header__brand-icon { display: grid; width: 44px; height: 44px; flex: none; place-items: center; border: 1px solid #FFD51E; border-radius: 15px; color: #1F0052; background: #FFD51E; box-shadow: 0 5px 16px rgb(255 213 30 / 18%); font-size: 14px; font-weight: 950; letter-spacing: -.08em; transition: transform .2s ease, box-shadow .2s ease; }
 .site-header__brand:hover .site-header__brand-icon { transform: rotate(-7deg); box-shadow: 0 8px 21px rgb(255 213 30 / 30%); }
 .site-header__brand-copy { display: grid; min-width: 0; gap: 3px; }
 .site-header__brand-name { overflow: hidden; font-size: clamp(15px, 1.35vw, 19px); font-weight: 850; letter-spacing: -.035em; text-overflow: ellipsis; white-space: nowrap; }
@@ -1009,7 +1008,7 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 .site-header__account-link:hover, .site-header__login:hover { color: #FFE681; background: rgb(255 255 255 / 8%); }
 .site-header__login { display: inline-flex; min-height: 42px; align-items: center; padding: 0 12px; border-radius: 11px; color: #fff; font-size: 12px; font-weight: 750; white-space: nowrap; }
 .site-header__account-actions form { margin: 0; }
-.site-header__join { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; padding: 0 17px; border: 1px solid #FFE782; border-radius: 999px; color: #251048; background: linear-gradient(135deg, #FFE77A, #FFD51E); box-shadow: 0 5px 14px rgb(255 213 30 / 14%); cursor: pointer; font-size: 12px; font-weight: 850; white-space: nowrap; transition: transform .18s ease, box-shadow .18s ease; }
+.site-header__join { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; padding: 0 17px; border: 1px solid #FFD51E; border-radius: 999px; color: #251048; background: #FFD51E; box-shadow: 0 5px 14px rgb(255 213 30 / 14%); cursor: pointer; font-size: 12px; font-weight: 850; white-space: nowrap; transition: transform .18s ease, box-shadow .18s ease; }
 .site-header__join:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgb(255 213 30 / 22%); }
 .site-header__mobile { display: none; position: relative; }
 .site-header__mobile > summary { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid rgb(255 255 255 / 16%); border-radius: 13px; color: #fff; background: rgb(255 255 255 / 7%); cursor: pointer; list-style: none; }

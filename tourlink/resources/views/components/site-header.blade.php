@@ -12,10 +12,7 @@
     <div class="site-header__inner container-page">
         <a class="site-header__brand" href="{{ route('home') }}" aria-label="{{ __('Havenedge Tourlink home') }}">
             <span class="site-header__brand-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="9"></circle>
-                    <path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z"></path>
-                </svg>
+                <span>HT</span>
             </span>
             <span class="site-header__brand-copy">
                 <span class="site-header__brand-name">Havenedge <strong>Tourlink</strong></span>
