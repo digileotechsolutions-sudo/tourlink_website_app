@@ -22,8 +22,6 @@ class SupportController extends Controller
     {
         if (! $this->supportTablesExist()) {
             return response()->view('support.unavailable', [
-                'supportEmail' => config('services.tourlink.support_email'),
-                'supportPhone' => config('services.tourlink.support_phone'),
                 'dashboardRoute' => $this->dashboardRoute($request),
             ], 503);
         }
@@ -48,23 +46,38 @@ class SupportController extends Controller
         ]);
     }
 
-    public function start(Request $request, SupportChatService $support): RedirectResponse
+    public function start(Request $request, SupportChatService $support): JsonResponse|RedirectResponse
     {
         if (! $this->supportTablesExist()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Live chat is temporarily unavailable. Please try again later.'], 503);
+            }
+
             return redirect()->route('support.index')
-                ->withErrors(['support' => 'Live chat is temporarily unavailable. Please contact our support team directly.']);
+                ->withErrors(['support' => 'Live chat is temporarily unavailable. Please try again shortly.']);
         }
 
         $conversation = $support->startNewConversation($request->user(), $this->bookingFromRequest($request));
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'conversation_id' => $conversation->id,
+                'status' => $conversation->status,
+            ])->header('Cache-Control', 'private, no-store, max-age=0');
+        }
+
         return redirect()->route('support.index', ['conversation' => $conversation->id]);
     }
 
-    public function send(Request $request, string $supportConversation, SupportChatService $support): RedirectResponse
+    public function send(Request $request, string $supportConversation, SupportChatService $support): JsonResponse|RedirectResponse
     {
         if (! $this->supportTablesExist()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Live chat is temporarily unavailable. Please try again later.'], 503);
+            }
+
             return redirect()->route('support.index')
-                ->withErrors(['support' => 'Live chat is temporarily unavailable. Please contact our support team directly.']);
+                ->withErrors(['support' => 'Live chat is temporarily unavailable. Please try again shortly.']);
         }
 
         $conversation = SupportConversation::query()
@@ -73,12 +86,25 @@ class SupportController extends Controller
             ->firstOrFail();
 
         $data = $request->validate(['message' => ['required', 'string', 'max:4000']]);
-        $support->addMessage(
+        $message = $support->addMessage(
             $conversation,
             $request->user(),
             SupportMessage::SENDER_CUSTOMER,
             $data['message'],
         );
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => [
+                    'id' => $message->id,
+                    'sender_type' => $message->sender_type,
+                    'sender_name' => $request->user()->name,
+                    'message' => $message->message,
+                    'created_at' => $message->created_at?->toIso8601String(),
+                ],
+                'status' => $conversation->fresh()->status,
+            ], 201)->header('Cache-Control', 'private, no-store, max-age=0');
+        }
 
         return redirect()->route('support.index', ['conversation' => $conversation->id])
             ->withFragment('latest-message');

@@ -110,4 +110,5 @@
         <x-portal-chrome />
     @endif
 @endauth
+<x-public-support-launcher />
 <x-pwa-status />

@@ -33,10 +33,6 @@ class SupportChatService
                 return $conversation;
             }
 
-            if ($customer->supportConversations()->exists()) {
-                return $customer->supportConversations()->latest('updated_at')->firstOrFail();
-            }
-
             return $customer->supportConversations()->create([
                 'booking_id' => $booking?->id,
                 'status' => SupportConversation::STATUS_OPEN,
@@ -153,7 +149,7 @@ class SupportChatService
             ->get()
             ->filter(fn (User $admin): bool => $verification->isFullyVerified($admin))
             ->each(fn (User $admin) => $admin->appNotifications()->create([
-                'title' => 'New customer support message',
+                'title' => 'New support message',
                 'body' => mb_substr($message->message, 0, 250),
                 'type' => 'support_message:'.$conversation->id,
             ]));

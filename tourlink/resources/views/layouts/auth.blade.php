@@ -14,5 +14,6 @@
     </main>
     <x-portal-footer />
     <x-pwa-status />
+    <x-public-support-launcher />
 </body>
 </html>

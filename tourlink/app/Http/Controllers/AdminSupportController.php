@@ -29,7 +29,7 @@ class AdminSupportController extends Controller
         ]);
 
         $conversations = SupportConversation::query()
-            ->with(['user:id,name,email,phone', 'assignedAdmin:id,name', 'booking:id,reference', 'latestMessage.sender:id,name'])
+            ->with(['user:id,name,email,phone,role', 'assignedAdmin:id,name', 'booking:id,reference', 'latestMessage.sender:id,name'])
             ->withCount([
                 'messages as unread_messages_count' => fn (Builder $messages): Builder => $messages
                     ->where('sender_type', SupportMessage::SENDER_CUSTOMER)
@@ -77,7 +77,7 @@ class AdminSupportController extends Controller
         $messages->setCollection($messages->getCollection()->reverse()->values());
 
         return view('admin.support.show', [
-            'conversation' => $supportConversation->load(['user:id,name,email,phone', 'assignedAdmin:id,name', 'booking:id,reference']),
+            'conversation' => $supportConversation->load(['user:id,name,email,phone,role', 'assignedAdmin:id,name', 'booking:id,reference']),
             'messages' => $messages,
             'admins' => User::query()
                 ->where('role', Role::Admin->value)

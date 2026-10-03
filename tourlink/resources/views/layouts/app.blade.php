@@ -19,7 +19,8 @@
     <x-site-footer />
     @unless (request()->routeIs('terms'))
         <x-mobile-bottom-nav />
+    @else
+        <x-public-support-launcher />
     @endunless
-    <x-public-support-launcher />
 </body>
 </html>

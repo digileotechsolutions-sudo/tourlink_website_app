@@ -51,8 +51,8 @@ class SupportChatTest extends TestCase
             ->get(route('support.index'))
             ->assertStatus(503)
             ->assertSeeText('We’re still here to help.')
-            ->assertSeeText(config('services.tourlink.support_email'))
-            ->assertSeeText(config('services.tourlink.support_phone'))
+            ->assertDontSee('mailto:')
+            ->assertDontSee('tel:')
             ->assertSee(route('dashboard'), false);
     }
 
@@ -98,6 +98,32 @@ class SupportChatTest extends TestCase
             'type' => 'support_message:'.$conversation->id,
         ]);
         $this->assertSame(SupportConversation::STATUS_PENDING, $conversation->fresh()->status);
+    }
+
+    public function test_operator_can_message_admin_from_the_embedded_chat_widget(): void
+    {
+        $operator = User::factory()->create(['role' => Role::Operator]);
+        $this->withoutMiddleware(EnsureAccountAccess::class)->actingAs($operator);
+
+        $this->postJson(route('support.conversations.store'))
+            ->assertOk()
+            ->assertJsonStructure(['conversation_id', 'status'])
+            ->assertJsonPath('status', SupportConversation::STATUS_OPEN);
+
+        $conversation = $operator->supportConversations()->firstOrFail();
+        $this->postJson(route('support.messages.store', $conversation), [
+            'message' => 'I need help with my operator account.',
+        ])->assertCreated()
+            ->assertJsonPath('message.message', 'I need help with my operator account.');
+
+        $this->getJson(route('support.messages.index', $conversation))
+            ->assertOk()
+            ->assertJsonPath('messages.0.message', 'I need help with my operator account.');
+
+        $this->get(route('operator.dashboard'))
+            ->assertOk()
+            ->assertSee('data-support-widget', false)
+            ->assertSee('data-widget-messages', false);
     }
 
     public function test_opening_conversation_marks_incoming_messages_read_for_each_side(): void

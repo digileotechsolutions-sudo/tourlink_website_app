@@ -939,7 +939,7 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
 }
 
 document.querySelectorAll('[data-support-chat]').forEach((form) => {
-    const messageList = document.querySelector('[data-support-messages]');
+    const messageList = form.closest('.support-chat-panel')?.querySelector('[data-support-messages]');
     const errorMessage = form.querySelector('[data-support-error]');
     const currentSender = form.dataset.currentSender;
     let lastMessageId = form.dataset.lastMessageId || '';
@@ -1057,4 +1057,191 @@ document.querySelectorAll('[data-support-chat]').forEach((form) => {
     });
 
     window.setInterval(refreshMessages, 5000);
+});
+
+document.querySelectorAll('[data-support-widget][data-start-url]').forEach((widget) => {
+    const messageList = widget.querySelector('[data-widget-messages]');
+    const notice = widget.querySelector('[data-support-notice]');
+    const errorMessage = widget.querySelector('[data-widget-error]');
+    const newChatButton = widget.querySelector('[data-support-new-chat]');
+    const form = widget.querySelector('[data-support-form]');
+    const input = widget.querySelector('[data-support-input]');
+    const sendButton = widget.querySelector('[data-support-send]');
+    let conversationId = '';
+    let lastMessageId = '';
+    let isLoading = false;
+
+    if (!messageList || !notice || !errorMessage || !newChatButton || !form || !input || !sendButton) {
+        return;
+    }
+
+    const endpoint = (template) => template.replace('__CONVERSATION__', encodeURIComponent(conversationId));
+    const showError = (message) => {
+        errorMessage.textContent = message;
+        errorMessage.hidden = false;
+    };
+    const formatMessageTime = (value) => {
+        const date = new Date(value);
+        return Number.isNaN(date.getTime())
+            ? ''
+            : new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' }).format(date);
+    };
+    const appendMessage = (message) => {
+        if (!message?.id || messageList.querySelector(`[data-widget-message-id="${CSS.escape(message.id)}"]`)) {
+            return;
+        }
+
+        const article = document.createElement('article');
+        article.className = `support-widget__message${message.sender_type === 'customer' ? ' support-widget__message--own' : ''}`;
+        article.dataset.widgetMessageId = message.id;
+        article.setAttribute('aria-label', message.sender_type === 'customer' ? 'You' : 'Support team');
+        article.textContent = message.message;
+
+        if (message.created_at) {
+            const time = document.createElement('time');
+            time.dateTime = message.created_at;
+            time.textContent = formatMessageTime(message.created_at);
+            article.append(time);
+        }
+
+        messageList.append(article);
+        lastMessageId = message.id;
+        messageList.scrollTop = messageList.scrollHeight;
+    };
+    const request = async (url, options = {}) => {
+        const response = await fetch(url, {
+            credentials: 'same-origin',
+            cache: 'no-store',
+            ...options,
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                ...(options.headers ?? {}),
+            },
+        });
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(payload.message ?? 'Support chat could not connect. Please try again.');
+        }
+
+        return payload;
+    };
+    const startConversation = async () => {
+        const result = await request(widget.dataset.startUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': widget.dataset.csrfToken,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        });
+        conversationId = result.conversation_id;
+        if (!conversationId) {
+            throw new Error('Support chat could not start. Please try again.');
+        }
+    };
+    const refreshMessages = async () => {
+        if (!conversationId || isLoading || document.visibilityState !== 'visible') {
+            return;
+        }
+
+        isLoading = true;
+        try {
+            const url = new URL(endpoint(widget.dataset.messagesUrl), window.location.href);
+            if (lastMessageId) {
+                url.searchParams.set('after', lastMessageId);
+            }
+            const result = await request(url);
+            result.messages.forEach(appendMessage);
+            if (errorMessage) {
+                errorMessage.hidden = true;
+            }
+            if (result.status === 'closed') {
+                notice.textContent = 'This support conversation is closed. Start a new conversation to continue.';
+                conversationId = '';
+                newChatButton.hidden = false;
+            }
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            isLoading = false;
+        }
+    };
+    const initialize = async () => {
+        if (conversationId || isLoading) {
+            return;
+        }
+
+        isLoading = true;
+        sendButton.disabled = true;
+        try {
+            await startConversation();
+            const result = await request(endpoint(widget.dataset.messagesUrl));
+            result.messages.forEach(appendMessage);
+            notice.textContent = 'You are connected to the support conversation. Replies will appear here.';
+            if (result.status === 'closed') {
+                notice.textContent = 'This support conversation is closed. Start a new conversation to continue.';
+                conversationId = '';
+                newChatButton.hidden = false;
+            }
+            errorMessage.hidden = true;
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            isLoading = false;
+            sendButton.disabled = false;
+        }
+    };
+
+    widget.addEventListener('toggle', () => {
+        if (widget.open) {
+            initialize();
+        }
+    });
+    newChatButton.addEventListener('click', () => {
+        messageList.replaceChildren();
+        lastMessageId = '';
+        conversationId = '';
+        newChatButton.hidden = true;
+        notice.textContent = 'Starting a new private chat...';
+        initialize();
+    });
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!form.reportValidity() || isLoading) {
+            return;
+        }
+
+        isLoading = true;
+        sendButton.disabled = true;
+        try {
+            if (!conversationId) {
+                await startConversation();
+            }
+            const result = await request(endpoint(widget.dataset.sendUrl), {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': widget.dataset.csrfToken,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: input.value }),
+            });
+            appendMessage(result.message);
+            input.value = '';
+            errorMessage.hidden = true;
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            isLoading = false;
+            sendButton.disabled = false;
+            input.focus();
+        }
+    });
+
+    window.setInterval(() => {
+        if (widget.open) {
+            refreshMessages();
+        }
+    }, 8000);
 });

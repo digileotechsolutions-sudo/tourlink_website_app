@@ -101,16 +101,19 @@ Route::middleware('auth')->group(function (): void {
     Route::put('/account/password', [PasswordController::class, 'change'])->name('password.change.update');
 });
 
+Route::middleware(['auth', 'account.access'])->group(function (): void {
+    Route::get('/support', [SupportController::class, 'index'])->name('support.index');
+    Route::post('/support/conversation', [SupportController::class, 'start'])->middleware('throttle:support-chat')->name('support.conversations.store');
+    Route::post('/support/conversation/{supportConversation}/messages', [SupportController::class, 'send'])->middleware('throttle:support-chat')->name('support.messages.store');
+    Route::get('/support/conversation/{supportConversation}/messages', [SupportController::class, 'messages'])->name('support.messages.index');
+});
+
 Route::middleware(['auth', 'account.access:TRAVELER'])->group(function (): void {
     Route::get('/pwa/csrf', fn (Request $request) => response()->json([
         'token' => csrf_token(),
         'user_id' => $request->user()->id,
     ])->header('Cache-Control', 'private, no-store, max-age=0')->header('Pragma', 'no-cache'))->name('pwa.csrf');
     Route::get('/dashboard', [TravelerController::class, 'dashboard'])->name('dashboard');
-    Route::get('/support', [SupportController::class, 'index'])->name('support.index');
-    Route::post('/support/conversation', [SupportController::class, 'start'])->middleware('throttle:support-chat')->name('support.conversations.store');
-    Route::post('/support/conversation/{supportConversation}/messages', [SupportController::class, 'send'])->middleware('throttle:support-chat')->name('support.messages.store');
-    Route::get('/support/conversation/{supportConversation}/messages', [SupportController::class, 'messages'])->name('support.messages.index');
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::post('/bookings/trips', [BookingController::class, 'storeTrip'])->name('bookings.trips.store');
     Route::post('/bookings/vehicles', [BookingController::class, 'storeVehicle'])->name('bookings.vehicles.store');
