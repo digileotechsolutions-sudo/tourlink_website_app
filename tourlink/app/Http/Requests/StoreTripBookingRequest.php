@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Role;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTripBookingRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->role?->value === 'TRAVELER';
+        return in_array($this->user()?->role, [Role::Traveler, Role::Operator, Role::VehicleOwner], true);
     }
 
     public function rules(): array

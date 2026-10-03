@@ -108,15 +108,22 @@ Route::middleware(['auth', 'account.access'])->group(function (): void {
     Route::get('/support/conversation/{supportConversation}/messages', [SupportController::class, 'messages'])->name('support.messages.index');
 });
 
+Route::middleware(['auth', 'account.access:TRAVELER,OPERATOR,VEHICLE_OWNER'])->group(function (): void {
+    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::post('/bookings/trips', [BookingController::class, 'storeTrip'])->name('bookings.trips.store');
+    Route::post('/bookings/vehicles', [BookingController::class, 'storeVehicle'])->name('bookings.vehicles.store');
+    Route::get('/traveler/bookings/{booking}/payment', [PaymentController::class, 'show'])->name('payments.show');
+    Route::post('/traveler/bookings/{booking}/payment/mpesa', [PaymentController::class, 'startMpesa'])->middleware('throttle:payments')->name('payments.mpesa');
+    Route::post('/traveler/bookings/{booking}/payment/card', [PaymentController::class, 'startCard'])->middleware('throttle:payments')->name('payments.card');
+    Route::get('/traveler/payments/pesapal/return/{payment}', [PaymentController::class, 'pesapalReturn'])->name('payments.pesapal.return');
+});
+
 Route::middleware(['auth', 'account.access:TRAVELER'])->group(function (): void {
     Route::get('/pwa/csrf', fn (Request $request) => response()->json([
         'token' => csrf_token(),
         'user_id' => $request->user()->id,
     ])->header('Cache-Control', 'private, no-store, max-age=0')->header('Pragma', 'no-cache'))->name('pwa.csrf');
     Route::get('/dashboard', [TravelerController::class, 'dashboard'])->name('dashboard');
-    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
-    Route::post('/bookings/trips', [BookingController::class, 'storeTrip'])->name('bookings.trips.store');
-    Route::post('/bookings/vehicles', [BookingController::class, 'storeVehicle'])->name('bookings.vehicles.store');
     Route::get('/traveler/bookings', [TravelerController::class, 'bookings'])->name('traveler.bookings');
     Route::patch('/traveler/bookings/{booking}/cancel', [TravelerController::class, 'cancelBooking'])->name('traveler.bookings.cancel');
     Route::get('/traveler/profile', [TravelerController::class, 'profile'])->name('traveler.profile');
@@ -128,10 +135,6 @@ Route::middleware(['auth', 'account.access:TRAVELER'])->group(function (): void 
     Route::post('/traveler/notifications/read', [TravelerController::class, 'markNotificationsRead'])->name('traveler.notifications.read');
     Route::get('/traveler/bookings/{booking}/review', [TravelerController::class, 'review'])->name('traveler.reviews.create');
     Route::post('/traveler/bookings/{booking}/review', [TravelerController::class, 'storeReview'])->name('traveler.reviews.store');
-    Route::get('/traveler/bookings/{booking}/payment', [PaymentController::class, 'show'])->name('payments.show');
-    Route::post('/traveler/bookings/{booking}/payment/mpesa', [PaymentController::class, 'startMpesa'])->middleware('throttle:payments')->name('payments.mpesa');
-    Route::post('/traveler/bookings/{booking}/payment/card', [PaymentController::class, 'startCard'])->middleware('throttle:payments')->name('payments.card');
-    Route::get('/traveler/payments/pesapal/return/{payment}', [PaymentController::class, 'pesapalReturn'])->name('payments.pesapal.return');
     Route::get('/traveler/{section}', [TravelerController::class, 'section'])->whereIn('section', ['upcoming', 'past', 'payments', 'receipts', 'messages', 'reviews', 'settings'])->name('traveler.section');
 });
 
@@ -257,5 +260,5 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 });
 
 Route::post('/api/payments/mpesa/stk', [MpesaPaymentController::class, 'stk'])
-    ->middleware(['auth', 'account.access:TRAVELER', 'throttle:payments'])
+    ->middleware(['auth', 'account.access:TRAVELER,OPERATOR,VEHICLE_OWNER', 'throttle:payments'])
     ->name('payments.mpesa.stk');

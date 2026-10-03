@@ -5,7 +5,7 @@
 @section('content')
     <main class="container-page py-8 sm:py-12">
         <header class="mb-6">
-            <a href="{{ route('traveler.bookings') }}" class="text-sm font-bold text-ink hover:underline">← My bookings</a>
+            <a href="{{ route('bookings.index') }}" class="text-sm font-bold text-ink hover:underline">← My bookings</a>
             <p class="mt-5 text-xs font-bold uppercase tracking-wider text-emerald-800">Secure payment</p>
             <h1 class="mt-2 text-3xl font-black text-slate-950">Booking {{ $booking->reference }}</h1>
             <p class="mt-2 text-sm text-slate-600">
