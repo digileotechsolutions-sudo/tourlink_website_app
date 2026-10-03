@@ -31,6 +31,6 @@
             <p class="support-unavailable-note">Your account and bookings are safe. Please try live chat again later.</p>
         </section>
 
-        <a class="support-unavailable-back" href="{{ route('dashboard') }}">Return to your dashboard</a>
+        <a class="support-unavailable-back" href="{{ route($dashboardRoute) }}">Return to your dashboard</a>
     </div>
 @endsection

@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\SupportConversation;
 use App\Models\SupportMessage;
+use App\Role;
 use App\Services\Support\SupportChatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
@@ -22,6 +24,7 @@ class SupportController extends Controller
             return response()->view('support.unavailable', [
                 'supportEmail' => config('services.tourlink.support_email'),
                 'supportPhone' => config('services.tourlink.support_phone'),
+                'dashboardRoute' => $this->dashboardRoute($request),
             ], 503);
         }
 
@@ -41,6 +44,7 @@ class SupportController extends Controller
             'messages' => $messages,
             'unreadCount' => $support->unreadCount($conversation, SupportMessage::SENDER_CUSTOMER),
             'requestedBooking' => $booking,
+            'dashboardRoute' => $this->dashboardRoute($request),
         ]);
     }
 
@@ -134,6 +138,18 @@ class SupportController extends Controller
     {
         return Schema::hasTable('support_conversations')
             && Schema::hasTable('support_messages');
+    }
+
+    private function dashboardRoute(Request $request): string
+    {
+        $route = match ($request->user()->role) {
+            Role::Admin => 'admin.dashboard',
+            Role::Operator => 'operator.dashboard',
+            Role::VehicleOwner => 'vehicle-owner.dashboard',
+            Role::Traveler => 'dashboard',
+        };
+
+        return Route::has($route) ? $route : 'home';
     }
 
     private function bookingFromRequest(Request $request): ?Booking

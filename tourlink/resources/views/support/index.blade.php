@@ -7,7 +7,7 @@
     <div class="support-page mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-9">
         <header class="support-page-header">
             <div>
-                <a class="support-page-back" href="{{ route('dashboard') }}">← Dashboard</a>
+                <a class="support-page-back" href="{{ route($dashboardRoute) }}">← Dashboard</a>
                 <p class="support-page-eyebrow">HAVENEDGE TOURLINK · CUSTOMER CARE</p>
                 <h1>How can we help?</h1>
                 <p>Send our team a message. Your conversation stays private to your account.</p>

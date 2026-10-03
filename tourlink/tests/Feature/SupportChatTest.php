@@ -6,6 +6,7 @@ use App\Models\SupportConversation;
 use App\Models\SupportMessage;
 use App\Models\User;
 use App\Role;
+use App\Http\Middleware\EnsureAccountAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -26,6 +27,18 @@ class SupportChatTest extends TestCase
         $this->get(route('support.index'))->assertOk();
 
         $this->assertSame(1, $customer->supportConversations()->count());
+    }
+
+    public function test_support_back_link_uses_operator_dashboard_for_operator_accounts(): void
+    {
+        $operator = User::factory()->create(['role' => Role::Operator]);
+
+        $this->withoutMiddleware(EnsureAccountAccess::class)
+            ->actingAs($operator)
+            ->get(route('support.index'))
+            ->assertOk()
+            ->assertSee('href="'.route('operator.dashboard').'"', false)
+            ->assertDontSee('href="'.route('dashboard').'"', false);
     }
 
     public function test_support_page_shows_alternative_contacts_if_chat_tables_are_missing(): void
