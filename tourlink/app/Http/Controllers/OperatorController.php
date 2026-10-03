@@ -8,12 +8,12 @@ use App\Models\Booking;
 use App\Models\Review;
 use App\Models\Trip;
 use App\Models\TripAvailability;
-use App\Models\TripCategory;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VerificationRequest;
 use App\OperatorVerificationDocument;
 use App\Services\Catalog\DestinationResolver;
+use App\Services\Catalog\TripCategoryCatalog;
 use App\VerificationLevel;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
@@ -81,9 +81,9 @@ class OperatorController extends Controller
         return view('operator.trips.index', compact('trips', 'filters'));
     }
 
-    public function createTrip(): View
+    public function createTrip(TripCategoryCatalog $categoryCatalog): View
     {
-        return view('operator.trips.form', $this->tripFormData(new Trip));
+        return view('operator.trips.form', $this->tripFormData(new Trip, $categoryCatalog));
     }
 
     public function storeTrip(Request $request, DestinationResolver $destinationResolver): RedirectResponse
@@ -111,12 +111,12 @@ class OperatorController extends Controller
         return redirect()->route('operator.trips.edit', $trip)->with('status', 'Trip created and submitted for verification.');
     }
 
-    public function editTrip(Request $request, Trip $trip): View
+    public function editTrip(Request $request, Trip $trip, TripCategoryCatalog $categoryCatalog): View
     {
         $this->ensureTripOwner($request, $trip);
         $trip->load('images');
 
-        return view('operator.trips.form', $this->tripFormData($trip));
+        return view('operator.trips.form', $this->tripFormData($trip, $categoryCatalog));
     }
 
     public function updateTrip(Request $request, Trip $trip, DestinationResolver $destinationResolver): RedirectResponse
@@ -423,9 +423,9 @@ class OperatorController extends Controller
         $request->merge($normalized);
     }
 
-    private function tripFormData(Trip $trip): array
+    private function tripFormData(Trip $trip, TripCategoryCatalog $categoryCatalog): array
     {
-        return ['trip' => $trip, 'categories' => TripCategory::query()->orderBy('name')->get(['id', 'name']), 'vehicles' => Vehicle::query()->where('owner_id', auth()->id())->where('status', '!=', ListingStatus::Archived)->get(['id', 'name'])];
+        return ['trip' => $trip, 'categories' => $categoryCatalog->all(), 'vehicles' => Vehicle::query()->where('owner_id', auth()->id())->where('status', '!=', ListingStatus::Archived)->get(['id', 'name'])];
     }
 
     private function syncImages(Trip $trip, array $images): void

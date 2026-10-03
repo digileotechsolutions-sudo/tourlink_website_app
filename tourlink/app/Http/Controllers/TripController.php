@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\ListingStatus;
 use App\Models\Destination;
 use App\Models\Trip;
-use App\Models\TripCategory;
+use App\Services\Catalog\TripCategoryCatalog;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ use Illuminate\View\View;
 
 class TripController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, TripCategoryCatalog $categoryCatalog): View
     {
         $filters = $request->validate([
             'search' => ['nullable', 'string', 'max:120'],
@@ -74,7 +74,7 @@ class TripController extends Controller
 
         $results = $trips->latest('created_at')->paginate(9)->withQueryString();
         $destinations = Destination::query()->orderBy('name')->get(['id', 'name', 'slug']);
-        $categories = TripCategory::query()->orderBy('name')->get(['id', 'name', 'slug']);
+        $categories = $categoryCatalog->all();
 
         return view('pages.trips.index', [
             'trips' => $results,

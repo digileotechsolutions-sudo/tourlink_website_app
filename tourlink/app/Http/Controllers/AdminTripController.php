@@ -6,11 +6,11 @@ use App\AccountApprovalStatus;
 use App\AccountStatus;
 use App\ListingStatus;
 use App\Models\Trip;
-use App\Models\TripCategory;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Role;
 use App\Services\Catalog\DestinationResolver;
+use App\Services\Catalog\TripCategoryCatalog;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -57,9 +57,9 @@ class AdminTripController extends Controller
         return view('admin.trips.index', compact('trips', 'filters'));
     }
 
-    public function create(): View
+    public function create(TripCategoryCatalog $categoryCatalog): View
     {
-        return view('admin.trips.form', $this->formData(new Trip));
+        return view('admin.trips.form', $this->formData(new Trip, $categoryCatalog));
     }
 
     public function store(Request $request, DestinationResolver $destinationResolver): RedirectResponse
@@ -82,11 +82,11 @@ class AdminTripController extends Controller
         return redirect()->route('admin.trips.edit', $trip)->with('status', 'Trip created.');
     }
 
-    public function edit(Trip $trip): View
+    public function edit(Trip $trip, TripCategoryCatalog $categoryCatalog): View
     {
         $trip->load('images');
 
-        return view('admin.trips.form', $this->formData($trip));
+        return view('admin.trips.form', $this->formData($trip, $categoryCatalog));
     }
 
     public function update(Request $request, Trip $trip, DestinationResolver $destinationResolver): RedirectResponse
@@ -211,11 +211,11 @@ class AdminTripController extends Controller
         $request->merge($normalized);
     }
 
-    private function formData(Trip $trip): array
+    private function formData(Trip $trip, TripCategoryCatalog $categoryCatalog): array
     {
         return [
             'trip' => $trip,
-            'categories' => TripCategory::query()->orderBy('name')->get(['id', 'name']),
+            'categories' => $categoryCatalog->all(),
             'operators' => User::query()
                 ->where('role', Role::Operator)
                 ->where('account_status', AccountStatus::Active)

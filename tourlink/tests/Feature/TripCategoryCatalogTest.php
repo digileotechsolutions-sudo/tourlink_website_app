@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\TripCategory;
+use App\Models\User;
+use App\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -51,5 +53,45 @@ class TripCategoryCatalogTest extends TestCase
             ->assertOk()
             ->assertSee('Safari &amp; Wildlife 🦁')
             ->assertSee('Weekend Getaways');
+    }
+
+    public function test_category_catalog_repairs_missing_defaults_when_a_trip_page_is_loaded(): void
+    {
+        TripCategory::query()->delete();
+
+        $this->get(route('trips.index'))
+            ->assertOk()
+            ->assertSee('Safari &amp; Wildlife 🦁')
+            ->assertSee('Cross-Country Trips');
+
+        $this->assertDatabaseCount('trip_categories', 24);
+    }
+
+    public function test_operator_trip_form_repairs_missing_default_categories(): void
+    {
+        TripCategory::query()->delete();
+        $operator = User::factory()->create(['role' => Role::Operator]);
+
+        $this->actingAs($operator)
+            ->get(route('operator.trips.create'))
+            ->assertOk()
+            ->assertSee('Safari &amp; Wildlife 🦁')
+            ->assertSee('Cross-Country Trips');
+
+        $this->assertDatabaseCount('trip_categories', 24);
+    }
+
+    public function test_admin_trip_form_repairs_missing_default_categories(): void
+    {
+        TripCategory::query()->delete();
+        $admin = User::factory()->create(['role' => Role::Admin]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.trips.create'))
+            ->assertOk()
+            ->assertSee('Safari &amp; Wildlife 🦁')
+            ->assertSee('Cross-Country Trips');
+
+        $this->assertDatabaseCount('trip_categories', 24);
     }
 }
