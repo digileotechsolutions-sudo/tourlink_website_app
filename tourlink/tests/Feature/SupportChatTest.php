@@ -7,6 +7,7 @@ use App\Models\SupportMessage;
 use App\Models\User;
 use App\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class SupportChatTest extends TestCase
@@ -25,6 +26,37 @@ class SupportChatTest extends TestCase
         $this->get(route('support.index'))->assertOk();
 
         $this->assertSame(1, $customer->supportConversations()->count());
+    }
+
+    public function test_support_page_shows_alternative_contacts_if_chat_tables_are_missing(): void
+    {
+        Schema::dropIfExists('support_messages');
+        Schema::dropIfExists('support_conversations');
+        $customer = User::factory()->create(['role' => Role::Traveler]);
+
+        $this->actingAs($customer)
+            ->get(route('support.index'))
+            ->assertStatus(503)
+            ->assertSeeText('We’re still here to help.')
+            ->assertSeeText(config('services.tourlink.support_email'))
+            ->assertSeeText(config('services.tourlink.support_phone'))
+            ->assertSee(route('dashboard'), false);
+    }
+
+    public function test_support_send_and_poll_return_clear_unavailable_responses_if_chat_tables_are_missing(): void
+    {
+        Schema::dropIfExists('support_messages');
+        Schema::dropIfExists('support_conversations');
+        $customer = User::factory()->create(['role' => Role::Traveler]);
+        $conversationId = '01J00000000000000000000000';
+
+        $this->actingAs($customer)
+            ->post(route('support.messages.store', $conversationId), ['message' => 'I need help'])
+            ->assertRedirect(route('support.index'));
+
+        $this->getJson(route('support.messages.index', $conversationId))
+            ->assertStatus(503)
+            ->assertJson(['message' => 'Live chat is temporarily unavailable.']);
     }
 
     public function test_customer_message_notifies_active_admin_and_admin_reply_notifies_customer(): void
