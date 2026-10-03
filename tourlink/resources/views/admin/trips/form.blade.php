@@ -51,12 +51,7 @@
                     <input name="slug" value="{{ old('slug', $trip->slug) }}" maxlength="255" placeholder="Generated from trip name when blank" class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
                 </label>
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Destination
-                    <select name="destination_id" required class="min-h-11 rounded border border-slate-300 bg-white px-3 font-normal text-slate-950">
-                        <option value="">Select destination</option>
-                        @foreach ($destinations as $destination)
-                            <option value="{{ $destination->id }}" @selected(old('destination_id', $trip->destination_id) === $destination->id)>{{ $destination->name }}</option>
-                        @endforeach
-                    </select>
+                    <input name="destination_name" value="{{ old('destination_name', $trip->destination?->name) }}" required maxlength="255" placeholder="Enter destination name" class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
                 </label>
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Category
                     <select name="category_id" required class="min-h-11 rounded border border-slate-300 bg-white px-3 font-normal text-slate-950">

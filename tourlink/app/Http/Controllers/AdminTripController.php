@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\AccountApprovalStatus;
 use App\AccountStatus;
 use App\ListingStatus;
-use App\Models\Destination;
 use App\Models\Trip;
 use App\Models\TripCategory;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Role;
+use App\Services\Catalog\DestinationResolver;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -62,14 +62,16 @@ class AdminTripController extends Controller
         return view('admin.trips.form', $this->formData(new Trip));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, DestinationResolver $destinationResolver): RedirectResponse
     {
         $data = $this->validatedTripData($request);
         $images = $data['images'] ?? [];
         unset($data['images']);
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name']);
 
-        $trip = DB::transaction(function () use ($request, $data, $images): Trip {
+        $trip = DB::transaction(function () use ($request, $data, $images, $destinationResolver): Trip {
+            $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
+            unset($data['destination_name']);
             $trip = Trip::query()->create($data);
             $this->syncImages($trip, $images);
             $this->writeAuditLog($request, $trip, 'trip.created', array_keys($data), count($images));
@@ -87,14 +89,16 @@ class AdminTripController extends Controller
         return view('admin.trips.form', $this->formData($trip));
     }
 
-    public function update(Request $request, Trip $trip): RedirectResponse
+    public function update(Request $request, Trip $trip, DestinationResolver $destinationResolver): RedirectResponse
     {
         $data = $this->validatedTripData($request, $trip);
         $images = $data['images'] ?? [];
         unset($data['images']);
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name'], $trip);
 
-        DB::transaction(function () use ($request, $trip, $data, $images): void {
+        DB::transaction(function () use ($request, $trip, $data, $images, $destinationResolver): void {
+            $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
+            unset($data['destination_name']);
             $trip->fill($data)->save();
             $this->syncImages($trip, $images);
             $this->writeAuditLog($request, $trip, 'trip.updated', array_keys($data), count($images));
@@ -124,7 +128,7 @@ class AdminTripController extends Controller
             'description' => ['required', 'string', 'max:20000'],
             'starting_point' => ['required', 'string', 'max:255'],
             'ending_point' => ['required', 'string', 'max:255'],
-            'destination_id' => ['required', 'string', 'exists:destinations,id'],
+            'destination_name' => ['required', 'string', 'max:255'],
             'category_id' => ['required', 'string', 'exists:trip_categories,id'],
             'duration_days' => ['required', 'integer', 'min:1', 'max:365'],
             'departure_date' => ['required', 'date'],
@@ -211,7 +215,6 @@ class AdminTripController extends Controller
     {
         return [
             'trip' => $trip,
-            'destinations' => Destination::query()->orderBy('name')->get(['id', 'name']),
             'categories' => TripCategory::query()->orderBy('name')->get(['id', 'name']),
             'operators' => User::query()
                 ->where('role', Role::Operator)

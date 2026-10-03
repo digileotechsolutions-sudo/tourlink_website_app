@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\BookingStatus;
 use App\ListingStatus;
 use App\Models\Booking;
-use App\Models\Destination;
 use App\Models\Review;
 use App\Models\Trip;
 use App\Models\TripAvailability;
@@ -14,6 +13,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VerificationRequest;
 use App\OperatorVerificationDocument;
+use App\Services\Catalog\DestinationResolver;
 use App\VerificationLevel;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
@@ -86,7 +86,7 @@ class OperatorController extends Controller
         return view('operator.trips.form', $this->tripFormData(new Trip));
     }
 
-    public function storeTrip(Request $request): RedirectResponse
+    public function storeTrip(Request $request, DestinationResolver $destinationResolver): RedirectResponse
     {
         $data = $this->validatedTripData($request);
         $images = $data['images'] ?? [];
@@ -98,7 +98,9 @@ class OperatorController extends Controller
         $data['featured'] = false;
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name']);
 
-        $trip = DB::transaction(function () use ($data, $images): Trip {
+        $trip = DB::transaction(function () use ($data, $images, $destinationResolver): Trip {
+            $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
+            unset($data['destination_name']);
             $trip = Trip::query()->create($data);
             $this->syncImages($trip, $images);
 
@@ -117,7 +119,7 @@ class OperatorController extends Controller
         return view('operator.trips.form', $this->tripFormData($trip));
     }
 
-    public function updateTrip(Request $request, Trip $trip): RedirectResponse
+    public function updateTrip(Request $request, Trip $trip, DestinationResolver $destinationResolver): RedirectResponse
     {
         $this->ensureTripOwner($request, $trip);
         $data = $this->validatedTripData($request, $trip);
@@ -127,7 +129,9 @@ class OperatorController extends Controller
         unset($data['status'], $data['verification_status'], $data['featured'], $data['operator_id']);
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name'], $trip);
 
-        DB::transaction(function () use ($trip, $data, $images): void {
+        DB::transaction(function () use ($trip, $data, $images, $destinationResolver): void {
+            $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
+            unset($data['destination_name']);
             $trip->fill($data)->save();
             $this->syncImages($trip, $images);
         });
@@ -373,7 +377,7 @@ class OperatorController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'], 'slug' => ['nullable', 'string', 'max:255', 'alpha_dash'],
             'description' => ['required', 'string', 'max:20000'], 'starting_point' => ['required', 'string', 'max:255'], 'ending_point' => ['required', 'string', 'max:255'],
-            'destination_id' => ['required', 'string', 'exists:destinations,id'], 'category_id' => ['required', 'string', 'exists:trip_categories,id'],
+            'destination_name' => ['required', 'string', 'max:255'], 'category_id' => ['required', 'string', 'exists:trip_categories,id'],
             'duration_days' => ['required', 'integer', 'min:1', 'max:365'], 'departure_date' => ['required', 'date'], 'return_date' => ['required', 'date', 'after:departure_date'],
             'price_per_person' => ['required', 'integer', 'min:0', 'max:100000000'], 'max_travelers' => ['required', 'integer', 'min:1', 'max:10000'],
             'min_travelers' => ['required', 'integer', 'min:1', 'lte:max_travelers'], 'available_seats' => ['required', 'integer', 'min:0', 'lte:max_travelers'],
@@ -421,7 +425,7 @@ class OperatorController extends Controller
 
     private function tripFormData(Trip $trip): array
     {
-        return ['trip' => $trip, 'destinations' => Destination::query()->orderBy('name')->get(['id', 'name']), 'categories' => TripCategory::query()->orderBy('name')->get(['id', 'name']), 'vehicles' => Vehicle::query()->where('owner_id', auth()->id())->where('status', '!=', ListingStatus::Archived)->get(['id', 'name'])];
+        return ['trip' => $trip, 'categories' => TripCategory::query()->orderBy('name')->get(['id', 'name']), 'vehicles' => Vehicle::query()->where('owner_id', auth()->id())->where('status', '!=', ListingStatus::Archived)->get(['id', 'name'])];
     }
 
     private function syncImages(Trip $trip, array $images): void
