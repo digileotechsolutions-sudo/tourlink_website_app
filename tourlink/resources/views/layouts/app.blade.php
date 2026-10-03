@@ -6,6 +6,9 @@
     <meta name="view-transition" content="same-origin">
     <meta name="description" content="@yield('meta_description', 'Discover trips, hire verified vehicles and travel Kenya with confidence.')">
     <x-pwa-head />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
     <title>@yield('title', 'Havenedge Tourlink | One Platform. Endless Journeys.')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])

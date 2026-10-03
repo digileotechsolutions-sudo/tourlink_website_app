@@ -35,6 +35,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 ::selection { background: #1F0052; color: #FFD51E; }
 .container-page { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
 .display { font-family: Roboto, 'Noto Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; letter-spacing: -.035em; }
+.hero-brush-headline { max-width: 100%; margin: 0; color: #fff; font-family: 'Kaushan Script', 'Brush Script MT', 'Segoe Script', cursive; font-size: clamp(3.75rem, 8.5vw, 7.5rem); font-weight: 400; letter-spacing: -.045em; line-height: 1.04; }
+.hero-brush-headline__first, .hero-brush-headline__second { display: block; }
+.hero-brush-headline__first { margin-bottom: .08em; font-size: .74em; }
+.hero-brush-headline__second { width: max-content; max-width: 100%; color: #FFD51E; transform: rotate(-1.5deg); transform-origin: left center; }
 .eyebrow { color: #1F0052; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
 .grain { position: relative; }
 .grain::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .055; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
