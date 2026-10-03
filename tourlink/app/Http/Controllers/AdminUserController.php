@@ -8,6 +8,7 @@ use App\Models\AdminLog;
 use App\Models\User;
 use App\Role;
 use App\Services\Referral\ReferralService;
+use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpDeliveryService;
 use App\VerificationLevel;
 use Illuminate\Database\Eloquent\Builder;
@@ -49,7 +50,13 @@ class AdminUserController extends Controller
         return view('admin.users.index', compact('users', 'filters'));
     }
 
-    public function update(Request $request, User $user, OtpDeliveryService $delivery, ReferralService $referrals): RedirectResponse
+    public function update(
+        Request $request,
+        User $user,
+        OtpDeliveryService $delivery,
+        ReferralService $referrals,
+        AccountVerificationService $verification,
+    ): RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:80'],
@@ -61,6 +68,18 @@ class AdminUserController extends Controller
             'verification_level' => ['required', Rule::enum(VerificationLevel::class)],
             'approval_note' => ['nullable', 'string', 'max:2000'],
         ]);
+        $emailChanged = $user->email !== $data['email'];
+        if ($emailChanged && $data['approval_status'] === AccountApprovalStatus::Approved->value) {
+            $data['approval_status'] = AccountApprovalStatus::Pending->value;
+        }
+
+        if ($data['approval_status'] === AccountApprovalStatus::Approved->value
+            && ($emailChanged || ! $verification->isFullyVerified($user))) {
+            throw ValidationException::withMessages([
+                'approval_status' => 'The account must verify its email with the OTP before it can be approved.',
+            ]);
+        }
+
         $approvalChanged = $user->approval_status->value !== $data['approval_status'];
 
         $isDisablingAdmin = $data['role'] !== Role::Admin->value

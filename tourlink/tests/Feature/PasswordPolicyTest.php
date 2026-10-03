@@ -52,6 +52,14 @@ class PasswordPolicyTest extends TestCase
         $response->assertRedirect(route('verification.notice', ['user' => $user->id]));
         $this->assertTrue(Hash::check('Jungle@Trail29', $user->password));
         $this->assertNotSame('Jungle@Trail29', $user->password);
+        $this->assertNull($user->email_verified_at);
+        $this->assertSame('PENDING', $user->approval_status->value);
+        $this->assertDatabaseHas('otp_challenges', [
+            'user_id' => $user->id,
+            'channel' => OtpChannel::Email->value,
+            'purpose' => 'account_verification',
+            'consumed_at' => null,
+        ]);
         $this->assertDatabaseMissing('otp_challenges', ['user_id' => $user->id, 'channel' => OtpChannel::Phone->value]);
     }
 

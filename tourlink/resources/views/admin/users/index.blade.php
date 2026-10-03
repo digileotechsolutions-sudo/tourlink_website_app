@@ -8,7 +8,7 @@
             <div>
                 <p class="text-xs font-bold uppercase tracking-wider text-emerald-800">Administration</p>
                 <h1 class="mt-2 text-3xl font-black text-slate-950">Manage users</h1>
-                <p class="mt-2 text-sm text-slate-600">Review traveler, operator, and vehicle owner profiles and account access.</p>
+                <p class="mt-2 text-sm text-slate-600">Review traveler, operator, and vehicle owner profiles and account access. New accounts must verify their email with an OTP before approval.</p>
             </div>
             <span class="text-sm text-slate-500">{{ number_format($users->total()) }} accounts</span>
         </header>
