@@ -35,9 +35,9 @@ New Google users must provide a phone number and account type, then complete Tou
 
 ## Email Delivery and Password Resets
 
-Password-reset links use the same configured email transport as account-verification email: authenticated SMTP (`MAIL_MAILER=smtp`, with host, username, password, and sender configured) or Resend (`RESEND_API_KEY` and `EMAIL_FROM`, with `OTP_EMAIL_TRANSPORT=resend` or `auto`). Configure these values in the deployed application's environment and refresh Laravel's cached configuration after changing them. Password reset requests fail explicitly when no real delivery transport is configured; they are not silently reported as sent.
+Account-verification OTPs and password-reset links use a configured real email transport: authenticated SMTP (`MAIL_MAILER=smtp`, with host, username, password, and sender configured), the host's configured Laravel `sendmail` transport, or Resend (`RESEND_API_KEY` and `EMAIL_FROM`, with `OTP_EMAIL_TRANSPORT=resend` or `auto`). Resend takes priority in `auto`; otherwise configured SMTP or the configured default sendmail transport is used. `log` and `array` mailers are never treated as production delivery. Configure the transport and sender in the deployed application's environment and refresh Laravel's cached configuration after changing it. Password reset and OTP requests fail explicitly when no real delivery transport is configured; they are not silently reported as sent.
 
-`OTP_DELIVERY=log` is restricted to local/testing environments and is not a production email transport. Production registrations and resend requests require working authenticated SMTP or Resend configuration.
+`OTP_DELIVERY=log` is restricted to local/testing environments and is not a production email transport. Production registrations and resend requests require working authenticated SMTP, host sendmail, or Resend configuration.
 
 Use `php artisan tourlink:check-verification` to check the effective email transport on the server. For an end-to-end delivery test, run `php artisan tourlink:check-verification --email=you@example.com` with an inbox you control, then check its inbox and spam folder. The command prints a temporary test code; do not share it.
 

@@ -78,8 +78,50 @@ class OtpDeliveryService
         return match ($preferred) {
             'resend' => $this->resendConfigured() ? 'resend' : null,
             'smtp' => $this->smtpConfigured() ? 'smtp' : null,
-            default => $this->resendConfigured() ? 'resend' : ($this->smtpConfigured() ? 'smtp' : null),
+            default => $this->resendConfigured()
+                ? 'resend'
+                : ($this->smtpConfigured() ? 'smtp' : $this->configuredDefaultMailer()),
         };
+    }
+
+    private function configuredDefaultMailer(): ?string
+    {
+        $mailer = strtolower(trim((string) config('mail.default')));
+        $configuration = config('mail.mailers.'.$mailer);
+
+        if ($mailer === '' || in_array($mailer, ['log', 'array', 'failover', 'roundrobin'], true) || ! is_array($configuration)) {
+            return null;
+        }
+
+        $transport = strtolower((string) ($configuration['transport'] ?? ''));
+
+        if ($transport === 'smtp') {
+            return $this->smtpConfigured() ? $mailer : null;
+        }
+
+        if ($transport === 'sendmail') {
+            $path = trim((string) ($configuration['path'] ?? ''));
+
+            return $path !== '' ? $mailer : null;
+        }
+
+        if ($transport === 'ses') {
+            return config('services.ses.key') && config('services.ses.secret') && config('services.ses.region')
+                ? $mailer
+                : null;
+        }
+
+        if ($transport === 'postmark') {
+            return config('services.postmark.key') ? $mailer : null;
+        }
+
+        if ($transport === 'mailgun') {
+            return config('services.mailgun.secret') && config('services.mailgun.domain')
+                ? $mailer
+                : null;
+        }
+
+        return null;
     }
 
     public function smsConfigured(): bool
@@ -272,15 +314,7 @@ class OtpDeliveryService
 
         $transport = $this->emailTransport();
 
-        if ($transport === 'smtp') {
-            Mail::mailer('smtp')->html($html, function (Message $message) use ($recipient, $subject): void {
-                $message->to($recipient)->subject($subject);
-            });
-
-            return;
-        }
-
-        if ($transport !== 'resend') {
+        if ($transport === null) {
             if ($this->developmentMode()) {
                 Log::debug('Havenedge Tourlink development email', ['recipient' => $recipient, 'subject' => $subject, 'body' => $body]);
 
@@ -288,6 +322,20 @@ class OtpDeliveryService
             }
 
             throw new RuntimeException('Email verification delivery is not configured.');
+        }
+
+        if ($transport !== 'resend') {
+            try {
+                Mail::mailer($transport)->html($html, function (Message $message) use ($recipient, $subject): void {
+                    $message->to($recipient)->subject($subject);
+                });
+            } catch (\Throwable $exception) {
+                report($exception);
+
+                throw new RuntimeException('Email could not be sent using the configured '.$transport.' mailer.', previous: $exception);
+            }
+
+            return;
         }
 
         $this->resendClient((string) config('services.resend.key'))

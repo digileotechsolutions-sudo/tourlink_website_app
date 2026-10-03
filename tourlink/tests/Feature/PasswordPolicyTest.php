@@ -153,6 +153,20 @@ class PasswordPolicyTest extends TestCase
         $this->assertSame('smtp', $delivery->emailTransport());
     }
 
+    public function test_configured_sendmail_is_available_as_the_default_email_transport(): void
+    {
+        config([
+            'services.otp.email_transport' => 'auto',
+            'services.resend.key' => null,
+            'services.resend.from' => null,
+            'mail.default' => 'sendmail',
+            'mail.mailers.sendmail.transport' => 'sendmail',
+            'mail.mailers.sendmail.path' => '/usr/sbin/sendmail -bs -i',
+        ]);
+
+        $this->assertSame('sendmail', app(OtpDeliveryService::class)->emailTransport());
+    }
+
     public function test_provider_registration_requires_and_saves_business_details(): void
     {
         $this->from(route('register'))->post(route('register'), [
