@@ -13,8 +13,11 @@
                 <p>We bring together <strong>tourists, travellers, vehicle owners, tour operators, drivers, and towing/recovery operators</strong> on one convenient platform, making it easier for users to discover services, connect with service providers, and arrange the support they need.</p>
             </div>
             <div class="about-page__hero-media">
-                <img src="{{ asset('images/about-kenya-journey.svg') }}" alt="Illustration of a safari vehicle travelling across the Kenyan savannah" fetchpriority="high" decoding="async">
-                <span>Travel, transport and local connections</span>
+                <img src="{{ asset('images/about-kenya-community.jpg') }}" alt="A Maasai host and a traveler work together to light a fire in a Kenyan village" fetchpriority="high" decoding="async">
+                <span>
+                    Kenyan people connecting through travel
+                    <small><a href="https://commons.wikimedia.org/wiki/File:Maasai_people_and_a_tourist_lighting_a_fire_in_a_Maasai_village_on_the_A109_road,_Kenya.jpg" target="_blank" rel="noopener noreferrer">Maasai people and a traveler sharing a cultural activity</a> by CT Cooper · <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer">CC0</a></small>
+                </span>
             </div>
         </div>
     </header>

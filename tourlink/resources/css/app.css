@@ -745,8 +745,10 @@ html[dir="rtl"] .auth-language-switcher { right: auto; left: max(16px, env(safe-
 .about-page__hero-copy > p:not(.eyebrow):not(.about-page__tagline) { margin: 12px 0 0; color: #526071; font-size: 14px; line-height: 1.75; }
 .about-page__hero-media { position: relative; aspect-ratio: 4 / 3; min-height: 230px; overflow: hidden; border-radius: 8px; background: #150039; }
 .about-page__hero-media::after { position: absolute; inset: 45% 0 0; background: linear-gradient(transparent, rgb(15 23 42 / 72%)); content: ''; }
-.about-page__hero-media img { width: 100%; height: 100%; object-fit: cover; }
+.about-page__hero-media img { width: 100%; height: 100%; object-fit: cover; object-position: 80% center; }
 .about-page__hero-media span { position: absolute; z-index: 1; right: 16px; bottom: 16px; left: 16px; color: #fff; font-size: 12px; font-weight: 750; }
+.about-page__hero-media small { display: block; margin-top: 6px; font-size: 9px; font-weight: 500; line-height: 1.5; }
+.about-page__hero-media small a { text-decoration: underline; text-underline-offset: 2px; }
 .about-page__content { max-width: 1000px; padding-block: 12px 56px; }
 .about-page__section { display: grid; gap: 14px; padding-block: 34px; border-bottom: 1px solid #E2E8F0; }
 .about-page__section .eyebrow { margin: 0; }
