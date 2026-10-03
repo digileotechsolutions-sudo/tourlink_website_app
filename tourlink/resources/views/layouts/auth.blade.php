@@ -15,5 +15,6 @@
     <x-portal-footer />
     <x-pwa-status />
     <x-public-support-launcher />
+    <x-google-translate-runtime />
 </body>
 </html>

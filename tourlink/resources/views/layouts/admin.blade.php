@@ -53,5 +53,6 @@
             </main>
         </div>
     </div>
+    <x-google-translate-runtime />
 </body>
 </html>

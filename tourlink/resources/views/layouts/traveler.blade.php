@@ -22,5 +22,6 @@
         @yield('content')
     </main>
     <x-mobile-bottom-nav />
+    <x-google-translate-runtime />
 </body>
 </html>

@@ -27,5 +27,6 @@
         <x-mobile-bottom-nav />
     </main>
 </div>
+<x-google-translate-runtime />
 </body>
 </html>

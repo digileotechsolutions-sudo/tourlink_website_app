@@ -23,6 +23,7 @@
                 @if(Route::has('register'))<a class="rounded-full bg-sun px-5 py-3 text-sm font-extrabold text-ink hover:bg-orange-300" href="{{ route('register') }}">Join Havenedge Tourlink</a>@endif
             @endauth
         </div>
+        <x-language-switcher />
         <details class="relative lg:hidden">
             <summary class="grid size-11 cursor-pointer list-none place-items-center rounded-lg p-2 hover:bg-white/10" aria-label="Open navigation menu">
                 <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>

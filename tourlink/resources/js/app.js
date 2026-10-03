@@ -29,6 +29,47 @@ const signInPrompt = document.querySelector('[data-sign-in-prompt]');
 
 printTermsButton?.addEventListener('click', () => window.print());
 
+const googleTranslateMounts = [...document.querySelectorAll('[data-google-translate-mount]')];
+if (googleTranslateMounts.length > 0) {
+    const showGoogleTranslateError = () => {
+        document.querySelectorAll('[data-google-translate-error]').forEach((message) => {
+            message.hidden = false;
+        });
+    };
+    const initializeGoogleTranslate = () => {
+        if (!window.google?.translate?.TranslateElement) {
+            showGoogleTranslateError();
+            return;
+        }
+
+        googleTranslateMounts.forEach((mount, index) => {
+            mount.id = `google-translate-mount-${index}`;
+            try {
+                new window.google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    autoDisplay: false,
+                }, mount.id);
+            } catch (error) {
+                showGoogleTranslateError();
+                console.error('Google Translate could not initialize.', error);
+            }
+        });
+    };
+
+    window.googleTranslateElementInit = initializeGoogleTranslate;
+    const translateScript = document.createElement('script');
+    translateScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    translateScript.async = true;
+    translateScript.onerror = showGoogleTranslateError;
+    document.head.append(translateScript);
+
+    window.setTimeout(() => {
+        if (!window.google?.translate?.TranslateElement) {
+            showGoogleTranslateError();
+        }
+    }, 12000);
+}
+
 if (signInPrompt && 'showModal' in signInPrompt) {
     const storageKey = 'tourlink:sign-in-prompt-shown';
     let hasBeenShown = false;
