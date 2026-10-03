@@ -49,8 +49,18 @@ class OtpDeliveryService
 
     public function smtpConfigured(): bool
     {
-        return config('mail.default') === 'smtp'
-            && (bool) config('mail.mailers.smtp.host')
+        $url = config('mail.mailers.smtp.url');
+        if (is_string($url) && trim($url) !== '') {
+            $parts = parse_url($url);
+
+            return is_array($parts)
+                && in_array(strtolower($parts['scheme'] ?? ''), ['smtp', 'smtps'], true)
+                && ! empty($parts['host'])
+                && ! empty($parts['user'])
+                && ! empty($parts['pass']);
+        }
+
+        return (bool) config('mail.mailers.smtp.host')
             && (bool) config('mail.mailers.smtp.username')
             && (bool) config('mail.mailers.smtp.password');
     }

@@ -115,6 +115,44 @@ class PasswordPolicyTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'nelson@example.com']);
     }
 
+    public function test_configured_smtp_is_available_even_when_it_is_not_the_default_mailer(): void
+    {
+        config([
+            'services.otp.email_transport' => 'auto',
+            'services.resend.key' => null,
+            'services.resend.from' => null,
+            'mail.default' => 'log',
+            'mail.mailers.smtp.url' => null,
+            'mail.mailers.smtp.host' => 'smtp.example.com',
+            'mail.mailers.smtp.username' => 'account@example.com',
+            'mail.mailers.smtp.password' => 'smtp-password',
+        ]);
+
+        $delivery = app(OtpDeliveryService::class);
+
+        $this->assertTrue($delivery->smtpConfigured());
+        $this->assertSame('smtp', $delivery->emailTransport());
+    }
+
+    public function test_configured_smtp_url_is_available_without_individual_mail_fields(): void
+    {
+        config([
+            'services.otp.email_transport' => 'auto',
+            'services.resend.key' => null,
+            'services.resend.from' => null,
+            'mail.default' => 'log',
+            'mail.mailers.smtp.url' => 'smtps://account%40example.com:smtp-password@smtp.example.com:465',
+            'mail.mailers.smtp.host' => null,
+            'mail.mailers.smtp.username' => null,
+            'mail.mailers.smtp.password' => null,
+        ]);
+
+        $delivery = app(OtpDeliveryService::class);
+
+        $this->assertTrue($delivery->smtpConfigured());
+        $this->assertSame('smtp', $delivery->emailTransport());
+    }
+
     public function test_provider_registration_requires_and_saves_business_details(): void
     {
         $this->from(route('register'))->post(route('register'), [
