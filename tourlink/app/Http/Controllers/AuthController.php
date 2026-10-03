@@ -335,7 +335,7 @@ class AuthController extends Controller
             Role::Admin => ['/admin'],
             Role::Operator => ['/operator'],
             Role::VehicleOwner => ['/vehicle-owner'],
-            Role::Traveler => ['/dashboard', '/bookings', '/traveler'],
+            Role::Traveler => ['/dashboard', '/bookings', '/traveler', '/support'],
         };
 
         foreach ([...$rolePaths, '/account/password', '/referrals'] as $allowedPath) {
