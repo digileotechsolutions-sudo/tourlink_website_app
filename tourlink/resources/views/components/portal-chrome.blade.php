@@ -1,7 +1,7 @@
 @php
     $user = auth()->user();
     $role = $user->role;
-    $pageTitle = str($__env->yieldContent('title', 'Havenedge Tourlink'))->before('|')->trim();
+    $pageTitle = str($__env->yieldContent('title', 'Havenedge Tourlink'))->before('|')->trim()->toString();
     $dashboardRoute = match ($role) {
         \App\Role::Operator => 'operator.dashboard',
         \App\Role::VehicleOwner => 'vehicle-owner.dashboard',

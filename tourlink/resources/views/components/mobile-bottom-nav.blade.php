@@ -17,7 +17,7 @@
                     : $query->where('user_id', auth()->id()))
                 ->count()
             : 0;
-        $pageTitle = str($__env->yieldContent('title', 'Havenedge Tourlink'))->before('|')->trim();
+        $pageTitle = str($__env->yieldContent('title', 'Havenedge Tourlink'))->before('|')->trim()->toString();
         $dashboardRoute = match ($role) {
             \App\Role::Operator => 'operator.dashboard',
             \App\Role::VehicleOwner => 'vehicle-owner.dashboard',
