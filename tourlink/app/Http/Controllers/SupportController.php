@@ -11,6 +11,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
@@ -162,8 +164,20 @@ class SupportController extends Controller
 
     private function supportTablesExist(): bool
     {
-        return Schema::hasTable('support_conversations')
-            && Schema::hasTable('support_messages');
+        $missingTables = collect(['support_conversations', 'support_messages'])
+            ->reject(fn (string $table): bool => Schema::hasTable($table))
+            ->values()
+            ->all();
+
+        if ($missingTables !== []) {
+            Log::warning('Support chat is unavailable because required database tables are missing.', [
+                'connection' => DB::getDefaultConnection(),
+                'database' => DB::connection()->getDatabaseName(),
+                'missing_tables' => $missingTables,
+            ]);
+        }
+
+        return $missingTables === [];
     }
 
     private function dashboardRoute(Request $request): string
