@@ -4,6 +4,7 @@ namespace App\Services\Support;
 
 use App\AccountApprovalStatus;
 use App\AccountStatus;
+use App\Mail\SupportMessageReceivedMail;
 use App\Models\Booking;
 use App\Models\SupportConversation;
 use App\Models\SupportMessage;
@@ -12,6 +13,7 @@ use App\Role;
 use App\Services\Verification\AccountVerificationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class SupportChatService
 {
@@ -63,7 +65,7 @@ class SupportChatService
         string $senderType,
         string $message,
     ): SupportMessage {
-        return DB::transaction(function () use ($conversation, $sender, $senderType, $message): SupportMessage {
+        $supportMessage = DB::transaction(function () use ($conversation, $sender, $senderType, $message): SupportMessage {
             $lockedConversation = SupportConversation::query()->whereKey($conversation->getKey())->lockForUpdate()->firstOrFail();
             abort_if($lockedConversation->status === SupportConversation::STATUS_CLOSED, 409, 'This support conversation is closed.');
 
@@ -93,6 +95,12 @@ class SupportChatService
 
             return $supportMessage;
         });
+
+        if ($senderType === SupportMessage::SENDER_CUSTOMER) {
+            $this->emailAuthorizedAdmins($conversation, $sender, $supportMessage);
+        }
+
+        return $supportMessage;
     }
 
     public function markIncomingRead(SupportConversation $conversation, string $readerType): void
@@ -153,5 +161,27 @@ class SupportChatService
                 'body' => mb_substr($message->message, 0, 250),
                 'type' => 'support_message:'.$conversation->id,
             ]));
+    }
+
+    private function emailAuthorizedAdmins(
+        SupportConversation $conversation,
+        User $customer,
+        SupportMessage $message,
+    ): void {
+        $verification = app(AccountVerificationService::class);
+
+        User::query()
+            ->where('role', Role::Admin->value)
+            ->where('account_status', AccountStatus::Active->value)
+            ->where('approval_status', AccountApprovalStatus::Approved->value)
+            ->get()
+            ->filter(fn (User $admin): bool => $verification->isFullyVerified($admin))
+            ->each(fn (User $admin) => Mail::to($admin->email)->send(new SupportMessageReceivedMail(
+                customerName: $customer->name,
+                customerEmail: $customer->email,
+                conversationId: (string) $conversation->getKey(),
+                supportMessage: $message->message,
+                conversationUrl: route('admin.support.show', $conversation),
+            )));
     }
 }

@@ -67,6 +67,28 @@ class TripCategoryCatalogTest extends TestCase
         $this->assertDatabaseCount('trip_categories', 24);
     }
 
+    public function test_repair_migration_restores_categories_without_replacing_existing_category_ids(): void
+    {
+        $category = TripCategory::query()->where('slug', 'safari-wildlife')->firstOrFail();
+        $category->update(['name' => 'Outdated safari name']);
+        TripCategory::query()->where('slug', 'beach-coastal-tours')->delete();
+
+        $migration = require database_path('migrations/2026_10_03_180000_repair_trip_and_road_trip_categories.php');
+        $migration->up();
+        $migration->up();
+
+        $this->assertDatabaseCount('trip_categories', 24);
+        $this->assertDatabaseHas('trip_categories', [
+            'id' => $category->id,
+            'name' => 'Safari & Wildlife',
+            'slug' => 'safari-wildlife',
+        ]);
+        $this->assertDatabaseHas('trip_categories', [
+            'name' => 'Beach & Coastal Tours',
+            'slug' => 'beach-coastal-tours',
+        ]);
+    }
+
     public function test_operator_trip_form_repairs_missing_default_categories(): void
     {
         TripCategory::query()->delete();

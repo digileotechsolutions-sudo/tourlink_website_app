@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\EnsureAccountAccess;
+use App\Mail\SupportMessageReceivedMail;
 use App\Models\SupportConversation;
 use App\Models\SupportMessage;
 use App\Models\User;
 use App\Role;
-use App\Http\Middleware\EnsureAccountAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -74,8 +76,10 @@ class SupportChatTest extends TestCase
 
     public function test_customer_message_notifies_active_admin_and_admin_reply_notifies_customer(): void
     {
+        Mail::fake();
         $customer = User::factory()->create(['name' => 'Customer One', 'role' => Role::Traveler]);
         $admin = User::factory()->create(['role' => Role::Admin]);
+        $inactiveAdmin = User::factory()->create(['role' => Role::Admin, 'account_status' => 'SUSPENDED']);
         $conversation = SupportConversation::factory()->create(['user_id' => $customer->id]);
 
         $this->actingAs($customer)
@@ -88,6 +92,11 @@ class SupportChatTest extends TestCase
             'user_id' => $admin->id,
             'type' => 'support_message:'.$conversation->id,
         ]);
+        Mail::assertSent(SupportMessageReceivedMail::class, fn (SupportMessageReceivedMail $mail): bool => $mail->hasTo($admin->email)
+            && $mail->customerName === 'Customer One'
+            && $mail->conversationId === (string) $conversation->id
+            && $mail->supportMessage === 'I need help with my booking.');
+        Mail::assertNotSent(SupportMessageReceivedMail::class, fn (SupportMessageReceivedMail $mail): bool => $mail->hasTo($inactiveAdmin->email));
 
         $this->actingAs($admin)
             ->post(route('admin.support.messages.store', $conversation), ['message' => 'We are checking this for you.'])
@@ -97,6 +106,7 @@ class SupportChatTest extends TestCase
             'user_id' => $customer->id,
             'type' => 'support_message:'.$conversation->id,
         ]);
+        Mail::assertSent(SupportMessageReceivedMail::class, 1);
         $this->assertSame(SupportConversation::STATUS_PENDING, $conversation->fresh()->status);
     }
 
