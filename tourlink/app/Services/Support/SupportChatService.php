@@ -11,9 +11,9 @@ use App\Models\SupportMessage;
 use App\Models\User;
 use App\Role;
 use App\Services\Verification\AccountVerificationService;
+use App\Services\Verification\OtpDeliveryService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 
 class SupportChatService
 {
@@ -176,7 +176,7 @@ class SupportChatService
             ->where('approval_status', AccountApprovalStatus::Approved->value)
             ->get()
             ->filter(fn (User $admin): bool => $verification->isFullyVerified($admin))
-            ->each(fn (User $admin) => Mail::to($admin->email)->send(new SupportMessageReceivedMail(
+            ->each(fn (User $admin) => app(OtpDeliveryService::class)->sendMailable($admin->email, new SupportMessageReceivedMail(
                 customerName: $customer->name,
                 customerEmail: $customer->email,
                 conversationId: (string) $conversation->getKey(),

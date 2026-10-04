@@ -6,6 +6,7 @@ use App\Mail\PasswordResetMail;
 use App\Mail\VerificationCodeMail;
 use App\Models\User;
 use App\OtpChannel;
+use Closure;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Http;
@@ -42,6 +43,11 @@ class OtpDeliveryService
     public function emailConfigured(): bool
     {
         return $this->emailTransport() !== null;
+    }
+
+    public function sendMailable(string $recipient, \Illuminate\Mail\Mailable $mail): void
+    {
+        $this->sendResolvedMailable($recipient, $mail, fn (): string => $mail->render());
     }
 
     public function resendConfigured(): bool
@@ -344,6 +350,11 @@ class OtpDeliveryService
      */
     private function sendAuthEmail(string $recipient, \Illuminate\Mail\Mailable $mail, string $view, array $viewData): void
     {
+        $this->sendResolvedMailable($recipient, $mail, fn (): string => view($view, $viewData)->render());
+    }
+
+    private function sendResolvedMailable(string $recipient, \Illuminate\Mail\Mailable $mail, Closure $render): void
+    {
         $subject = $mail->envelope()->subject;
 
         if ($this->logDelivery()) {
@@ -376,7 +387,7 @@ class OtpDeliveryService
                     'from' => config('services.resend.from'),
                     'to' => [$recipient],
                     'subject' => $subject,
-                    'html' => view($view, $viewData)->render(),
+                    'html' => $render(),
                 ])
                 ->throw();
 
