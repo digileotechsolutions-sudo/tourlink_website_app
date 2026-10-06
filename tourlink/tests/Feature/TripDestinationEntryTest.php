@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Destination;
+use App\Models\Trip;
 use App\Models\User;
 use App\Role;
 use App\Services\Catalog\DestinationResolver;
+use App\Services\Catalog\TripCategoryCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -43,6 +45,40 @@ class TripDestinationEntryTest extends TestCase
             ->assertSee('Central station')
             ->assertSee('Airport transfer')
             ->assertSee('Breakfast');
+    }
+
+    public function test_operator_can_create_trip_without_submitting_a_slug(): void
+    {
+        $operator = User::factory()->create(['role' => Role::Operator]);
+        $category = app(TripCategoryCatalog::class)->all()->first();
+
+        $response = $this->actingAs($operator)
+            ->post(route('operator.trips.store'), [
+                'name' => 'Savannah Weekend',
+                'description' => 'A weekend exploring the savannah.',
+                'starting_point' => 'Nairobi',
+                'ending_point' => 'Maasai Mara',
+                'destination_name' => 'Maasai Mara',
+                'category_id' => $category->id,
+                'duration_days' => 2,
+                'departure_date' => '2027-01-10 08:00',
+                'return_date' => '2027-01-12 18:00',
+                'price_per_person' => 25000,
+                'max_travelers' => 10,
+                'min_travelers' => 1,
+                'available_seats' => 10,
+                'pickup_points' => 'Nairobi CBD',
+                'itinerary' => json_encode([
+                    ['day' => 1, 'title' => 'Arrival', 'detail' => 'Travel to the reserve.'],
+                ]),
+                'cancellation_policy' => 'Contact us to cancel.',
+            ]);
+
+        $trip = Trip::query()->where('name', 'Savannah Weekend')->firstOrFail();
+
+        $response->assertRedirect(route('operator.trips.edit', $trip));
+        $this->assertSame('savannah-weekend', $trip->slug);
+        $this->assertSame($operator->id, $trip->operator_id);
     }
 
     public function test_admin_can_enter_a_destination_name_instead_of_selecting_one(): void

@@ -96,7 +96,7 @@ class OperatorController extends Controller
         $data['status'] = ListingStatus::Draft;
         $data['verification_status'] = VerificationStatus::Pending;
         $data['featured'] = false;
-        $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name']);
+        $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name']);
 
         $trip = DB::transaction(function () use ($data, $images, $destinationResolver): Trip {
             $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
@@ -127,7 +127,7 @@ class OperatorController extends Controller
         unset($data['images']);
         $images = $this->uploadedImages($request, $images);
         unset($data['status'], $data['verification_status'], $data['featured'], $data['operator_id']);
-        $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name'], $trip);
+        $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name'], $trip);
 
         DB::transaction(function () use ($trip, $data, $images, $destinationResolver): void {
             $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
