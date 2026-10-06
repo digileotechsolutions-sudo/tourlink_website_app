@@ -24,6 +24,27 @@ class TripDestinationEntryTest extends TestCase
             ->assertDontSee('name="destination_id"', false);
     }
 
+    public function test_operator_trip_form_renders_normalized_old_input_after_validation_fails(): void
+    {
+        $operator = User::factory()->create(['role' => Role::Operator]);
+
+        $this->actingAs($operator)
+            ->from(route('operator.trips.create'))
+            ->followingRedirects()
+            ->post(route('operator.trips.store'), [
+                'description' => 'A short trip description.',
+                'pickup_points' => "Central station\nAirport",
+                'itinerary' => json_encode([
+                    ['day' => 1, 'title' => 'Arrival', 'detail' => 'Airport transfer'],
+                ]),
+                'meals' => "Breakfast\nLunch",
+            ])
+            ->assertOk()
+            ->assertSee('Central station')
+            ->assertSee('Airport transfer')
+            ->assertSee('Breakfast');
+    }
+
     public function test_admin_can_enter_a_destination_name_instead_of_selecting_one(): void
     {
         $admin = User::factory()->create(['role' => Role::Admin]);
