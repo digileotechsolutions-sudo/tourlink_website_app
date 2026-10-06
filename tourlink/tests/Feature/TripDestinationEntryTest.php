@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\ListingStatus;
 use App\Models\Destination;
 use App\Models\Trip;
 use App\Models\User;
 use App\Role;
 use App\Services\Catalog\DestinationResolver;
 use App\Services\Catalog\TripCategoryCatalog;
+use App\VerificationStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -76,9 +78,12 @@ class TripDestinationEntryTest extends TestCase
 
         $trip = Trip::query()->where('name', 'Savannah Weekend')->firstOrFail();
 
-        $response->assertRedirect(route('operator.trips.edit', $trip));
+        $response->assertRedirect(route('operator.trips.index'))
+            ->assertSessionHas('status', 'Trip created and submitted for verification.');
         $this->assertSame('savannah-weekend', $trip->slug);
         $this->assertSame($operator->id, $trip->operator_id);
+        $this->assertSame(ListingStatus::Draft, $trip->status);
+        $this->assertSame(VerificationStatus::Pending, $trip->verification_status);
     }
 
     public function test_admin_can_enter_a_destination_name_instead_of_selecting_one(): void

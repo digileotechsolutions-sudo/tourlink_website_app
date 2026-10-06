@@ -108,7 +108,7 @@ class OperatorController extends Controller
         });
         $this->syncAvailability($request, $trip);
 
-        return redirect()->route('operator.trips.edit', $trip)->with('status', 'Trip created and submitted for verification.');
+        return redirect()->route('operator.trips.index')->with('status', 'Trip created and submitted for verification.');
     }
 
     public function editTrip(Request $request, Trip $trip, TripCategoryCatalog $categoryCatalog): View
