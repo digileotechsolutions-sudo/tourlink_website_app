@@ -68,10 +68,11 @@ class AdminTripController extends Controller
     {
         $data = $this->validatedTripData($request);
         $data['submitted_at'] = $data['verification_status'] === VerificationStatus::Pending->value ? now() : null;
+        $data['currency'] = 'KES';
         $images = $data['images'] ?? [];
         unset($data['images'], $data['images_files']);
         $images = $this->uploadedImages($request, $images);
-        $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name']);
+        $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name']);
 
         $trip = DB::transaction(function () use ($request, $data, $images, $destinationResolver): Trip {
             $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
@@ -99,7 +100,8 @@ class AdminTripController extends Controller
         $images = $data['images'] ?? [];
         unset($data['images'], $data['images_files']);
         $images = $this->uploadedImages($request, $images);
-        $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name'], $trip);
+        $data['currency'] = 'KES';
+        $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name'], $trip);
 
         DB::transaction(function () use ($request, $trip, $data, $images, $destinationResolver): void {
             $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
@@ -140,6 +142,7 @@ class AdminTripController extends Controller
             'departure_date' => ['required', 'date'],
             'return_date' => ['required', 'date', 'after:departure_date'],
             'price_per_person' => ['required', 'integer', 'min:0', 'max:100000000'],
+            'group_discount_percent' => ['nullable', 'integer', 'between:0,100'],
             'max_travelers' => ['required', 'integer', 'min:1', 'max:10000'],
             'min_travelers' => ['required', 'integer', 'min:1', 'lte:max_travelers'],
             'available_seats' => ['required', 'integer', 'min:0', 'lte:max_travelers'],

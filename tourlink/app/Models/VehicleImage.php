@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class VehicleImage extends TourLinkModel
 {
-    protected $fillable = ['url', 'alt', 'vehicle_id'];
+    protected $fillable = ['url', 'alt', 'sort_order', 'vehicle_id'];
+
+    protected function casts(): array
+    {
+        return ['sort_order' => 'integer'];
+    }
 
     public function vehicle(): BelongsTo
     {

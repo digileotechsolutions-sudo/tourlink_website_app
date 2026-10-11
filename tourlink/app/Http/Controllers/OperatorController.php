@@ -99,6 +99,7 @@ class OperatorController extends Controller
         $data['verification_status'] = VerificationStatus::Pending;
         $data['featured'] = false;
         $data['submitted_at'] = $submissionAction === 'submit' ? now() : null;
+        $data['currency'] = 'KES';
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name']);
 
         $trip = DB::transaction(function () use ($data, $images, $destinationResolver): Trip {
@@ -121,7 +122,7 @@ class OperatorController extends Controller
     public function editTrip(Request $request, Trip $trip, TripCategoryCatalog $categoryCatalog): View
     {
         $this->ensureTripOwner($request, $trip);
-        $trip->load('images');
+        $trip->load('images', 'availabilities');
 
         return view('operator.trips.form', $this->tripFormData($trip, $categoryCatalog));
     }
@@ -137,6 +138,7 @@ class OperatorController extends Controller
         unset($data['status'], $data['verification_status'], $data['featured'], $data['operator_id'], $data['submitted_at']);
         $data['status'] = ListingStatus::Draft;
         $data['submitted_at'] = $submissionAction === 'submit' ? now() : null;
+        $data['currency'] = 'KES';
         if ($submissionAction === 'submit' || $trip->verification_status === VerificationStatus::Approved) {
             $data['verification_status'] = VerificationStatus::Pending;
         }
@@ -401,10 +403,14 @@ class OperatorController extends Controller
             'departure_time' => ['nullable', 'date_format:H:i'], 'return_time' => ['nullable', 'date_format:H:i'],
             'price_per_person' => ['required', 'integer', 'min:0', 'max:100000000'], 'max_travelers' => ['required', 'integer', 'min:1', 'max:10000'],
             'child_price' => ['nullable', 'integer', 'min:0', 'max:100000000'], 'deposit_amount' => ['nullable', 'integer', 'min:0', 'lte:price_per_person'],
+            'group_discount_percent' => ['nullable', 'integer', 'between:0,100'],
             'min_travelers' => ['required', 'integer', 'min:1', 'lte:max_travelers'], 'available_seats' => ['required', 'integer', 'min:0', 'lte:max_travelers'],
             'pickup_points' => ['nullable', 'array', 'max:20'], 'pickup_points.*' => ['string', 'max:255'],
             'itinerary' => ['required', 'array', 'min:1'], 'itinerary.*.day' => ['required', 'integer', 'min:1'], 'itinerary.*.title' => ['required', 'string', 'max:120'], 'itinerary.*.detail' => ['required', 'string', 'max:4000'],
             'itinerary.*.start_time' => ['nullable', 'date_format:H:i'], 'itinerary.*.end_time' => ['nullable', 'date_format:H:i'],
+            'itinerary.*.location' => ['nullable', 'string', 'max:255'],
+            'itinerary.*.meals' => ['nullable', 'string', 'max:500'],
+            'itinerary.*.accommodation' => ['nullable', 'string', 'max:500'],
             'meeting_point' => ['nullable', 'string', 'max:255'], 'meeting_point_and_time' => ['nullable', 'string', 'max:255'],
             'transport_type' => ['nullable', Rule::in(['TOUR_VAN', 'BUS', '4X4_SAFARI', 'PRIVATE_CAR', 'NO_TRANSPORT'])],
             'accommodation' => ['nullable', 'string', 'max:5000'], 'meals' => ['nullable', 'array'], 'meals.*' => ['string', 'max:255'], 'transport' => ['nullable', 'string', 'max:5000'],
@@ -414,6 +420,7 @@ class OperatorController extends Controller
             'cancellation_policy' => ['required', 'string', 'max:10000'], 'required_vehicle_id' => ['nullable', 'string', Rule::exists('vehicles', 'id')->where('owner_id', $request->user()->id)],
             'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'],
             'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'media_order' => ['nullable', 'array', 'max:12'], 'media_order.*' => ['string', 'max:2048'],
         ]);
 
         $meetingPoint = $data['meeting_point'] ?? null;
@@ -536,9 +543,21 @@ class OperatorController extends Controller
      */
     private function uploadedImages(Request $request, array $images): array
     {
-        foreach ($request->file('images_files', []) as $file) {
-            $images[] = ['url' => Storage::disk('public')->url($file->store('trip-images', 'public')), 'alt' => null];
+        $orderedImages = [];
+        foreach ($images as $image) {
+            $orderedImages['existing:'.$image['url']] = $image;
         }
+        foreach ($request->file('images_files', []) as $index => $file) {
+            $orderedImages['file:'.$index] = ['url' => Storage::disk('public')->url($file->store('trip-images', 'public')), 'alt' => null];
+        }
+        $images = [];
+        foreach ((array) $request->input('media_order', []) as $token) {
+            if (is_string($token) && array_key_exists($token, $orderedImages)) {
+                $images[] = $orderedImages[$token];
+                unset($orderedImages[$token]);
+            }
+        }
+        $images = [...$images, ...array_values($orderedImages)];
 
         return array_slice($images, 0, 12);
     }

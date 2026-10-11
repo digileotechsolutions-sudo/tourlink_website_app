@@ -71,11 +71,14 @@ class VehicleOwnerController extends Controller
     public function storeVehicle(Request $request): RedirectResponse
     {
         $data = $this->validatedData($request);
+        $submissionAction = $data['submission_action'];
         $images = $this->uploadedImages($request, $data['images'] ?? []);
-        unset($data['images'], $data['images_files']);
+        unset($data['images'], $data['images_files'], $data['submission_action']);
         $data['owner_id'] = $request->user()->id;
+        $data['currency'] = 'KES';
         $data['status'] = ListingStatus::Draft;
         $data['verification_status'] = VerificationStatus::Pending;
+        $data['submitted_at'] = $submissionAction === 'submit' ? now() : null;
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name']);
 
         $vehicle = DB::transaction(function () use ($data, $images): Vehicle {
@@ -86,7 +89,11 @@ class VehicleOwnerController extends Controller
         });
         $this->syncAvailability($request, $vehicle);
 
-        return redirect()->route('vehicle-owner.vehicles.edit', $vehicle)->with('status', 'Vehicle added successfully. It is waiting for administrator approval.');
+        $message = $submissionAction === 'submit'
+            ? 'Vehicle added successfully. It is waiting for administrator approval.'
+            : 'Vehicle draft saved successfully.';
+
+        return redirect()->route('vehicle-owner.vehicles.edit', $vehicle)->with('status', $message);
     }
 
     public function editVehicle(Request $request, Vehicle $vehicle): View
@@ -101,11 +108,14 @@ class VehicleOwnerController extends Controller
     {
         $this->ensureOwner($request, $vehicle);
         $data = $this->validatedData($request, $vehicle);
+        $submissionAction = $data['submission_action'];
         $images = $this->uploadedImages($request, $data['images'] ?? []);
-        unset($data['images'], $data['images_files'], $data['status'], $data['verification_status'], $data['owner_id']);
+        unset($data['images'], $data['images_files'], $data['submission_action'], $data['status'], $data['verification_status'], $data['owner_id'], $data['submitted_at']);
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name'], $vehicle);
+        $data['currency'] = 'KES';
         $data['status'] = ListingStatus::Draft;
         $data['verification_status'] = VerificationStatus::Pending;
+        $data['submitted_at'] = $submissionAction === 'submit' ? now() : null;
 
         DB::transaction(function () use ($vehicle, $data, $images): void {
             $vehicle->fill($data)->save();
@@ -113,7 +123,11 @@ class VehicleOwnerController extends Controller
         });
         $this->syncAvailability($request, $vehicle);
 
-        return back()->with('status', 'Vehicle updated successfully and is waiting for administrator approval.');
+        $message = $submissionAction === 'submit'
+            ? 'Vehicle updated successfully. It is waiting for administrator approval.'
+            : 'Vehicle draft saved successfully.';
+
+        return back()->with('status', $message);
     }
 
     public function deleteVehicle(Request $request, Vehicle $vehicle): RedirectResponse
@@ -289,12 +303,31 @@ class VehicleOwnerController extends Controller
     private function validatedData(Request $request, ?Vehicle $vehicle = null): array
     {
         $request->merge(['air_conditioning' => $request->boolean('air_conditioning'), 'four_by_four' => $request->boolean('four_by_four'), 'driver_included' => $request->boolean('driver_included')]);
+        $serviceAreas = $request->input('service_areas', []);
+        $request->merge(['service_areas' => array_values(array_filter(array_map('trim', is_array($serviceAreas) ? $serviceAreas : [])))]);
+        $charges = $request->input('additional_charges', []);
+        $request->merge(['additional_charges' => is_array($charges)
+            ? array_values(array_filter($charges, static fn (mixed $charge): bool => is_array($charge) && (filled($charge['name'] ?? null) || filled($charge['amount'] ?? null))))
+            : []]);
+        $existingImageUrls = $vehicle?->images()->pluck('url')->all() ?? [];
         $data = $request->validate([
+            'submission_action' => ['required', Rule::in(['draft', 'submit'])],
             'name' => ['required', 'string', 'max:255'], 'slug' => ['nullable', 'string', 'max:255', 'alpha_dash'], 'registration_number' => ['required', 'string', 'max:30'], 'make' => ['required', 'string', 'max:120'], 'model' => ['required', 'string', 'max:120'],
             'year' => ['required', 'integer', 'min:1900', 'max:'.(now()->year + 2)], 'body_type' => ['required', Rule::in(['Safari Land Cruiser', 'Safari Van', 'Toyota Hiace', 'SUV', 'Minibus', 'Bus', 'Sedan', '4x4', 'Other'])], 'engine_cc' => ['nullable', 'integer', 'min:0'], 'colour' => ['nullable', 'string', 'max:80'], 'seating_capacity' => ['required', 'integer', 'min:1', 'max:100'], 'tare_weight' => ['nullable', 'integer', 'min:0'], 'axles' => ['nullable', 'integer', 'min:1', 'max:10'], 'load_capacity' => ['nullable', 'integer', 'min:0'], 'transmission' => ['required', 'string', 'max:80'], 'fuel_type' => ['required', 'string', 'max:80'],
             'air_conditioning' => ['required', 'boolean'], 'four_by_four' => ['required', 'boolean'], 'driver_included' => ['required', 'boolean'], 'price_per_day' => ['required', 'integer', 'min:0', 'max:100000000'], 'location' => ['required', 'string', 'max:255'], 'destination_id' => ['nullable', 'string', 'exists:destinations,id'],
-            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'], 'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'hourly_price' => ['nullable', 'integer', 'min:0', 'max:100000000'], 'trip_price' => ['nullable', 'integer', 'min:0', 'max:100000000'], 'driver_charge' => ['nullable', 'integer', 'min:0', 'max:100000000'],
+            'additional_charges' => ['nullable', 'array', 'max:20'], 'additional_charges.*.name' => ['required', 'string', 'max:120'], 'additional_charges.*.amount' => ['required', 'integer', 'min:0', 'max:100000000'],
+            'service_areas' => ['nullable', 'array', 'max:50'], 'service_areas.*' => ['required', 'string', 'max:255'],
+            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'], 'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'], 'media_order' => ['nullable', 'array', 'max:12'], 'media_order.*' => ['string', 'max:2048'],
         ]);
+
+        if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {
+            throw ValidationException::withMessages(['images_files' => 'A vehicle can have up to 12 photos.']);
+        }
+
+        if ($data['submission_action'] === 'submit' && ($data['images'] ?? []) === [] && $request->file('images_files', []) === []) {
+            throw ValidationException::withMessages(['images_files' => 'Add at least one vehicle photo before submitting for approval.']);
+        }
 
         $imageUploadBytes = array_sum(array_map(static fn (UploadedFile $file): int => $file->getSize(), $request->file('images_files', [])));
         if ($imageUploadBytes > 6 * 1024 * 1024) {
@@ -312,20 +345,28 @@ class VehicleOwnerController extends Controller
     private function syncImages(Vehicle $vehicle, array $images): void
     {
         $vehicle->images()->delete();
-        foreach ($images as $image) {
-            $vehicle->images()->create(['url' => $image['url'], 'alt' => $image['alt'] ?? $vehicle->name]);
+        foreach ($images as $sortOrder => $image) {
+            $vehicle->images()->create(['url' => $image['url'], 'alt' => $image['alt'] ?? $vehicle->name, 'sort_order' => $sortOrder]);
         }
     }
 
     private function uploadedImages(Request $request, array $images): array
     {
-        foreach ($request->file('images_files', []) as $file) {
-            $images[] = ['url' => Storage::disk('public')->url($file->store('vehicle-images', 'public')), 'alt' => null];
+        $orderedImages = [];
+        foreach ($images as $image) {
+            $orderedImages['existing:'.$image['url']] = $image;
         }
-        $urls = array_values(array_filter(array_map('trim', preg_split('/\R/u', (string) $request->input('image_urls', '')) ?: [])));
-        foreach ($urls as $url) {
-            $images[] = ['url' => $url, 'alt' => null];
+        foreach ($request->file('images_files', []) as $index => $file) {
+            $orderedImages['file:'.$index] = ['url' => Storage::disk('public')->url($file->store('vehicle-images', 'public')), 'alt' => null];
         }
+        $images = [];
+        foreach ((array) $request->input('media_order', []) as $token) {
+            if (is_string($token) && array_key_exists($token, $orderedImages)) {
+                $images[] = $orderedImages[$token];
+                unset($orderedImages[$token]);
+            }
+        }
+        $images = [...$images, ...array_values($orderedImages)];
 
         return array_slice($images, 0, 12);
     }
@@ -418,12 +459,27 @@ class VehicleOwnerController extends Controller
 
     private function syncAvailability(Request $request, Vehicle $vehicle): void
     {
-        $date = $request->input('availability.0.date');
-        if (! $date) {
+        $rows = $request->input('availability', []);
+        if (! is_array($rows)) {
             return;
         }
-        $data = $request->validate(['availability.0.date' => ['date'], 'availability.0.available' => ['nullable', 'boolean']]);
-        VehicleAvailability::query()->updateOrCreate(['vehicle_id' => $vehicle->id, 'date' => $data['availability'][0]['date']], ['available' => $request->boolean('availability.0.available')]);
+        $data = validator(['availability' => $rows], [
+            'availability' => ['nullable', 'array', 'max:365'],
+            'availability.*.date' => ['nullable', 'date'],
+            'availability.*.available' => ['nullable', 'boolean'],
+        ])->validate();
+        $dates = collect($data['availability'] ?? [])->filter(static fn (array $row): bool => filled($row['date'] ?? null))->unique('date')->values();
+
+        DB::transaction(function () use ($vehicle, $dates): void {
+            $vehicle->availabilities()->delete();
+            foreach ($dates as $row) {
+                VehicleAvailability::query()->create([
+                    'vehicle_id' => $vehicle->id,
+                    'date' => $row['date'],
+                    'available' => (bool) ($row['available'] ?? false),
+                ]);
+            }
+        });
     }
 
     private function uniqueSlug(string $value, ?Vehicle $vehicle = null): string

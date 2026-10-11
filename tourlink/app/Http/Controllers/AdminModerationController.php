@@ -29,6 +29,7 @@ class AdminModerationController extends Controller
         $pendingVehicles = Vehicle::query()
             ->with(['owner:id,name,email', 'destination:id,name'])
             ->where('verification_status', VerificationStatus::Pending)
+            ->whereNotNull('submitted_at')
             ->orderBy('created_at')
             ->limit(8)
             ->get();
@@ -38,7 +39,7 @@ class AdminModerationController extends Controller
             'pendingTrips' => $pendingTrips,
             'pendingVehicles' => $pendingVehicles,
             'pendingTripCount' => Trip::query()->where('verification_status', VerificationStatus::Pending)->whereNotNull('submitted_at')->count(),
-            'pendingVehicleCount' => Vehicle::query()->where('verification_status', VerificationStatus::Pending)->count(),
+            'pendingVehicleCount' => Vehicle::query()->where('verification_status', VerificationStatus::Pending)->whereNotNull('submitted_at')->count(),
         ]));
     }
 

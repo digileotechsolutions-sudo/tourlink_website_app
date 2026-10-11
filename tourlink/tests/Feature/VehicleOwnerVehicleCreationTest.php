@@ -16,12 +16,29 @@ class VehicleOwnerVehicleCreationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_vehicle_owner_sees_a_six_step_vehicle_listing_wizard(): void
+    {
+        $owner = User::factory()->create(['role' => Role::VehicleOwner]);
+
+        $this->actingAs($owner)
+            ->get(route('vehicle-owner.vehicles.create'))
+            ->assertOk()
+            ->assertSee('Vehicle details')
+            ->assertSee('Features')
+            ->assertSee('Photos')
+            ->assertSee('Pricing')
+            ->assertSee('Location &amp; availability')
+            ->assertSee('Review &amp; submit')
+            ->assertSee('data-vehicle-step="5"', false);
+    }
+
     public function test_vehicle_owner_can_create_a_vehicle_with_photos_for_admin_approval(): void
     {
         Storage::fake('public');
         $owner = User::factory()->create(['role' => Role::VehicleOwner]);
 
         $response = $this->actingAs($owner)->post(route('vehicle-owner.vehicles.store'), [
+            'submission_action' => 'submit',
             'name' => 'Safari Van',
             'registration_number' => 'KDA 123A',
             'make' => 'Toyota',

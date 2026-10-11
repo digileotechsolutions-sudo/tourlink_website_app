@@ -391,9 +391,10 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
     const endingPointInput = form.querySelector('[data-trip-ending]');
     let current = 0;
     let uploading = false;
+    let dirty = false;
     let objectUrls = [];
     const field = (name) => form.elements.namedItem(name);
-    const stepNames = ['Trip information', 'Schedule', 'Pricing', 'Publish'];
+    const stepNames = (form.dataset.stepNames ?? 'Trip information|Schedule|Pricing|Media|Publish').split('|');
 
     const isInvalid = (input) => {
         if (input.type === 'radio') {
@@ -503,6 +504,8 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
             row.querySelectorAll('[name]').forEach((input) => {
                 if (type === 'itinerary') {
                     input.name = input.name.replace(/itinerary\[\d+\]/, `itinerary[${index}]`);
+                } else if (type === 'availability') {
+                    input.name = input.name.replace(/availability\[\d+\]/, `availability[${index}]`);
                 } else if (type === 'charges') {
                     input.name = input.name.replace(/additional_charges\[\d+\]/, `additional_charges[${index}]`);
                 }
@@ -512,6 +515,8 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
                 number.value = String(index + 1);
                 row.querySelector('[data-day-label]').textContent = String(index + 1);
             }
+            const label = row.querySelector('[data-day-label]');
+            if (label) label.textContent = String(index + 1);
         });
     };
 
@@ -527,7 +532,10 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
             row.innerHTML = `<label class="sr-only" for="trip-stop-${index}">Stop ${index + 1}</label><input id="trip-stop-${index}" name="pickup_points[]" placeholder="Stop or pickup point" class="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 px-4"><button type="button" data-remove-row class="min-h-11 rounded-xl border border-slate-300 px-4 text-sm font-bold text-red-700">Remove</button>`;
         } else if (type === 'itinerary') {
             row.className = 'rounded-xl border border-slate-200 bg-slate-50 p-4';
-            row.innerHTML = `<div class="mb-3 flex items-center justify-between"><p class="text-sm font-black">Day <span data-day-label>${index + 1}</span></p><button type="button" data-remove-row class="text-xs font-bold text-red-700">Remove day</button></div><div class="grid gap-3 sm:grid-cols-2"><label class="grid gap-1 text-xs font-bold">Day number<input required type="number" min="1" name="itinerary[${index}][day]" value="${index + 1}" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Title<input required maxlength="120" name="itinerary[${index}][title]" placeholder="e.g. Arrival and welcome" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Start time<input type="time" name="itinerary[${index}][start_time]" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">End time<input type="time" name="itinerary[${index}][end_time]" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold sm:col-span-2">Activities & details<textarea required maxlength="4000" rows="2" name="itinerary[${index}][detail]" placeholder="Describe the day's schedule and activities" class="rounded-lg border border-slate-300 p-3 text-sm font-normal"></textarea></label></div>`;
+            row.innerHTML = `<div class="mb-3 flex items-center justify-between"><p class="text-sm font-black">Day <span data-day-label>${index + 1}</span></p><span class="flex gap-1"><button type="button" data-move-day="up" class="rounded border px-2 py-1 text-xs" aria-label="Move day earlier">↑</button><button type="button" data-move-day="down" class="rounded border px-2 py-1 text-xs" aria-label="Move day later">↓</button><button type="button" data-remove-row class="rounded border px-2 py-1 text-xs font-bold text-red-700">Remove</button></span></div><div class="grid gap-3 sm:grid-cols-2"><label class="grid gap-1 text-xs font-bold">Day number<input required type="number" min="1" name="itinerary[${index}][day]" value="${index + 1}" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Day title<input required maxlength="120" name="itinerary[${index}][title]" placeholder="e.g. Arrival and welcome" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Activity start time<input type="time" name="itinerary[${index}][start_time]" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Activity end time<input type="time" name="itinerary[${index}][end_time]" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Activity location<input maxlength="255" name="itinerary[${index}][location]" placeholder="Optional stop or venue" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Meals for the day<input maxlength="500" name="itinerary[${index}][meals]" placeholder="e.g. Breakfast, picnic lunch" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold sm:col-span-2">Activities & details<textarea required maxlength="4000" rows="2" name="itinerary[${index}][detail]" placeholder="Describe the day's schedule and activities" class="rounded-lg border border-slate-300 p-3 text-sm font-normal"></textarea></label></div>`;
+        } else if (type === 'availability') {
+            row.className = 'grid gap-2 sm:grid-cols-[1fr_160px_auto]';
+            row.innerHTML = `<label class="grid gap-1 text-xs font-semibold">Departure date<input type="date" name="availability[${index}][date]" class="min-h-10 rounded-lg border border-slate-300 px-3"></label><label class="grid gap-1 text-xs font-semibold">Available seats<input type="number" min="0" name="availability[${index}][seats]" placeholder="Optional" class="min-h-10 rounded-lg border border-slate-300 px-3"></label><button type="button" data-remove-row class="self-end rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-red-700">Remove</button>`;
         } else {
             row.className = 'grid gap-2 rounded-xl border border-slate-200 p-3 sm:grid-cols-[1fr_180px_auto]';
             row.innerHTML = `<label class="grid gap-1 text-xs font-bold">Charge name<input name="additional_charges[${index}][name]" placeholder="e.g. Park conservation fee" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Amount (KES)<input type="number" min="0" name="additional_charges[${index}][amount]" placeholder="0" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><button type="button" data-remove-row class="min-h-10 self-end rounded-lg border border-slate-300 px-3 text-xs font-bold text-red-700">Remove</button>`;
@@ -538,7 +546,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
     form.addEventListener('click', (event) => {
         const target = event.target;
         const stepLink = target.closest('[data-trip-step-link]');
-        if (stepLink) {
+        if (stepLink && Number(stepLink.dataset.tripStepLink) <= current) {
             showStep(Number(stepLink.dataset.tripStepLink));
         } else if (target.closest('[data-trip-back]')) {
             showStep(current - 1);
@@ -558,13 +566,74 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
             if (container) {
                 reindex(container);
             }
+        } else if (target.closest('[data-move-day]')) {
+            const row = target.closest('[data-trip-repeater="itinerary"] > *');
+            const direction = target.closest('[data-move-day]').dataset.moveDay;
+            const sibling = direction === 'up' ? row.previousElementSibling : row.nextElementSibling;
+            const container = row.parentElement;
+            if (sibling) {
+                container.insertBefore(direction === 'up' ? row : sibling, direction === 'up' ? sibling : row);
+                reindex(container);
+                dirty = true;
+            }
         } else if (target.closest('[data-remove-image]')) {
             target.closest('[data-existing-image]')?.remove();
+            reindexTripImages();
+            dirty = true;
+            updatePreview();
+        } else if (target.closest('[data-move-trip-image]')) {
+            const card = target.closest('[data-existing-image], [data-new-image]');
+            const direction = target.closest('[data-move-trip-image]').dataset.moveTripImage;
+            const sibling = direction === 'up' ? card.previousElementSibling : card.nextElementSibling;
+            if (sibling) {
+                preview.insertBefore(direction === 'up' ? card : sibling, direction === 'up' ? sibling : card);
+                reindexTripImages();
+                syncTripFilesWithPreview();
+                dirty = true;
+                updatePreview();
+            }
+        } else if (target.closest('[data-remove-trip-file]')) {
+            target.closest('[data-new-image]')?.remove();
+            syncTripFilesWithPreview();
+            dirty = true;
             updatePreview();
         }
     });
 
+    const reindexTripImages = () => {
+        [...(preview?.querySelectorAll('[data-existing-image]') ?? [])].forEach((card, index) => {
+            card.querySelectorAll('[name]').forEach((input) => {
+                input.name = input.name.replace(/images\[\d+\]/, `images[${index}]`);
+            });
+            const label = card.querySelector('[data-trip-image-label]');
+            if (label) label.textContent = index === 0 ? 'Cover image' : 'Gallery image';
+        });
+        [...(preview?.children ?? [])].forEach((card, index) => {
+            const label = card.querySelector('[data-trip-image-label], [data-trip-file-label]');
+            if (label) label.textContent = `${index === 0 ? 'Cover image' : 'Gallery image'}${card.dataset.tripFileName ? ` · ${card.dataset.tripFileName}` : ''}`;
+        });
+    };
+
+    const syncTripFilesWithPreview = () => {
+        const cards = [...(preview?.querySelectorAll('[data-new-image]') ?? [])];
+        const previousFiles = [...(fileInput?.files ?? [])];
+        const transfer = new DataTransfer();
+        cards.forEach((card, index) => {
+            const oldIndex = Number(card.dataset.tripFileIndex);
+            if (previousFiles[oldIndex]) transfer.items.add(previousFiles[oldIndex]);
+            card.dataset.tripFileIndex = String(index);
+        });
+        if (fileInput) fileInput.files = transfer.files;
+    };
+
+    const tripMediaOrder = () => [...(preview?.children ?? [])].map((card) => {
+        if (card.matches('[data-existing-image]')) return `existing:${card.querySelector('input[name$="[url]"]')?.value ?? ''}`;
+        if (card.matches('[data-new-image]')) return `file:${card.dataset.tripFileIndex}`;
+        return '';
+    }).filter(Boolean);
+
     form.addEventListener('input', (event) => {
+        dirty = true;
         if (event.target === destinationInput && endingPointInput) {
             endingPointInput.value = destinationInput.value;
         }
@@ -578,6 +647,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
 
     form.addEventListener('change', (event) => {
         if (event.target === fileInput) {
+            dirty = true;
             objectUrls.forEach((url) => URL.revokeObjectURL(url));
             objectUrls = [];
             const existing = preview?.querySelectorAll('[data-existing-image]').length ?? 0;
@@ -609,17 +679,42 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
                 objectUrls.push(url);
                 const wrapper = document.createElement('div');
                 wrapper.dataset.newImage = '';
+                wrapper.dataset.tripFileIndex = String(index);
+                wrapper.dataset.tripFileName = file.name;
+                wrapper.dataset.sortableImage = '';
+                wrapper.draggable = true;
                 wrapper.className = 'overflow-hidden rounded-xl border border-slate-200';
                 const image = document.createElement('img');
                 image.src = url;
                 image.alt = `Selected trip photo ${index + 1}`;
                 image.className = 'h-28 w-full object-cover';
-                const name = document.createElement('p');
-                name.className = 'truncate px-2 py-1 text-xs font-bold';
-                name.textContent = index === 0 && existing === 0 ? `${file.name} · Cover` : file.name;
-                wrapper.append(image, name);
+                const toolbar = document.createElement('div');
+                toolbar.className = 'flex items-center justify-between gap-1 p-2';
+                const name = document.createElement('span');
+                name.dataset.tripFileLabel = '';
+                name.className = 'truncate text-[10px] font-bold';
+                const controls = document.createElement('span');
+                controls.className = 'flex gap-1';
+                [['up', '↑'], ['down', '↓']].forEach(([direction, label]) => {
+                    const move = document.createElement('button');
+                    move.type = 'button';
+                    move.dataset.moveTripMedia = direction;
+                    move.className = 'rounded border px-2 py-1 text-[10px]';
+                    move.textContent = label;
+                    controls.append(move);
+                });
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.dataset.removeTripFile = '';
+                remove.className = 'rounded border border-red-200 px-2 py-1 text-[10px] font-bold text-red-700';
+                remove.setAttribute('aria-label', 'Remove photo');
+                remove.textContent = '×';
+                controls.append(remove);
+                toolbar.append(name, controls);
+                wrapper.append(image, toolbar);
                 preview?.append(wrapper);
             });
+            reindexTripImages();
             if (oversizedFiles.length === 0) {
                 uploadStatus.textContent = fileInput.files?.length ? `${fileInput.files.length} image(s) ready to upload.` : '';
                 uploadStatus.classList.remove('font-bold', 'text-red-700');
@@ -658,7 +753,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         const action = event.submitter?.value ?? 'draft';
         const existing = preview?.querySelectorAll('[data-existing-image]').length ?? 0;
         if (action === 'submit' && existing === 0 && (fileInput?.files?.length ?? 0) === 0) {
-            showStep(1);
+            showStep(Number(fileInput?.closest('[data-trip-step]')?.dataset.tripStep ?? 3));
             uploadStatus.textContent = 'Add at least one cover or gallery image before submitting.';
             uploadStatus.classList.add('font-bold', 'text-red-700');
             return;
@@ -673,6 +768,8 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         }
         const data = new FormData(form);
         data.set('submission_action', action);
+        tripMediaOrder().forEach((token) => data.append('media_order[]', token));
+        dirty = false;
         const request = new XMLHttpRequest();
         uploading = true;
         request.open(form.method.toUpperCase(), form.action);
@@ -707,6 +804,13 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
             uploadStatus.classList.add('font-bold', 'text-red-700');
         });
         request.send(data);
+    });
+
+    window.addEventListener('beforeunload', (event) => {
+        if (dirty && !uploading) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
     });
 
     updateDuration();
@@ -854,6 +958,383 @@ document.querySelectorAll('[data-admin-itinerary]').forEach((itinerary) => {
         row.remove();
         reindexRows();
     });
+});
+
+document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
+    const steps = [...form.querySelectorAll('[data-vehicle-step]')];
+    const links = [...form.querySelectorAll('[data-vehicle-step-link]')];
+    const back = form.querySelector('[data-vehicle-back]');
+    const next = form.querySelector('[data-vehicle-next]');
+    const draft = form.querySelector('[data-vehicle-draft]');
+    const submit = form.querySelector('[data-vehicle-submit]');
+    const imageInput = form.querySelector('[data-vehicle-media-input]');
+    const imageDropzone = form.querySelector('[data-vehicle-media-dropzone]');
+    const imagePreview = form.querySelector('[data-vehicle-media-preview]');
+    const imageStatus = form.querySelector('[data-vehicle-media-status]');
+    const storageKey = `tourlink-vehicle-draft:${form.dataset.formDraft}`;
+    const stepNames = (form.dataset.stepNames ?? 'Details|Features|Multimedia|Pricing|Location|Review').split('|');
+    let current = 0;
+    let busy = false;
+    let dirty = false;
+    let previewUrls = [];
+
+    const isInvalid = (field) => {
+        if (field.type === 'radio') {
+            return !form.querySelector(`input[type="radio"][name="${CSS.escape(field.name)}"]:checked`);
+        }
+        return !field.checkValidity();
+    };
+    const updatePreview = () => {
+        const setText = (selector, value, fallback) => {
+            const target = form.querySelector(selector);
+            if (target) {
+                target.textContent = value?.trim() || fallback;
+            }
+        };
+        const name = form.elements.namedItem('name')?.value;
+        const year = form.elements.namedItem('year')?.value;
+        const transmission = form.elements.namedItem('transmission')?.value;
+        const fuel = form.elements.namedItem('fuel_type')?.value;
+        const seats = form.elements.namedItem('seating_capacity')?.value;
+        const location = form.elements.namedItem('location')?.value;
+        const dailyPrice = form.elements.namedItem('price_per_day')?.value;
+        const specs = [year, transmission, fuel, seats ? `${seats} seats` : ''].filter(Boolean).join(' · ');
+        setText('[data-vehicle-preview-name]', name, 'Vehicle name');
+        setText('[data-vehicle-preview-specs]', specs, 'Year · transmission · fuel · seats');
+        setText('[data-vehicle-preview-location]', location, 'Location');
+        setText('[data-vehicle-preview-price]', `KES ${dailyPrice || '—'}`, 'KES —');
+        const mobile = form.querySelector('[data-vehicle-preview-mobile]');
+        if (mobile) {
+            mobile.textContent = `${name || 'Vehicle name'} · ${specs || 'Vehicle details'} · ${location || 'Location'} · KES ${dailyPrice || '—'} / day`;
+        }
+        const imageTarget = form.querySelector('[data-vehicle-preview-image]');
+        const firstFile = imageInput?.files?.[0];
+        const existingImage = imagePreview?.querySelector('[data-vehicle-existing-image] img');
+        if (imageTarget && (firstFile || existingImage)) {
+            const image = document.createElement('img');
+            image.src = firstFile ? (previewUrls[0] ?? URL.createObjectURL(firstFile)) : existingImage.src;
+            image.alt = 'Vehicle cover preview';
+            image.className = 'h-52 w-full object-cover';
+            imageTarget.replaceChildren(image);
+        }
+    };
+
+    const reindex = (container, prefix) => {
+        [...container.children].forEach((row, index) => {
+            row.querySelectorAll('[name]').forEach((field) => {
+                field.name = field.name.replace(new RegExp(`${prefix}\\[\\d+\\]`), `${prefix}[${index}]`);
+            });
+        });
+    };
+
+    const reorderNewFiles = (fromIndex, toIndex) => {
+        const files = [...(imageInput.files ?? [])];
+        if (toIndex < 0 || toIndex >= files.length) return;
+        const [file] = files.splice(fromIndex, 1);
+        files.splice(toIndex, 0, file);
+        const transfer = new DataTransfer();
+        files.forEach((item) => transfer.items.add(item));
+        imageInput.files = transfer.files;
+        imageInput.dispatchEvent(new Event('change', { bubbles: true }));
+        dirty = true;
+    };
+
+    const reindexVehicleImages = () => {
+        [...imagePreview.children].forEach((card, index) => {
+            if (card.matches('[data-vehicle-existing-image]')) {
+                card.querySelectorAll('[name]').forEach((field) => { field.name = field.name.replace(/images\[\d+\]/, `images[${index}]`); });
+                card.querySelector('[data-vehicle-image-label]').textContent = index === 0 ? 'Cover photo' : 'Gallery photo';
+            } else if (card.matches('[data-vehicle-new-image]')) {
+                const fileName = card.dataset.vehicleFileName;
+                const label = card.querySelector('[data-vehicle-new-label]');
+                if (label) label.textContent = `${index === 0 ? 'Cover photo' : 'Gallery photo'} · ${fileName}`;
+            }
+        });
+    };
+    const vehicleMediaOrder = () => [...imagePreview.children].map((card) => {
+        if (card.matches('[data-vehicle-existing-image]')) return `existing:${card.querySelector('input[name$="[url]"]')?.value ?? ''}`;
+        if (card.matches('[data-vehicle-new-image]')) return `file:${card.dataset.vehicleFileIndex}`;
+        return '';
+    }).filter(Boolean);
+
+    const appendSimpleRow = (container, prefix, labels, placeholders) => {
+        if (!container || container.children.length >= 50) {
+            return;
+        }
+        const index = container.children.length;
+        const row = document.createElement('div');
+        row.className = prefix === 'availability'
+            ? 'grid gap-2 sm:grid-cols-[1fr_160px_auto]'
+            : prefix === 'additional_charges'
+                ? 'grid gap-2 rounded-xl border border-slate-200 p-3 sm:grid-cols-[1fr_160px_auto]'
+                : 'flex gap-2';
+        if (prefix === 'availability') {
+            row.innerHTML = `<label class="grid gap-1 text-xs font-semibold">Date<input type="date" name="availability[${index}][date]" class="min-h-10 rounded-lg border border-slate-300 px-3"></label><label class="flex min-h-10 items-center gap-2 text-xs font-semibold"><input type="checkbox" name="availability[${index}][available]" value="1" checked class="size-4 accent-emerald-800">Available</label><button type="button" data-vehicle-remove-row class="self-end rounded-lg border px-3 py-2 text-xs text-red-700">Remove</button>`;
+        } else if (prefix === 'additional_charges') {
+            row.innerHTML = `<label class="grid gap-1 text-xs font-semibold">Fee name<input name="additional_charges[${index}][name]" placeholder="${placeholders[0]}" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-semibold">Amount (KES)<input type="number" min="0" name="additional_charges[${index}][amount]" placeholder="0" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><button type="button" data-vehicle-remove-row class="self-end rounded-lg border px-3 py-2 text-xs text-red-700">Remove</button>`;
+        } else {
+            row.innerHTML = `<input name="service_areas[${index}]" placeholder="${placeholders[0]}" class="min-h-10 min-w-0 flex-1 rounded-xl border border-slate-300 px-3"><button type="button" data-vehicle-remove-row class="rounded-lg border px-3 text-xs text-red-700">Remove</button>`;
+        }
+        container.append(row);
+    };
+
+    const showStep = (index) => {
+        current = Math.max(0, Math.min(index, steps.length - 1));
+        steps.forEach((step, stepIndex) => {
+            step.hidden = stepIndex !== current;
+            step.classList.toggle('hidden', stepIndex !== current);
+        });
+        links.forEach((link, stepIndex) => {
+            link.setAttribute('aria-current', stepIndex === current ? 'step' : 'false');
+            const bar = link.querySelector('[data-vehicle-step-bar]');
+            bar?.classList.toggle('bg-emerald-700', stepIndex <= current);
+            bar?.classList.toggle('bg-slate-200', stepIndex > current);
+        });
+        const counter = form.querySelector('[data-vehicle-step-count]');
+        const title = form.querySelector('[data-vehicle-step-title]');
+        if (counter) counter.textContent = `Step ${current + 1} of ${steps.length}`;
+        if (title) title.textContent = stepNames[current];
+        back.disabled = current === 0;
+        next.classList.toggle('hidden', current === steps.length - 1);
+        draft.classList.toggle('hidden', current !== steps.length - 1);
+        submit.classList.toggle('hidden', current !== steps.length - 1);
+        if (current === steps.length - 1) updatePreview();
+    };
+
+    try {
+        const draftValues = JSON.parse(sessionStorage.getItem(storageKey) ?? '{}');
+        [...form.elements].forEach((field) => {
+            if (!field.name || !Object.hasOwn(draftValues, field.name) || field.type === 'file') return;
+            if (field.type === 'checkbox') field.checked = Boolean(draftValues[field.name]);
+            else if (!field.value) field.value = draftValues[field.name];
+        });
+    } catch {}
+
+    form.addEventListener('input', (event) => {
+        dirty = true;
+        const field = event.target;
+        if (field.matches('[data-vehicle-draft-field]') || field.name) {
+            try {
+                const values = Object.fromEntries([...form.elements].filter((item) => item.name && item.type !== 'file').map((item) => [item.name, item.type === 'checkbox' ? item.checked : item.value]));
+                sessionStorage.setItem(storageKey, JSON.stringify(values));
+            } catch {}
+        }
+        updatePreview();
+    });
+    form.addEventListener('change', (event) => {
+        if (event.target !== imageInput) return;
+        dirty = true;
+        previewUrls.forEach(URL.revokeObjectURL);
+        previewUrls = [];
+        imagePreview.querySelectorAll('[data-vehicle-new-image]').forEach((node) => node.remove());
+        const files = [...(imageInput.files ?? [])];
+        const oversized = files.filter((file) => file.size > 5 * 1024 * 1024);
+        if (oversized.length) {
+            const transfer = new DataTransfer();
+            files.filter((file) => file.size <= 5 * 1024 * 1024).forEach((file) => transfer.items.add(file));
+            imageInput.files = transfer.files;
+            imageStatus.textContent = `${oversized.map((file) => file.name).join(', ')} exceeds the 5 MB per-image limit.`;
+            imageStatus.classList.add('font-bold', 'text-red-700');
+        }
+        if ([...(imageInput.files ?? [])].reduce((total, file) => total + file.size, 0) > 6 * 1024 * 1024) {
+            imageInput.value = '';
+            imageStatus.textContent = 'Combined photo upload exceeds the 6 MB limit. Compress or remove photos.';
+            imageStatus.classList.add('font-bold', 'text-red-700');
+            return;
+        }
+        const existingCount = imagePreview.querySelectorAll('[data-vehicle-existing-image]').length;
+        if (existingCount + imageInput.files.length > 12) {
+            imageInput.value = '';
+            imageStatus.textContent = 'A vehicle can have up to 12 photos.';
+            imageStatus.classList.add('font-bold', 'text-red-700');
+            return;
+        }
+        [...imageInput.files].forEach((file, index) => {
+            const url = URL.createObjectURL(file);
+            previewUrls.push(url);
+            const card = document.createElement('article');
+            card.dataset.vehicleNewImage = '';
+            card.dataset.vehicleFileIndex = String(index);
+            card.dataset.vehicleFileName = file.name;
+            card.className = 'overflow-hidden rounded-xl border border-slate-200';
+            const image = document.createElement('img');
+            image.src = url;
+            image.alt = `Selected vehicle photo ${index + 1}`;
+            image.className = 'h-32 w-full object-cover';
+            const actions = document.createElement('div');
+            actions.className = 'flex items-center justify-between gap-1 p-2';
+            const name = document.createElement('span');
+            name.dataset.vehicleNewLabel = '';
+            name.className = 'truncate text-[10px] font-bold';
+            name.textContent = existingCount === 0 && index === 0 ? `${file.name} · Cover photo` : file.name;
+            const controls = document.createElement('span');
+            controls.className = 'flex gap-1';
+            [['up', '↑', 'Move photo earlier'], ['down', '↓', 'Move photo later']].forEach(([direction, label, aria]) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.dataset.vehicleNewMove = direction;
+                button.className = 'rounded border px-2 py-1 text-xs';
+                button.setAttribute('aria-label', aria);
+                button.textContent = label;
+                controls.append(button);
+            });
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.dataset.vehicleRemoveNew = '';
+            remove.className = 'rounded border border-red-200 px-2 py-1 text-xs font-bold text-red-700';
+            remove.setAttribute('aria-label', 'Remove photo');
+            remove.textContent = '×';
+            controls.append(remove);
+            actions.append(name, controls);
+            card.append(image, actions);
+            imagePreview.append(card);
+        });
+        reindexVehicleImages();
+        if (!oversized.length) {
+            imageStatus.textContent = imageInput.files.length ? `${imageInput.files.length} photo(s) ready to upload.` : '';
+            imageStatus.classList.remove('font-bold', 'text-red-700');
+        }
+        updatePreview();
+    });
+
+    imageDropzone?.addEventListener('dragover', (event) => { event.preventDefault(); imageDropzone.classList.add('border-emerald-700', 'bg-emerald-100'); });
+    imageDropzone?.addEventListener('dragleave', () => imageDropzone.classList.remove('border-emerald-700', 'bg-emerald-100'));
+    imageDropzone?.addEventListener('drop', (event) => {
+        event.preventDefault();
+        imageDropzone.classList.remove('border-emerald-700', 'bg-emerald-100');
+        const transfer = new DataTransfer();
+        [...(imageInput.files ?? []), ...(event.dataTransfer?.files ?? [])].forEach((file) => transfer.items.add(file));
+        imageInput.files = transfer.files;
+        imageInput.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    form.addEventListener('click', (event) => {
+        const target = event.target;
+        const link = target.closest('[data-vehicle-step-link]');
+        if (link && Number(link.dataset.vehicleStepLink) <= current) {
+            showStep(Number(link.dataset.vehicleStepLink));
+        } else if (target.closest('[data-vehicle-back]')) {
+            showStep(current - 1);
+        } else if (target.closest('[data-vehicle-next]')) {
+            const invalid = [...steps[current].querySelectorAll('input, select, textarea')].find((field) => field.willValidate && isInvalid(field));
+            if (invalid) invalid.reportValidity();
+            else { showStep(current + 1); form.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        } else if (target.closest('[data-vehicle-add-charge]')) {
+            appendSimpleRow(form.querySelector('[data-vehicle-charges]'), 'additional_charges', [], ['e.g. Cleaning fee']);
+        } else if (target.closest('[data-vehicle-add-area]')) {
+            appendSimpleRow(form.querySelector('[data-vehicle-service-areas]'), 'service_areas', [], ['e.g. Mombasa County']);
+        } else if (target.closest('[data-vehicle-add-date]')) {
+            appendSimpleRow(form.querySelector('[data-vehicle-availability]'), 'availability', [], []);
+        } else if (target.closest('[data-vehicle-remove-row]')) {
+            const container = target.closest('[data-vehicle-charges], [data-vehicle-service-areas], [data-vehicle-availability]');
+            target.closest('.grid, .flex')?.remove();
+            if (container) {
+                const type = container.matches('[data-vehicle-charges]') ? 'additional_charges' : container.matches('[data-vehicle-service-areas]') ? 'service_areas' : 'availability';
+                reindex(container, type);
+            }
+        } else if (target.closest('[data-vehicle-remove-image]')) {
+            target.closest('[data-vehicle-existing-image]')?.remove();
+            reindexVehicleImages();
+            updatePreview();
+        } else if (target.closest('[data-vehicle-move]')) {
+            const card = target.closest('[data-vehicle-existing-image], [data-vehicle-new-image]');
+            const direction = target.closest('[data-vehicle-move]').dataset.vehicleMove;
+            const sibling = direction === 'up' ? card.previousElementSibling : card.nextElementSibling;
+            if (sibling) {
+                imagePreview.insertBefore(direction === 'up' ? card : sibling, direction === 'up' ? sibling : card);
+                const newCards = [...imagePreview.querySelectorAll('[data-vehicle-new-image]')];
+                const oldFiles = [...(imageInput.files ?? [])];
+                const transfer = new DataTransfer();
+                newCards.forEach((newCard, index) => {
+                    const file = oldFiles[Number(newCard.dataset.vehicleFileIndex)];
+                    if (file) transfer.items.add(file);
+                    newCard.dataset.vehicleFileIndex = String(index);
+                });
+                imageInput.files = transfer.files;
+                reindexVehicleImages();
+                dirty = true;
+                updatePreview();
+            }
+        } else if (target.closest('[data-vehicle-remove-new]')) {
+            const card = target.closest('[data-vehicle-new-image]');
+            const selectedIndex = [...imagePreview.querySelectorAll('[data-vehicle-new-image]')].indexOf(card);
+            const fileIndex = selectedIndex;
+            const files = [...(imageInput.files ?? [])];
+            files.splice(fileIndex, 1);
+            const transfer = new DataTransfer();
+            files.forEach((file) => transfer.items.add(file));
+            imageInput.files = transfer.files;
+            imageInput.dispatchEvent(new Event('change', { bubbles: true }));
+        } else if (target.closest('[data-vehicle-new-move]')) {
+            const card = target.closest('[data-vehicle-new-image]');
+            const index = [...imagePreview.querySelectorAll('[data-vehicle-new-image]')].indexOf(card);
+            const direction = target.closest('[data-vehicle-new-move]').dataset.vehicleNewMove;
+            reorderNewFiles(index, index + (direction === 'up' ? -1 : 1));
+        }
+    });
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (busy) return;
+        const invalid = [...form.querySelectorAll('input, select, textarea')].find((field) => field.willValidate && isInvalid(field));
+        if (invalid) {
+            showStep(Number(invalid.closest('[data-vehicle-step]')?.dataset.vehicleStep ?? 0));
+            window.setTimeout(() => invalid.reportValidity(), 0);
+            return;
+        }
+        const action = event.submitter?.value ?? 'draft';
+        const existingCount = imagePreview.querySelectorAll('[data-vehicle-existing-image]').length;
+        if (action === 'submit' && existingCount + imageInput.files.length === 0) {
+            showStep(2);
+            imageStatus.textContent = 'Add at least one vehicle photo before submitting for approval.';
+            imageStatus.classList.add('font-bold', 'text-red-700');
+            return;
+        }
+        dirty = false;
+        const button = event.submitter;
+        const originalText = button?.textContent;
+        if (button) { button.disabled = true; button.textContent = 'Saving…'; button.setAttribute('aria-busy', 'true'); }
+        const data = new FormData(form);
+        data.set('submission_action', action);
+        vehicleMediaOrder().forEach((token) => data.append('media_order[]', token));
+        const request = new XMLHttpRequest();
+        busy = true;
+        request.open(form.method.toUpperCase(), form.action);
+        request.setRequestHeader('Accept', 'text/html');
+        request.upload.addEventListener('progress', (progressEvent) => {
+            if (progressEvent.lengthComputable) imageStatus.textContent = `Uploading photos: ${Math.round(progressEvent.loaded / progressEvent.total * 100)}%`;
+        });
+        request.addEventListener('load', () => {
+            if (request.status >= 200 && request.status < 400 && request.responseURL) {
+                sessionStorage.removeItem(storageKey);
+                window.location.assign(request.responseURL);
+                return;
+            }
+            busy = false;
+            if (button) { button.disabled = false; button.textContent = originalText; button.removeAttribute('aria-busy'); }
+            imageStatus.textContent = 'Could not save the vehicle. Review the form and try again.';
+            imageStatus.classList.add('font-bold', 'text-red-700');
+        });
+        request.addEventListener('error', () => {
+            busy = false;
+            if (button) { button.disabled = false; button.textContent = originalText; button.removeAttribute('aria-busy'); }
+            imageStatus.textContent = 'The request was interrupted. Please try again.';
+            imageStatus.classList.add('font-bold', 'text-red-700');
+        });
+        request.send(data);
+    });
+
+    window.addEventListener('beforeunload', (event) => {
+        if (dirty && !busy) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+
+    form.addEventListener('change', () => updatePreview());
+    if (form.querySelector('[data-form-draft-clear]')) sessionStorage.removeItem(storageKey);
+    showStep(0);
+    updatePreview();
 });
 
 document.querySelectorAll('[data-admin-image-upload]').forEach((uploader) => {

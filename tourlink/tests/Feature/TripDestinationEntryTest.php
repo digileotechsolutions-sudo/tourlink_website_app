@@ -31,6 +31,10 @@ class TripDestinationEntryTest extends TestCase
             ->assertSee('data-trip-step="1"', false)
             ->assertSee('data-trip-step="2"', false)
             ->assertSee('data-trip-step="3"', false)
+            ->assertSee('data-trip-step="4"', false)
+            ->assertSee('Basic trip details')
+            ->assertSee('Itinerary builder')
+            ->assertSee('Trip media')
             ->assertDontSee('name="destination_id"', false);
     }
 

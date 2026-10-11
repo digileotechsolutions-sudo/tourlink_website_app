@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Trip extends TourLinkModel
 {
-    protected $fillable = ['slug', 'name', 'description', 'starting_point', 'ending_point', 'meeting_point', 'duration_days', 'departure_date', 'return_date', 'price_per_person', 'child_price', 'deposit_amount', 'max_travelers', 'min_travelers', 'available_seats', 'pickup_points', 'itinerary', 'accommodation', 'meals', 'transport', 'transport_type', 'activities', 'highlights', 'included_items', 'excluded_items', 'additional_charges', 'cancellation_policy', 'status', 'featured', 'verification_status', 'operator_id', 'destination_id', 'category_id', 'required_vehicle_id', 'submitted_at'];
+    protected $fillable = ['slug', 'name', 'description', 'starting_point', 'ending_point', 'meeting_point', 'duration_days', 'departure_date', 'return_date', 'price_per_person', 'child_price', 'deposit_amount', 'group_discount_percent', 'currency', 'max_travelers', 'min_travelers', 'available_seats', 'pickup_points', 'itinerary', 'accommodation', 'meals', 'transport', 'transport_type', 'activities', 'highlights', 'included_items', 'excluded_items', 'additional_charges', 'cancellation_policy', 'status', 'featured', 'verification_status', 'operator_id', 'destination_id', 'category_id', 'required_vehicle_id', 'submitted_at'];
 
     public $timestamps = true;
 
@@ -22,6 +22,7 @@ class Trip extends TourLinkModel
             'price_per_person' => 'integer',
             'child_price' => 'integer',
             'deposit_amount' => 'integer',
+            'group_discount_percent' => 'integer',
             'max_travelers' => 'integer',
             'min_travelers' => 'integer',
             'available_seats' => 'integer',

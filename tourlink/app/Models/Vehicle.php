@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vehicle extends TourLinkModel
 {
-    protected $fillable = ['slug', 'name', 'registration_number', 'make', 'model', 'year', 'body_type', 'engine_cc', 'colour', 'seating_capacity', 'tare_weight', 'axles', 'load_capacity', 'transmission', 'fuel_type', 'air_conditioning', 'four_by_four', 'driver_included', 'price_per_day', 'location', 'status', 'verification_status', 'owner_id', 'destination_id'];
+    protected $fillable = ['slug', 'name', 'registration_number', 'make', 'model', 'year', 'body_type', 'engine_cc', 'colour', 'seating_capacity', 'tare_weight', 'axles', 'load_capacity', 'transmission', 'fuel_type', 'air_conditioning', 'four_by_four', 'driver_included', 'price_per_day', 'hourly_price', 'trip_price', 'driver_charge', 'additional_charges', 'currency', 'service_areas', 'location', 'status', 'verification_status', 'owner_id', 'destination_id', 'submitted_at'];
 
     public const UPDATED_AT = null;
 
@@ -28,9 +28,15 @@ class Vehicle extends TourLinkModel
             'four_by_four' => 'boolean',
             'driver_included' => 'boolean',
             'price_per_day' => 'integer',
+            'hourly_price' => 'integer',
+            'trip_price' => 'integer',
+            'driver_charge' => 'integer',
+            'additional_charges' => 'array',
+            'service_areas' => 'array',
             'status' => ListingStatus::class,
             'verification_status' => VerificationStatus::class,
             'created_at' => 'datetime',
+            'submitted_at' => 'datetime',
         ];
     }
 
@@ -46,7 +52,7 @@ class Vehicle extends TourLinkModel
 
     public function images(): HasMany
     {
-        return $this->hasMany(VehicleImage::class);
+        return $this->hasMany(VehicleImage::class)->orderBy('sort_order');
     }
 
     public function availabilities(): HasMany

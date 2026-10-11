@@ -60,7 +60,9 @@ class AdminVehicleController extends Controller
         $images = $data['images'] ?? [];
         unset($data['images'], $data['images_files']);
         $images = $this->uploadedImages($request, $images);
-        $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name']);
+        $data['currency'] = 'KES';
+        $data['submitted_at'] = ($data['verification_status'] ?? VerificationStatus::Pending->value) === VerificationStatus::Pending->value ? now() : null;
+        $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name']);
 
         $vehicle = DB::transaction(function () use ($request, $data, $images): Vehicle {
             $vehicle = Vehicle::query()->create($data);
@@ -86,7 +88,9 @@ class AdminVehicleController extends Controller
         $images = $data['images'] ?? [];
         unset($data['images'], $data['images_files']);
         $images = $this->uploadedImages($request, $images);
-        $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name'], $vehicle);
+        $data['currency'] = 'KES';
+        unset($data['submitted_at']);
+        $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name'], $vehicle);
 
         DB::transaction(function () use ($request, $vehicle, $data, $images): void {
             $vehicle->fill($data)->save();
@@ -146,6 +150,14 @@ class AdminVehicleController extends Controller
             'four_by_four' => ['required', 'boolean'],
             'driver_included' => ['required', 'boolean'],
             'price_per_day' => ['required', 'integer', 'min:0', 'max:100000000'],
+            'hourly_price' => ['nullable', 'integer', 'min:0', 'max:100000000'],
+            'trip_price' => ['nullable', 'integer', 'min:0', 'max:100000000'],
+            'driver_charge' => ['nullable', 'integer', 'min:0', 'max:100000000'],
+            'additional_charges' => ['nullable', 'array', 'max:20'],
+            'additional_charges.*.name' => ['required', 'string', 'max:120'],
+            'additional_charges.*.amount' => ['required', 'integer', 'min:0', 'max:100000000'],
+            'service_areas' => ['nullable', 'array', 'max:50'],
+            'service_areas.*' => ['required', 'string', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
             'owner_id' => ['required', 'string', Rule::exists('users', 'id')->where('role', Role::VehicleOwner->value)->where('account_status', AccountStatus::Active->value)->where('approval_status', AccountApprovalStatus::Approved->value)],
             'destination_id' => ['nullable', 'string', 'exists:destinations,id'],
@@ -202,10 +214,11 @@ class AdminVehicleController extends Controller
     {
         $vehicle->images()->delete();
 
-        foreach ($images as $image) {
+        foreach ($images as $sortOrder => $image) {
             $vehicle->images()->create([
                 'url' => $image['url'],
                 'alt' => $image['alt'] ?? $vehicle->name,
+                'sort_order' => $sortOrder,
             ]);
         }
     }

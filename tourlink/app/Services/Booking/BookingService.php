@@ -65,6 +65,11 @@ class BookingService
                 $trip->decrement('available_seats', $travelers);
             }
             $total = $trip->price_per_person * $travelers;
+            $discount = $trip->group_discount_percent !== null && $travelers >= $trip->min_travelers
+                ? (int) floor($total * $trip->group_discount_percent / 100)
+                : 0;
+            $additionalFees = collect($trip->additional_charges ?? [])->sum(static fn (mixed $charge): int => is_array($charge) ? (int) ($charge['amount'] ?? 0) : 0);
+            $grandTotal = $total - $discount + $additionalFees;
             $booking = Booking::query()->create([
                 'reference' => $this->bookingReference(),
                 'type' => BookingType::Trip,
@@ -76,13 +81,13 @@ class BookingService
                 'travelers' => $travelers,
                 'pickup_location' => $pickupLocation,
                 'base_amount' => $total,
-                'fees' => 0,
-                'discount' => 0,
-                'total_amount' => $total,
-                'currency' => 'KES',
+                'fees' => $additionalFees,
+                'discount' => $discount,
+                'total_amount' => $grandTotal,
+                'currency' => $trip->currency ?: 'KES',
             ]);
 
-            $this->createPaymentAndCommission($booking, $total);
+            $this->createPaymentAndCommission($booking, $grandTotal);
             Notification::query()->create([
                 'user_id' => $trip->operator_id,
                 'title' => 'New trip booking',
@@ -144,7 +149,11 @@ class BookingService
             }
 
             $days = max(1, (int) ceil(($end->getTimestamp() - $start->getTimestamp()) / 86400));
-            $total = $vehicle->price_per_day * $days;
+            $baseAmount = $vehicle->price_per_day * $days;
+            $driverFee = $driverRequired ? ((int) ($vehicle->driver_charge ?? 0) * $days) : 0;
+            $additionalFees = collect($vehicle->additional_charges ?? [])->sum(static fn (mixed $charge): int => is_array($charge) ? (int) ($charge['amount'] ?? 0) : 0);
+            $fees = $driverFee + $additionalFees;
+            $total = $baseAmount + $fees;
             $booking = Booking::query()->create([
                 'reference' => $this->bookingReference(),
                 'type' => BookingType::Vehicle,
@@ -156,11 +165,11 @@ class BookingService
                 'travelers' => 1,
                 'pickup_location' => $pickupLocation,
                 'driver_required' => $driverRequired,
-                'base_amount' => $total,
-                'fees' => 0,
+                'base_amount' => $baseAmount,
+                'fees' => $fees,
                 'discount' => 0,
                 'total_amount' => $total,
-                'currency' => 'KES',
+                'currency' => $vehicle->currency ?: 'KES',
             ]);
 
             $this->createPaymentAndCommission($booking, $total);
