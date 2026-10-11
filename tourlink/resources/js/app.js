@@ -428,10 +428,11 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         });
         links.forEach((link, item) => {
             const active = item === current;
+            const completedThrough = current === 0 ? 1 : current;
             link.setAttribute('aria-current', active ? 'step' : 'false');
             const segment = link.querySelector('[data-progress-segment]');
-            segment?.classList.toggle('bg-emerald-700', item <= current);
-            segment?.classList.toggle('bg-slate-200', item > current);
+            segment?.classList.toggle('bg-emerald-700', item <= completedThrough);
+            segment?.classList.toggle('bg-slate-200', item > completedThrough);
         });
         if (captionCount) {
             captionCount.textContent = `Step ${current + 1} of ${steps.length}`;

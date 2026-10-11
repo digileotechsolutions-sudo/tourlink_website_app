@@ -35,33 +35,33 @@
     ];
 @endphp
 @section('content')
-<div class="mx-auto max-w-[640px] space-y-4 px-3 py-4 pb-28 sm:px-6 sm:py-8">
-    <form id="trip-wizard" data-trip-wizard method="POST" action="{{ $trip->exists ? route('operator.trips.update', $trip) : route('operator.trips.store') }}" enctype="multipart/form-data" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+<div class="mx-auto max-w-[614px] space-y-0 bg-slate-50 px-3 py-3.5 pb-28 sm:px-0 sm:py-6">
+    <form id="trip-wizard" data-trip-wizard method="POST" action="{{ $trip->exists ? route('operator.trips.update', $trip) : route('operator.trips.store') }}" enctype="multipart/form-data" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         @csrf
         @if($trip->exists) @method('PUT') @endif
 
-        <header class="bg-emerald-800 px-4 py-4 text-white sm:px-6">
-            <div class="flex items-center gap-3"><span class="grid size-10 shrink-0 place-items-center rounded-lg bg-white/15" aria-hidden="true"><svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M9 12h6M12 10v4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h1 class="text-lg font-black">{{ $trip->exists ? 'Edit your trip' : 'Publish a new trip' }}</h1><p class="mt-0.5 text-xs text-emerald-50">Operator dashboard · Trip management</p></div></div>
-            <p data-trip-caption class="mt-3 flex items-center gap-2 text-xs font-semibold"><span data-trip-caption-count class="rounded-full bg-white/15 px-2 py-1">Step 1 of 4</span><span data-trip-caption-name>Trip information</span></p>
+        <header class="bg-[#176b4b] px-3.5 pb-2 pt-3.5 text-white">
+            <div class="flex items-center gap-2.5"><span class="grid size-9.5 shrink-0 place-items-center rounded-lg bg-white/15" aria-hidden="true"><svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M9 12h6M12 10v4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h1 class="text-base font-bold">{{ $trip->exists ? 'Edit your trip' : 'Publish a new trip' }}</h1><p class="mt-0.5 text-[11px] text-emerald-50">Operator dashboard · Trip management</p></div></div>
+            <p data-trip-caption class="mt-2 flex items-center gap-2 text-[10px] font-semibold"><span data-trip-caption-count class="rounded-full bg-white/15 px-2 py-1">Step 1 of 4</span><span data-trip-caption-name>Trip information</span></p>
         </header>
 
         <nav class="px-3 pt-3 sm:px-5" aria-label="Trip form progress">
             <ol class="grid grid-cols-4 gap-1">
                 @foreach(['Details', 'Schedule', 'Pricing', 'Publish'] as $index => $label)
-                    <li><button type="button" data-trip-step-link="{{ $index }}" class="block w-full text-left text-[10px] font-medium text-slate-700" aria-current="{{ $index === 0 ? 'step' : 'false' }}"><span data-progress-segment class="mb-1.5 block h-[3px] rounded-full bg-slate-200"></span>{{ $index + 1 }}. {{ $label }}</button></li>
+                    <li><button type="button" data-trip-step-link="{{ $index }}" class="block w-full text-left text-[9px] font-medium text-slate-700" aria-current="{{ $index === 0 ? 'step' : 'false' }}"><span data-progress-segment class="mb-1.5 block h-[3px] rounded-full bg-slate-200"></span>{{ $index + 1 }}. {{ $label }}</button></li>
                 @endforeach
             </ol>
         </nav>
 
         <section data-trip-step="0" class="space-y-5 px-3 py-4 sm:px-5" aria-labelledby="trip-step-title-0">
             <div><h2 id="trip-step-title-0" class="text-lg font-black">Route and schedule</h2></div>
-            <div class="grid gap-5 sm:grid-cols-2">
-                <label class="grid gap-1.5 text-xs font-semibold sm:col-span-2">Departure location <span class="text-red-700">*</span><input required name="starting_point" maxlength="255" value="{{ old('starting_point', $trip->starting_point ?: 'Nairobi') }}" placeholder="Nairobi" class="min-h-10 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
-                <label class="grid gap-1.5 text-xs font-semibold sm:col-span-2">Destination <span class="text-red-700">*</span><input required maxlength="255" name="destination_name" data-trip-destination value="{{ old('destination_name', $trip->destination?->name) }}" placeholder="e.g. Diani Beach, Kwale" class="min-h-10 rounded-full border border-slate-300 px-4 text-sm font-normal"><input type="hidden" name="ending_point" data-trip-ending value="{{ old('ending_point', $trip->ending_point ?: $trip->destination?->name) }}"></label>
-                <label class="grid gap-1.5 text-xs font-semibold">Departure date <span class="text-red-700">*</span><input required type="date" name="departure_date" value="{{ $formDate($departureDateInput) }}" class="min-h-10 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
-                <label class="grid gap-1.5 text-xs font-semibold">Return date<input required type="date" name="return_date" value="{{ $formDate($returnDateInput) }}" class="min-h-10 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
+            <div class="grid gap-3 sm:grid-cols-2">
+                <label class="grid gap-1.5 text-xs font-semibold sm:col-span-2">Departure location <span class="text-red-700">*</span><input required name="starting_point" maxlength="255" value="{{ old('starting_point', $trip->starting_point ?: 'Nairobi') }}" placeholder="Nairobi" class="min-h-8 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
+                <label class="grid gap-1.5 text-xs font-semibold sm:col-span-2">Destination <span class="text-red-700">*</span><input required maxlength="255" name="destination_name" data-trip-destination value="{{ old('destination_name', $trip->destination?->name) }}" placeholder="e.g. Diani Beach, Kwale" class="min-h-8 rounded-full border border-slate-300 px-4 text-sm font-normal"><input type="hidden" name="ending_point" data-trip-ending value="{{ old('ending_point', $trip->ending_point ?: $trip->destination?->name) }}"></label>
+                <label class="grid gap-1.5 text-xs font-semibold">Departure date <span class="text-red-700">*</span><input required type="date" name="departure_date" value="{{ $formDate($departureDateInput) }}" class="min-h-8 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
+                <label class="grid gap-1.5 text-xs font-semibold">Return date<input required type="date" name="return_date" value="{{ $formDate($returnDateInput) }}" class="min-h-8 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
                 <fieldset class="grid gap-2 sm:col-span-2"><legend class="text-xs font-semibold">Trip duration</legend><div class="grid gap-2">@foreach([1 => '1 day', 2 => '2 days', 3 => '3–5 days', 6 => '6 or more days'] as $days => $label)<label class="flex min-h-7 items-center gap-2 text-sm"><input type="radio" name="duration_days" value="{{ $days }}" required @checked((int) old('duration_days', $trip->duration_days ?: 2) === $days) class="size-4 accent-emerald-800">{{ $label }}</label>@endforeach</div></fieldset>
-                <label class="grid gap-1.5 text-xs font-semibold sm:col-span-2">Meeting point and departure time<input name="meeting_point_and_time" maxlength="255" value="{{ $meetingPointAndTime }}" placeholder="e.g. Nairobi CBD, 6:00 AM" class="min-h-10 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
+                <label class="grid gap-1.5 text-xs font-semibold sm:col-span-2">Meeting point and departure time<input name="meeting_point_and_time" maxlength="255" value="{{ $meetingPointAndTime }}" placeholder="e.g. Nairobi CBD, 6:00 AM" class="min-h-8 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
                 <fieldset class="grid gap-2 sm:col-span-2"><legend class="text-xs font-semibold">Transport provided</legend><div class="grid gap-2">@foreach($transportTypes as $value => $label)<label class="flex min-h-7 items-center gap-2 text-sm"><input type="radio" name="transport_type" value="{{ $value }}" required @checked(old('transport_type', $trip->transport_type ?: 'TOUR_VAN') === $value) class="size-4 accent-emerald-800">{{ $label === 'No transport' ? 'No transport included' : $label }}</label>@endforeach</div></fieldset>
             </div>
         </section>
@@ -120,9 +120,9 @@
             @if($vehicles->isNotEmpty())<label class="grid max-w-xl gap-2 text-sm font-bold">Associated vehicle <span class="font-normal text-slate-500">Optional</span><select name="required_vehicle_id" class="min-h-12 rounded-xl border border-slate-300 bg-white px-4 font-normal"><option value="">No specific vehicle</option>@foreach($vehicles as $vehicle)<option value="{{ $vehicle->id }}" @selected(old('required_vehicle_id', $trip->required_vehicle_id) === $vehicle->id)>{{ $vehicle->name }}</option>@endforeach</select></label>@endif
         </section>
 
-        <div class="sticky bottom-20 z-10 flex gap-2 border-t border-slate-100 bg-white px-3 py-3 sm:bottom-4 sm:px-5">
-            <button type="button" data-trip-back class="min-h-11 flex-1 rounded-full border border-slate-300 px-4 text-sm font-medium text-slate-600 disabled:opacity-40">Back</button>
-            <button type="button" data-trip-next class="min-h-11 flex-1 rounded-full bg-neutral-950 px-5 text-sm font-bold text-white hover:bg-neutral-800">Continue <span aria-hidden="true">→</span></button>
+        <div class="sticky bottom-20 z-10 flex gap-2 border-t border-slate-100 bg-white px-3 py-2 sm:bottom-4 sm:px-5">
+            <button type="button" data-trip-back class="min-h-[30px] flex-1 rounded-full border border-slate-300 px-4 py-1 text-xs font-medium text-slate-600 disabled:opacity-40">Back</button>
+            <button type="button" data-trip-next class="min-h-[30px] flex-1 rounded-full bg-neutral-950 px-5 py-1 text-xs font-bold text-white hover:bg-neutral-800">Continue <span aria-hidden="true">→</span></button>
             <button type="submit" formnovalidate name="submission_action" value="draft" data-trip-draft class="hidden min-h-11 rounded-full border border-emerald-800 px-4 text-sm font-bold text-emerald-900">Save draft</button>
             <button type="submit" formnovalidate name="submission_action" value="submit" data-trip-submit class="hidden min-h-11 flex-1 rounded-full bg-neutral-950 px-5 text-sm font-bold text-white">Submit for approval</button>
         </div>
