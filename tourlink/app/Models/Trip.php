@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Trip extends TourLinkModel
 {
-    protected $fillable = ['slug', 'name', 'description', 'starting_point', 'ending_point', 'duration_days', 'departure_date', 'return_date', 'price_per_person', 'max_travelers', 'min_travelers', 'available_seats', 'pickup_points', 'itinerary', 'accommodation', 'meals', 'transport', 'activities', 'included_items', 'excluded_items', 'cancellation_policy', 'status', 'featured', 'verification_status', 'operator_id', 'destination_id', 'category_id', 'required_vehicle_id'];
+    protected $fillable = ['slug', 'name', 'description', 'starting_point', 'ending_point', 'meeting_point', 'duration_days', 'departure_date', 'return_date', 'price_per_person', 'child_price', 'deposit_amount', 'max_travelers', 'min_travelers', 'available_seats', 'pickup_points', 'itinerary', 'accommodation', 'meals', 'transport', 'transport_type', 'activities', 'highlights', 'included_items', 'excluded_items', 'additional_charges', 'cancellation_policy', 'status', 'featured', 'verification_status', 'operator_id', 'destination_id', 'category_id', 'required_vehicle_id', 'submitted_at'];
 
     public $timestamps = true;
 
@@ -20,6 +20,8 @@ class Trip extends TourLinkModel
             'departure_date' => 'datetime',
             'return_date' => 'datetime',
             'price_per_person' => 'integer',
+            'child_price' => 'integer',
+            'deposit_amount' => 'integer',
             'max_travelers' => 'integer',
             'min_travelers' => 'integer',
             'available_seats' => 'integer',
@@ -27,11 +29,14 @@ class Trip extends TourLinkModel
             'itinerary' => 'array',
             'meals' => 'array',
             'activities' => 'array',
+            'highlights' => 'array',
             'included_items' => 'array',
             'excluded_items' => 'array',
+            'additional_charges' => 'array',
             'status' => ListingStatus::class,
             'featured' => 'boolean',
             'verification_status' => VerificationStatus::class,
+            'submitted_at' => 'datetime',
         ];
     }
 

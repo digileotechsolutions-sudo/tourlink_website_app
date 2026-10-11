@@ -374,6 +374,273 @@ if (draftToClear) {
     } catch {}
 }
 
+document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
+    const steps = [...form.querySelectorAll('[data-trip-step]')];
+    const links = [...form.querySelectorAll('[data-trip-step-link]')];
+    const progress = form.querySelector('[data-trip-progress]');
+    const progressBar = progress?.parentElement;
+    const back = form.querySelector('[data-trip-back]');
+    const next = form.querySelector('[data-trip-next]');
+    const submit = form.querySelector('[data-trip-submit]');
+    const fileInput = form.querySelector('[data-trip-images]');
+    const preview = form.querySelector('[data-trip-image-preview]');
+    const uploadStatus = form.querySelector('[data-trip-upload-status]');
+    let current = 0;
+    let uploading = false;
+    let objectUrls = [];
+    const field = (name) => form.elements.namedItem(name);
+
+    const showStep = (index) => {
+        current = Math.max(0, Math.min(index, steps.length - 1));
+        steps.forEach((step, item) => {
+            step.hidden = item !== current;
+            step.classList.toggle('hidden', item !== current);
+        });
+        links.forEach((link, item) => {
+            const active = item === current;
+            link.setAttribute('aria-current', active ? 'step' : 'false');
+            link.classList.toggle('border-emerald-700', active);
+            link.classList.toggle('bg-emerald-50', active);
+            link.classList.toggle('text-emerald-950', active);
+            link.querySelector('[data-step-number]')?.classList.toggle('bg-emerald-800', active);
+            link.querySelector('[data-step-number]')?.classList.toggle('text-white', active);
+        });
+        back.disabled = current === 0;
+        back.classList.toggle('opacity-40', current === 0);
+        next.classList.toggle('hidden', current === steps.length - 1);
+        submit.classList.toggle('hidden', current !== steps.length - 1);
+        if (progress) {
+            progress.style.width = `${((current + 1) / steps.length) * 100}%`;
+        }
+        progressBar?.setAttribute('aria-valuenow', String(current + 1));
+        if (current === steps.length - 1) {
+            updatePreview();
+        }
+    };
+
+    const updateDuration = () => {
+        const from = field('departure_date')?.value;
+        const to = field('return_date')?.value;
+        const duration = field('duration_days');
+        if (from && to && duration) {
+            const hours = (new Date(to) - new Date(from)) / 3600000;
+            if (Number.isFinite(hours) && hours > 0) {
+                duration.value = String(Math.max(1, Math.ceil(hours / 24)));
+            }
+        }
+    };
+
+    const updatePreview = () => {
+        const text = (selector, value, fallback) => {
+            const node = form.querySelector(selector);
+            if (node) {
+                node.textContent = value?.trim() || fallback;
+            }
+        };
+        const category = field('category_id');
+        const date = (value) => {
+            const parsed = new Date(value);
+            return value && !Number.isNaN(parsed.getTime())
+                ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(parsed)
+                : 'Date not set';
+        };
+        text('[data-preview-title]', field('name')?.value, 'Your trip title');
+        text('[data-preview-category]', category?.value ? category.selectedOptions[0].textContent : '', 'Trip category');
+        text('[data-preview-destination]', field('destination_name')?.value, 'Destination');
+        text('[data-preview-description]', field('description')?.value, 'Your trip description will appear here.');
+        text('[data-preview-route]', `${field('starting_point')?.value || 'Start'} → ${field('ending_point')?.value || 'End'}`, 'Start → End');
+        text('[data-preview-dates]', `${date(field('departure_date')?.value)} → ${date(field('return_date')?.value)}`, 'Departure → Return');
+        text('[data-preview-price]', `KES ${field('price_per_person')?.value || '—'} per adult`, 'KES — per adult');
+        const cover = form.querySelector('[data-preview-cover]');
+        const chosenFile = fileInput?.files?.[0];
+        const existingCover = preview?.querySelector('[data-existing-image] img');
+        if (cover && (chosenFile || existingCover)) {
+            const src = chosenFile ? (objectUrls[0] ?? URL.createObjectURL(chosenFile)) : existingCover.src;
+            const image = document.createElement('img');
+            image.src = src;
+            image.alt = 'Trip cover preview';
+            image.className = 'h-56 w-full object-cover sm:h-72';
+            cover.replaceChildren(image);
+        }
+    };
+
+    const reindex = (container) => {
+        const type = container.dataset.tripRepeater;
+        [...container.children].forEach((row, index) => {
+            row.querySelectorAll('[name]').forEach((input) => {
+                if (type === 'itinerary') {
+                    input.name = input.name.replace(/itinerary\[\d+\]/, `itinerary[${index}]`);
+                } else if (type === 'charges') {
+                    input.name = input.name.replace(/additional_charges\[\d+\]/, `additional_charges[${index}]`);
+                }
+            });
+            const number = row.querySelector('[name$="[day]"]');
+            if (number) {
+                number.value = String(index + 1);
+                row.querySelector('[data-day-label]').textContent = String(index + 1);
+            }
+        });
+    };
+
+    const addRow = (type) => {
+        const container = form.querySelector(`[data-trip-repeater="${type}"]`);
+        if (!container || container.children.length >= 20) {
+            return;
+        }
+        const index = container.children.length;
+        const row = document.createElement(type === 'itinerary' ? 'article' : 'div');
+        if (type === 'stops') {
+            row.className = 'flex gap-2';
+            row.innerHTML = `<label class="sr-only" for="trip-stop-${index}">Stop ${index + 1}</label><input id="trip-stop-${index}" name="pickup_points[]" placeholder="Stop or pickup point" class="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 px-4"><button type="button" data-remove-row class="min-h-11 rounded-xl border border-slate-300 px-4 text-sm font-bold text-red-700">Remove</button>`;
+        } else if (type === 'itinerary') {
+            row.className = 'rounded-xl border border-slate-200 bg-slate-50 p-4';
+            row.innerHTML = `<div class="mb-3 flex items-center justify-between"><p class="text-sm font-black">Day <span data-day-label>${index + 1}</span></p><button type="button" data-remove-row class="text-xs font-bold text-red-700">Remove day</button></div><div class="grid gap-3 sm:grid-cols-2"><label class="grid gap-1 text-xs font-bold">Day number<input required type="number" min="1" name="itinerary[${index}][day]" value="${index + 1}" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Title<input required maxlength="120" name="itinerary[${index}][title]" placeholder="e.g. Arrival and welcome" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Start time<input type="time" name="itinerary[${index}][start_time]" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">End time<input type="time" name="itinerary[${index}][end_time]" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold sm:col-span-2">Activities & details<textarea required maxlength="4000" rows="2" name="itinerary[${index}][detail]" placeholder="Describe the day's schedule and activities" class="rounded-lg border border-slate-300 p-3 text-sm font-normal"></textarea></label></div>`;
+        } else {
+            row.className = 'grid gap-2 rounded-xl border border-slate-200 p-3 sm:grid-cols-[1fr_180px_auto]';
+            row.innerHTML = `<label class="grid gap-1 text-xs font-bold">Charge name<input name="additional_charges[${index}][name]" placeholder="e.g. Park conservation fee" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold">Amount (KES)<input type="number" min="0" name="additional_charges[${index}][amount]" placeholder="0" class="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-normal"></label><button type="button" data-remove-row class="min-h-10 self-end rounded-lg border border-slate-300 px-3 text-xs font-bold text-red-700">Remove</button>`;
+        }
+        container.append(row);
+    };
+
+    form.addEventListener('click', (event) => {
+        const target = event.target;
+        const stepLink = target.closest('[data-trip-step-link]');
+        if (stepLink) {
+            showStep(Number(stepLink.dataset.tripStepLink));
+        } else if (target.closest('[data-trip-back]')) {
+            showStep(current - 1);
+        } else if (target.closest('[data-trip-next]')) {
+            const invalid = [...steps[current].querySelectorAll('input, select, textarea')].find((input) => !input.checkValidity());
+            if (invalid) {
+                invalid.reportValidity();
+            } else {
+                showStep(current + 1);
+                window.scrollTo({ top: form.offsetTop - 24, behavior: 'smooth' });
+            }
+        } else if (target.closest('[data-add-row]')) {
+            addRow(target.closest('[data-add-row]').dataset.addRow);
+        } else if (target.closest('[data-remove-row]')) {
+            const container = target.closest('[data-trip-repeater]');
+            target.closest('[data-trip-repeater] > *')?.remove();
+            if (container) {
+                reindex(container);
+            }
+        } else if (target.closest('[data-remove-image]')) {
+            target.closest('[data-existing-image]')?.remove();
+            updatePreview();
+        }
+    });
+
+    form.addEventListener('input', (event) => {
+        if (['departure_date', 'return_date'].includes(event.target.name)) {
+            updateDuration();
+        }
+        if (current === steps.length - 1) {
+            updatePreview();
+        }
+    });
+
+    form.addEventListener('change', (event) => {
+        if (event.target === fileInput) {
+            objectUrls.forEach((url) => URL.revokeObjectURL(url));
+            objectUrls = [];
+            const existing = preview?.querySelectorAll('[data-existing-image]').length ?? 0;
+            if (existing + (fileInput.files?.length ?? 0) > 12) {
+                fileInput.value = '';
+                uploadStatus.textContent = 'Keep the total trip image count to 12 or fewer.';
+                return;
+            }
+            preview?.querySelectorAll('[data-new-image]').forEach((node) => node.remove());
+            [...(fileInput.files ?? [])].forEach((file, index) => {
+                const url = URL.createObjectURL(file);
+                objectUrls.push(url);
+                const wrapper = document.createElement('div');
+                wrapper.dataset.newImage = '';
+                wrapper.className = 'overflow-hidden rounded-xl border border-slate-200';
+                const image = document.createElement('img');
+                image.src = url;
+                image.alt = `Selected trip photo ${index + 1}`;
+                image.className = 'h-28 w-full object-cover';
+                const name = document.createElement('p');
+                name.className = 'truncate px-2 py-1 text-xs font-bold';
+                name.textContent = index === 0 && existing === 0 ? `${file.name} · Cover` : file.name;
+                wrapper.append(image, name);
+                preview?.append(wrapper);
+            });
+            uploadStatus.textContent = fileInput.files?.length ? `${fileInput.files.length} image(s) ready to upload.` : '';
+            updatePreview();
+        }
+    });
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (uploading) {
+            return;
+        }
+        const invalid = [...form.querySelectorAll('input, select, textarea')].find((input) => input.willValidate && !input.checkValidity());
+        if (invalid) {
+            showStep(Number(invalid.closest('[data-trip-step]')?.dataset.tripStep ?? 0));
+            window.setTimeout(() => invalid.reportValidity(), 0);
+            return;
+        }
+        const action = event.submitter?.value ?? 'draft';
+        const existing = preview?.querySelectorAll('[data-existing-image]').length ?? 0;
+        if (action === 'submit' && existing === 0 && (fileInput?.files?.length ?? 0) === 0) {
+            showStep(0);
+            uploadStatus.textContent = 'Add at least one cover or gallery image before submitting.';
+            uploadStatus.classList.add('font-bold', 'text-red-700');
+            return;
+        }
+
+        const button = event.submitter;
+        const originalText = button?.textContent;
+        if (button) {
+            button.disabled = true;
+            button.textContent = 'Saving…';
+            button.setAttribute('aria-busy', 'true');
+        }
+        const data = new FormData(form);
+        data.set('submission_action', action);
+        const request = new XMLHttpRequest();
+        uploading = true;
+        request.open(form.method.toUpperCase(), form.action);
+        request.setRequestHeader('Accept', 'text/html');
+        request.upload.addEventListener('progress', (progressEvent) => {
+            if (uploadStatus && progressEvent.lengthComputable) {
+                uploadStatus.textContent = `Uploading trip photos: ${Math.round((progressEvent.loaded / progressEvent.total) * 100)}%`;
+            }
+        });
+        request.addEventListener('load', () => {
+            if (request.status >= 200 && request.status < 400 && request.responseURL) {
+                window.location.assign(request.responseURL);
+                return;
+            }
+            uploading = false;
+            if (button) {
+                button.disabled = false;
+                button.textContent = originalText;
+                button.removeAttribute('aria-busy');
+            }
+            uploadStatus.textContent = 'The trip could not be saved. Check your connection and try again.';
+            uploadStatus.classList.add('font-bold', 'text-red-700');
+        });
+        request.addEventListener('error', () => {
+            uploading = false;
+            if (button) {
+                button.disabled = false;
+                button.textContent = originalText;
+                button.removeAttribute('aria-busy');
+            }
+            uploadStatus.textContent = 'The upload was interrupted. Please try again.';
+            uploadStatus.classList.add('font-bold', 'text-red-700');
+        });
+        request.send(data);
+    });
+
+    updateDuration();
+    showStep(0);
+});
+
 document.querySelectorAll('[data-form-draft]').forEach((form) => {
     const draftKey = `tourlink-form-draft:${form.dataset.formDraft}`;
     const fields = [...form.querySelectorAll('[data-draft-field]')];

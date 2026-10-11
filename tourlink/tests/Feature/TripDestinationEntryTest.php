@@ -11,6 +11,8 @@ use App\Services\Catalog\DestinationResolver;
 use App\Services\Catalog\TripCategoryCatalog;
 use App\VerificationStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class TripDestinationEntryTest extends TestCase
@@ -25,6 +27,10 @@ class TripDestinationEntryTest extends TestCase
             ->get(route('operator.trips.create'))
             ->assertOk()
             ->assertSee('name="destination_name"', false)
+            ->assertSee('data-trip-step="0"', false)
+            ->assertSee('data-trip-step="1"', false)
+            ->assertSee('data-trip-step="2"', false)
+            ->assertSee('data-trip-step="3"', false)
             ->assertDontSee('name="destination_id"', false);
     }
 
@@ -51,12 +57,14 @@ class TripDestinationEntryTest extends TestCase
 
     public function test_operator_can_create_trip_without_submitting_a_slug(): void
     {
+        Storage::fake('public');
         $operator = User::factory()->create(['role' => Role::Operator]);
         $category = app(TripCategoryCatalog::class)->all()->first();
 
         $response = $this->actingAs($operator)
             ->post(route('operator.trips.store'), [
                 'name' => 'Savannah Weekend',
+                'submission_action' => 'submit',
                 'description' => 'A weekend exploring the savannah.',
                 'starting_point' => 'Nairobi',
                 'ending_point' => 'Maasai Mara',
@@ -74,16 +82,52 @@ class TripDestinationEntryTest extends TestCase
                     ['day' => 1, 'title' => 'Arrival', 'detail' => 'Travel to the reserve.'],
                 ]),
                 'cancellation_policy' => 'Contact us to cancel.',
+                'images_files' => [UploadedFile::fake()->image('savannah.jpg')],
             ]);
 
         $trip = Trip::query()->where('name', 'Savannah Weekend')->firstOrFail();
 
         $response->assertRedirect(route('operator.trips.index'))
-            ->assertSessionHas('status', 'Trip created and submitted for verification.');
+            ->assertSessionHas('status', 'Trip submitted for administrator approval.');
         $this->assertSame('savannah-weekend', $trip->slug);
         $this->assertSame($operator->id, $trip->operator_id);
         $this->assertSame(ListingStatus::Draft, $trip->status);
         $this->assertSame(VerificationStatus::Pending, $trip->verification_status);
+        $this->assertNotNull($trip->submitted_at);
+        $this->assertDatabaseCount('trip_images', 1);
+    }
+
+    public function test_operator_can_save_a_trip_as_a_private_draft(): void
+    {
+        $operator = User::factory()->create(['role' => Role::Operator]);
+        $category = app(TripCategoryCatalog::class)->all()->first();
+
+        $this->actingAs($operator)
+            ->post(route('operator.trips.store'), [
+                'submission_action' => 'draft',
+                'name' => 'Private Safari Draft',
+                'description' => 'A draft experience for a private trip.',
+                'starting_point' => 'Nairobi',
+                'ending_point' => 'Amboseli',
+                'destination_name' => 'Amboseli',
+                'category_id' => $category->id,
+                'duration_days' => 1,
+                'departure_date' => '2027-02-10 08:00',
+                'return_date' => '2027-02-10 18:00',
+                'price_per_person' => 15000,
+                'max_travelers' => 8,
+                'min_travelers' => 1,
+                'available_seats' => 8,
+                'pickup_points' => [],
+                'itinerary' => [['day' => 1, 'title' => 'Game drive', 'detail' => 'Explore the park.']],
+                'cancellation_policy' => 'Contact us to cancel.',
+            ])
+            ->assertRedirect(route('operator.trips.index'))
+            ->assertSessionHas('status', 'Trip draft saved.');
+
+        $trip = Trip::query()->where('name', 'Private Safari Draft')->firstOrFail();
+        $this->assertSame(ListingStatus::Draft, $trip->status);
+        $this->assertNull($trip->submitted_at);
     }
 
     public function test_admin_can_enter_a_destination_name_instead_of_selecting_one(): void

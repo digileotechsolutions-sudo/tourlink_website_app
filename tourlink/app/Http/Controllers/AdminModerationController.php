@@ -21,6 +21,7 @@ class AdminModerationController extends Controller
         $pendingTrips = Trip::query()
             ->with(['operator:id,name,email', 'destination:id,name'])
             ->where('verification_status', VerificationStatus::Pending)
+            ->whereNotNull('submitted_at')
             ->orderBy('created_at')
             ->limit(8)
             ->get();
@@ -36,7 +37,7 @@ class AdminModerationController extends Controller
             'recentActivities' => AdminLog::query()->with('admin:id,name')->latest('created_at')->limit(8)->get(),
             'pendingTrips' => $pendingTrips,
             'pendingVehicles' => $pendingVehicles,
-            'pendingTripCount' => Trip::query()->where('verification_status', VerificationStatus::Pending)->count(),
+            'pendingTripCount' => Trip::query()->where('verification_status', VerificationStatus::Pending)->whereNotNull('submitted_at')->count(),
             'pendingVehicleCount' => Vehicle::query()->where('verification_status', VerificationStatus::Pending)->count(),
         ]));
     }

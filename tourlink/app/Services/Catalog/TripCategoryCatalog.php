@@ -9,6 +9,13 @@ use Illuminate\Support\Str;
 class TripCategoryCatalog
 {
     public const DEFAULT_CATEGORIES = [
+        'Road Trip',
+        'Wildlife Safari',
+        'Adventure Tour',
+        'Beach Holiday',
+        'Cultural Tour',
+        'Hiking and Camping',
+        'City Tour',
         'Safari & Wildlife',
         'Beach & Coastal Tours',
         'Mountain & Hiking',

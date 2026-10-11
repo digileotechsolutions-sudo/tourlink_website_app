@@ -31,7 +31,7 @@ use Throwable;
 
 class OperatorController extends Controller
 {
-    private const LIST_FIELDS = ['pickup_points', 'meals', 'activities', 'included_items', 'excluded_items'];
+    private const LIST_FIELDS = ['pickup_points', 'meals', 'activities', 'highlights', 'included_items', 'excluded_items'];
 
     public function dashboard(Request $request): View
     {
@@ -89,13 +89,15 @@ class OperatorController extends Controller
     public function storeTrip(Request $request, DestinationResolver $destinationResolver): RedirectResponse
     {
         $data = $this->validatedTripData($request);
+        $submissionAction = $data['submission_action'];
         $images = $data['images'] ?? [];
-        unset($data['images']);
+        unset($data['images'], $data['submission_action']);
         $images = $this->uploadedImages($request, $images);
         $data['operator_id'] = $request->user()->id;
         $data['status'] = ListingStatus::Draft;
         $data['verification_status'] = VerificationStatus::Pending;
         $data['featured'] = false;
+        $data['submitted_at'] = $submissionAction === 'submit' ? now() : null;
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name']);
 
         $trip = DB::transaction(function () use ($data, $images, $destinationResolver): Trip {
@@ -108,7 +110,11 @@ class OperatorController extends Controller
         });
         $this->syncAvailability($request, $trip);
 
-        return redirect()->route('operator.trips.index')->with('status', 'Trip created and submitted for verification.');
+        $message = $submissionAction === 'submit'
+            ? 'Trip submitted for administrator approval.'
+            : 'Trip draft saved.';
+
+        return redirect()->route('operator.trips.index')->with('status', $message);
     }
 
     public function editTrip(Request $request, Trip $trip, TripCategoryCatalog $categoryCatalog): View
@@ -123,10 +129,16 @@ class OperatorController extends Controller
     {
         $this->ensureTripOwner($request, $trip);
         $data = $this->validatedTripData($request, $trip);
+        $submissionAction = $data['submission_action'];
         $images = $data['images'] ?? [];
-        unset($data['images']);
+        unset($data['images'], $data['submission_action']);
         $images = $this->uploadedImages($request, $images);
-        unset($data['status'], $data['verification_status'], $data['featured'], $data['operator_id']);
+        unset($data['status'], $data['verification_status'], $data['featured'], $data['operator_id'], $data['submitted_at']);
+        $data['status'] = ListingStatus::Draft;
+        $data['submitted_at'] = $submissionAction === 'submit' ? now() : null;
+        if ($submissionAction === 'submit' || $trip->verification_status === VerificationStatus::Approved) {
+            $data['verification_status'] = VerificationStatus::Pending;
+        }
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name'], $trip);
 
         DB::transaction(function () use ($trip, $data, $images, $destinationResolver): void {
@@ -137,7 +149,11 @@ class OperatorController extends Controller
         });
         $this->syncAvailability($request, $trip);
 
-        return redirect()->route('operator.trips.edit', $trip)->with('status', 'Trip updated. It remains subject to verification.');
+        $message = $submissionAction === 'submit'
+            ? 'Trip changes submitted for administrator approval.'
+            : 'Trip draft saved. It is not visible to travelers.';
+
+        return redirect()->route('operator.trips.edit', $trip)->with('status', $message);
     }
 
     public function deleteTrip(Request $request, Trip $trip): RedirectResponse
@@ -374,21 +390,45 @@ class OperatorController extends Controller
     private function validatedTripData(Request $request, ?Trip $trip = null): array
     {
         $this->normalizeFields($request);
+        $existingImageUrls = $trip?->images()->pluck('url')->all() ?? [];
         $data = $request->validate([
+            'submission_action' => ['required', Rule::in(['draft', 'submit'])],
             'name' => ['required', 'string', 'max:255'], 'slug' => ['nullable', 'string', 'max:255', 'alpha_dash'],
             'description' => ['required', 'string', 'max:20000'], 'starting_point' => ['required', 'string', 'max:255'], 'ending_point' => ['required', 'string', 'max:255'],
             'destination_name' => ['required', 'string', 'max:255'], 'category_id' => ['required', 'string', 'exists:trip_categories,id'],
             'duration_days' => ['required', 'integer', 'min:1', 'max:365'], 'departure_date' => ['required', 'date'], 'return_date' => ['required', 'date', 'after:departure_date'],
             'price_per_person' => ['required', 'integer', 'min:0', 'max:100000000'], 'max_travelers' => ['required', 'integer', 'min:1', 'max:10000'],
+            'child_price' => ['nullable', 'integer', 'min:0', 'max:100000000'], 'deposit_amount' => ['nullable', 'integer', 'min:0', 'lte:price_per_person'],
             'min_travelers' => ['required', 'integer', 'min:1', 'lte:max_travelers'], 'available_seats' => ['required', 'integer', 'min:0', 'lte:max_travelers'],
-            'pickup_points' => ['required', 'array', 'min:1'], 'pickup_points.*' => ['required', 'string', 'max:255'],
+            'pickup_points' => ['nullable', 'array', 'max:20'], 'pickup_points.*' => ['string', 'max:255'],
             'itinerary' => ['required', 'array', 'min:1'], 'itinerary.*.day' => ['required', 'integer', 'min:1'], 'itinerary.*.title' => ['required', 'string', 'max:120'], 'itinerary.*.detail' => ['required', 'string', 'max:4000'],
+            'itinerary.*.start_time' => ['nullable', 'date_format:H:i'], 'itinerary.*.end_time' => ['nullable', 'date_format:H:i'],
+            'meeting_point' => ['nullable', 'string', 'max:255'], 'transport_type' => ['nullable', Rule::in(['TOUR_VAN', 'BUS', '4X4_SAFARI', 'PRIVATE_CAR', 'NO_TRANSPORT'])],
             'accommodation' => ['nullable', 'string', 'max:5000'], 'meals' => ['nullable', 'array'], 'meals.*' => ['string', 'max:255'], 'transport' => ['nullable', 'string', 'max:5000'],
             'activities' => ['nullable', 'array'], 'activities.*' => ['string', 'max:255'], 'included_items' => ['nullable', 'array'], 'included_items.*' => ['string', 'max:255'], 'excluded_items' => ['nullable', 'array'], 'excluded_items.*' => ['string', 'max:255'],
-            'cancellation_policy' => ['required', 'string', 'max:10000'], 'required_vehicle_id' => ['nullable', 'string', 'exists:vehicles,id'],
-            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'],
-            'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'max:5120'],
+            'highlights' => ['nullable', 'array', 'max:20'], 'highlights.*' => ['string', 'max:255'],
+            'additional_charges' => ['nullable', 'array', 'max:20'], 'additional_charges.*.name' => ['required', 'string', 'max:120'], 'additional_charges.*.amount' => ['required', 'integer', 'min:0', 'max:100000000'],
+            'cancellation_policy' => ['required', 'string', 'max:10000'], 'required_vehicle_id' => ['nullable', 'string', Rule::exists('vehicles', 'id')->where('owner_id', $request->user()->id)],
+            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'],
+            'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
+
+        $departure = \Illuminate\Support\Carbon::parse($data['departure_date']);
+        $return = \Illuminate\Support\Carbon::parse($data['return_date']);
+        $data['duration_days'] = max(1, (int) ceil($departure->diffInMinutes($return) / 1440));
+        $data['pickup_points'] = $data['pickup_points'] ?? [];
+
+        if ($data['duration_days'] > 365) {
+            throw ValidationException::withMessages(['return_date' => 'A trip cannot be longer than 365 days.']);
+        }
+
+        if ($data['submission_action'] === 'submit' && ($request->file('images_files', []) === [] && ($data['images'] ?? []) === [])) {
+            throw ValidationException::withMessages(['images_files' => 'Add at least one cover or gallery image before submitting the trip.']);
+        }
+
+        if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {
+            throw ValidationException::withMessages(['images_files' => 'A trip can have up to 12 cover and gallery images.']);
+        }
 
         $reservedSeats = $trip?->bookings()->whereNotIn('status', [BookingStatus::Cancelled, BookingStatus::Refunded, BookingStatus::Completed])->sum('travelers') ?? 0;
         if ($data['max_travelers'] < $data['available_seats'] + $reservedSeats) {
@@ -403,8 +443,18 @@ class OperatorController extends Controller
         $normalized = [];
         foreach (self::LIST_FIELDS as $field) {
             $value = $request->input($field, []);
-            $normalized[$field] = is_string($value) ? array_values(array_filter(array_map('trim', preg_split('/\R/u', $value) ?: []))) : (is_array($value) ? $value : []);
+            $values = is_string($value)
+                ? preg_split('/\R/u', $value) ?: []
+                : (is_array($value) ? $value : []);
+            $normalized[$field] = array_values(array_filter(array_map(
+                static fn (mixed $item): string => is_scalar($item) ? trim((string) $item) : '',
+                $values,
+            )));
         }
+        $charges = $request->input('additional_charges', []);
+        $normalized['additional_charges'] = is_array($charges)
+            ? array_values(array_filter($charges, static fn (mixed $charge): bool => is_array($charge) && (filled($charge['name'] ?? null) || filled($charge['amount'] ?? null))))
+            : [];
         $value = $request->input('itinerary', []);
         if (is_string($value)) {
             try {
@@ -425,7 +475,14 @@ class OperatorController extends Controller
 
     private function tripFormData(Trip $trip, TripCategoryCatalog $categoryCatalog): array
     {
-        return ['trip' => $trip, 'categories' => $categoryCatalog->all(), 'vehicles' => Vehicle::query()->where('owner_id', auth()->id())->where('status', '!=', ListingStatus::Archived)->get(['id', 'name'])];
+        $operator = auth()->user();
+
+        return [
+            'trip' => $trip,
+            'categories' => $categoryCatalog->all(),
+            'vehicles' => Vehicle::query()->where('owner_id', $operator->id)->where('status', '!=', ListingStatus::Archived)->get(['id', 'name']),
+            'operatorVerificationRequest' => $this->latestVerificationRequest($operator),
+        ];
     }
 
     private function syncImages(Trip $trip, array $images): void
