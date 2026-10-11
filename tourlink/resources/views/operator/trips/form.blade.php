@@ -1,4 +1,4 @@
-@extends('layouts.operator')
+@extends('layouts.trip-wizard')
 @section('title', ($trip->exists ? 'Edit trip' : 'Create a trip').' | Havenedge Tourlink')
 @php
     $operator = auth()->user();
@@ -35,13 +35,13 @@
     ];
 @endphp
 @section('content')
-<div class="mx-auto max-w-[614px] space-y-0 bg-slate-50 px-3 py-3.5 pb-28 sm:px-0 sm:py-6">
+<div class="mx-auto max-w-[614px] space-y-0">
     <form id="trip-wizard" data-trip-wizard method="POST" action="{{ $trip->exists ? route('operator.trips.update', $trip) : route('operator.trips.store') }}" enctype="multipart/form-data" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         @csrf
         @if($trip->exists) @method('PUT') @endif
 
         <header class="bg-[#176b4b] px-3.5 pb-2 pt-3.5 text-white">
-            <div class="flex items-center gap-2.5"><span class="grid size-9.5 shrink-0 place-items-center rounded-lg bg-white/15" aria-hidden="true"><svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M9 12h6M12 10v4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h1 class="text-base font-bold">{{ $trip->exists ? 'Edit your trip' : 'Publish a new trip' }}</h1><p class="mt-0.5 text-[11px] text-emerald-50">Operator dashboard · Trip management</p></div></div>
+            <div class="flex items-center gap-2.5"><span class="grid size-9.5 shrink-0 place-items-center rounded-lg bg-white/15" aria-hidden="true"><svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M9 12h6M12 10v4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h1 class="text-base font-bold">{{ $trip->exists ? 'Edit your trip' : 'Publish a new trip' }}</h1><p class="mt-0.5 text-[11px] text-emerald-50"><a href="{{ route('operator.dashboard') }}" class="underline underline-offset-2">Operator dashboard</a> · Trip management</p></div></div>
             <p data-trip-caption class="mt-2 flex items-center gap-2 text-[10px] font-semibold"><span data-trip-caption-count class="rounded-full bg-white/15 px-2 py-1">Step 1 of 4</span><span data-trip-caption-name>Trip information</span></p>
         </header>
 
@@ -66,8 +66,8 @@
             </div>
         </section>
 
-        <section data-trip-step="1" class="hidden space-y-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-7" aria-labelledby="trip-step-title-1" hidden>
-            <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">02 · Schedule</p><h2 id="trip-step-title-1" class="mt-2 text-2xl font-black">Trip details and itinerary</h2><p class="mt-1 text-sm text-slate-600">Add the trip overview, photos, route stops, and day-by-day activities.</p></div>
+        <section data-trip-step="1" class="hidden space-y-4 px-3 py-4 sm:px-5" aria-labelledby="trip-step-title-1" hidden>
+            <div><h2 id="trip-step-title-1" class="text-lg font-black">Trip details and itinerary</h2><p class="mt-1 text-xs text-slate-600">Add the trip overview, photos, route stops, and day-by-day activities.</p></div>
             <label class="grid gap-2 text-sm font-bold">Trip title <span class="text-red-700">*</span><input required maxlength="255" name="name" value="{{ old('name', $trip->name) }}" placeholder="e.g. 3-day Amboseli wildlife escape" class="min-h-12 rounded-xl border border-slate-300 px-4 font-normal"></label>
             <div class="grid gap-5 sm:grid-cols-2">
                 <label class="grid gap-2 text-sm font-bold">Trip category <span class="text-red-700">*</span><select required name="category_id" class="min-h-12 rounded-xl border border-slate-300 bg-white px-4 font-normal"><option value="">Choose a category</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id', $trip->category_id) === $category->id)>{{ $category->name }}</option>@endforeach</select></label>
@@ -93,8 +93,8 @@
             </div>
         </section>
 
-        <section data-trip-step="2" class="hidden space-y-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-7" aria-labelledby="trip-step-title-2" hidden>
-            <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">03 · Make it bookable</p><h2 id="trip-step-title-2" class="mt-2 text-2xl font-black">Pricing & capacity</h2><p class="mt-1 text-sm text-slate-600">Set clear prices, group sizes, and what is included.</p></div>
+        <section data-trip-step="2" class="hidden space-y-4 px-3 py-4 sm:px-5" aria-labelledby="trip-step-title-2" hidden>
+            <div><h2 id="trip-step-title-2" class="text-lg font-black">Pricing & capacity</h2><p class="mt-1 text-xs text-slate-600">Set clear prices, group sizes, and what is included.</p></div>
             <div class="grid gap-5 sm:grid-cols-2">
                 <label class="grid gap-2 text-sm font-bold">Adult price <span class="text-red-700">*</span><span class="relative"><span class="absolute left-4 top-3 text-sm font-bold text-slate-500">KES</span><input required type="number" min="0" max="100000000" step="1" name="price_per_person" value="{{ old('price_per_person', $trip->price_per_person) }}" placeholder="0" class="min-h-12 w-full rounded-xl border border-slate-300 pl-16 pr-4 font-normal"></span></label>
                 <label class="grid gap-2 text-sm font-bold">Child price <span class="font-normal text-slate-500">Optional · KES</span><input type="number" min="0" max="100000000" name="child_price" value="{{ old('child_price', $trip->child_price) }}" placeholder="Same as adult if blank" class="min-h-12 rounded-xl border border-slate-300 px-4 font-normal"></label>
@@ -110,8 +110,8 @@
             </div>
         </section>
 
-        <section data-trip-step="3" class="hidden space-y-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-7" aria-labelledby="trip-step-title-3" hidden>
-            <div><p class="text-xs font-black uppercase tracking-widest text-emerald-800">04 · Final check</p><h2 id="trip-step-title-3" class="mt-2 text-2xl font-black">Review & publish</h2><p class="mt-1 text-sm text-slate-600">Review how your trip will appear before sending it to our team.</p></div>
+        <section data-trip-step="3" class="hidden space-y-4 px-3 py-4 sm:px-5" aria-labelledby="trip-step-title-3" hidden>
+            <div><h2 id="trip-step-title-3" class="text-lg font-black">Review & publish</h2><p class="mt-1 text-xs text-slate-600">Review how your trip will appear before sending it to our team.</p></div>
             <article class="overflow-hidden rounded-2xl border border-slate-200">
                 <div data-preview-cover class="grid min-h-48 place-items-center bg-emerald-50 text-sm font-bold text-emerald-900">Your trip cover photo will appear here</div>
                 <div class="space-y-4 p-5 sm:p-7"><div><p data-preview-category class="text-xs font-black uppercase tracking-widest text-emerald-800">Trip category</p><h3 data-preview-title class="mt-2 text-2xl font-black">Your trip title</h3><p data-preview-destination class="mt-1 text-sm text-slate-600">Destination</p></div><p data-preview-description class="whitespace-pre-line text-sm leading-6 text-slate-700">Your trip description will appear here.</p><div class="grid gap-3 rounded-xl bg-slate-50 p-4 text-sm sm:grid-cols-3"><p><span class="block text-xs font-bold uppercase text-slate-500">Route</span><span data-preview-route>Start → End</span></p><p><span class="block text-xs font-bold uppercase text-slate-500">Dates</span><span data-preview-dates>Departure → Return</span></p><p><span class="block text-xs font-bold uppercase text-slate-500">From</span><span data-preview-price>KES — per adult</span></p></div><div><p class="text-xs font-black uppercase tracking-wide text-slate-500">Organized by</p><p class="mt-1 font-bold">{{ $profile?->company_name ?: $operator->name }}</p><p class="text-sm text-slate-600">{{ $operator->email }}{{ $operator->phone ? ' · '.$operator->phone : '' }}</p><p class="mt-1 text-xs font-semibold text-emerald-900">Operator verification: {{ $operatorVerificationRequest->status?->label() ?? 'Not submitted' }} · <a class="underline" href="{{ route('operator.profile') }}">Manage profile</a></p></div></div>
@@ -120,7 +120,7 @@
             @if($vehicles->isNotEmpty())<label class="grid max-w-xl gap-2 text-sm font-bold">Associated vehicle <span class="font-normal text-slate-500">Optional</span><select name="required_vehicle_id" class="min-h-12 rounded-xl border border-slate-300 bg-white px-4 font-normal"><option value="">No specific vehicle</option>@foreach($vehicles as $vehicle)<option value="{{ $vehicle->id }}" @selected(old('required_vehicle_id', $trip->required_vehicle_id) === $vehicle->id)>{{ $vehicle->name }}</option>@endforeach</select></label>@endif
         </section>
 
-        <div class="sticky bottom-20 z-10 flex gap-2 border-t border-slate-100 bg-white px-3 py-2 sm:bottom-4 sm:px-5">
+        <div class="sticky bottom-2 z-10 flex gap-2 border-t border-slate-100 bg-white px-3 py-2 sm:px-5">
             <button type="button" data-trip-back class="min-h-[30px] flex-1 rounded-full border border-slate-300 px-4 py-1 text-xs font-medium text-slate-600 disabled:opacity-40">Back</button>
             <button type="button" data-trip-next class="min-h-[30px] flex-1 rounded-full bg-neutral-950 px-5 py-1 text-xs font-bold text-white hover:bg-neutral-800">Continue <span aria-hidden="true">→</span></button>
             <button type="submit" formnovalidate name="submission_action" value="draft" data-trip-draft class="hidden min-h-11 rounded-full border border-emerald-800 px-4 text-sm font-bold text-emerald-900">Save draft</button>
