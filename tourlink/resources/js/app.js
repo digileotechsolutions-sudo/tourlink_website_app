@@ -510,9 +510,24 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         text('[data-preview-route]', `${field('starting_point')?.value || 'Start'} → ${field('ending_point')?.value || 'End'}`, 'Start → End');
         text('[data-preview-dates]', `${date(field('departure_date')?.value, departureTimeValue())} → ${date(field('return_date')?.value, field('return_time')?.value)}`, 'Departure → Return');
         text('[data-preview-price]', `KES ${field('price_per_person')?.value || '—'} per adult`, 'KES — per adult');
+        text('[data-side-title]', field('name')?.value, 'Your trip title');
+        text('[data-side-category]', category?.value ? category.selectedOptions[0].textContent : '', 'Trip category');
+        text('[data-side-destination]', field('destination_name')?.value, 'Destination');
+        text('[data-side-description]', field('description')?.value, 'Your trip description will appear here.');
+        text('[data-side-route]', `${field('starting_point')?.value || 'Start'} → ${field('ending_point')?.value || 'End'}`, 'Start → End');
+        text('[data-side-dates]', `${date(field('departure_date')?.value, departureTimeValue())} → ${date(field('return_date')?.value, field('return_time')?.value)}`, 'Departure → Return');
+        text('[data-side-price]', `KES ${field('price_per_person')?.value || '—'} / adult`, 'KES — / adult');
         const cover = form.querySelector('[data-preview-cover]');
         const chosenFile = fileInput?.files?.[0];
         const existingCover = preview?.querySelector('[data-existing-image] img');
+        const sideCover = form.querySelector('[data-side-cover]');
+        if (sideCover && (chosenFile || existingCover)) {
+            const image = document.createElement('img');
+            image.src = chosenFile ? (objectUrls[0] ?? URL.createObjectURL(chosenFile)) : existingCover.src;
+            image.alt = 'Trip cover preview';
+            image.className = 'h-44 w-full object-cover';
+            sideCover.replaceChildren(image);
+        }
         if (cover && (chosenFile || existingCover)) {
             const src = chosenFile ? (objectUrls[0] ?? URL.createObjectURL(chosenFile)) : existingCover.src;
             const image = document.createElement('img');

@@ -37,17 +37,17 @@
     ];
 @endphp
 @section('content')
-<div class="mx-auto max-w-[614px] space-y-0">
-        <form id="trip-wizard" data-trip-wizard data-step-names="Basic details|Itinerary|Pricing|Media|Review & publish" method="POST" action="{{ $trip->exists ? route('operator.trips.update', $trip) : route('operator.trips.store') }}" enctype="multipart/form-data" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+<div class="mx-auto w-full max-w-7xl space-y-0 px-3 sm:px-6 lg:px-8">
+        <form id="trip-wizard" data-trip-wizard data-step-names="Basic details|Itinerary|Pricing|Media|Review & publish" method="POST" action="{{ $trip->exists ? route('operator.trips.update', $trip) : route('operator.trips.store') }}" enctype="multipart/form-data" class="trip-builder overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:grid lg:grid-cols-[minmax(0,1fr)_320px]">
         @csrf
         @if($trip->exists) @method('PUT') @endif
 
-        <header class="bg-[#176b4b] px-3.5 pb-2 pt-3.5 text-white">
+        <header class="bg-[#176b4b] px-3.5 pb-2 pt-3.5 text-white lg:col-span-2">
             <div class="flex items-center gap-2.5"><span class="grid size-9.5 shrink-0 place-items-center rounded-lg bg-white/15" aria-hidden="true"><svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M9 12h6M12 10v4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h1 class="text-base font-bold">{{ $trip->exists ? 'Edit your trip' : 'Publish a new trip' }}</h1><p class="mt-0.5 text-[11px] text-emerald-50"><a href="{{ route('operator.dashboard') }}" class="underline underline-offset-2">Operator dashboard</a> · Trip management</p></div></div>
             <p data-trip-caption class="mt-2 flex items-center gap-2 text-[10px] font-semibold"><span data-trip-caption-count class="rounded-full bg-white/15 px-2 py-1">Step 1 of 5</span><span data-trip-caption-name>Basic details</span></p>
         </header>
 
-        <nav class="px-3 pt-3 sm:px-5" aria-label="Trip form progress">
+        <nav class="px-3 pt-3 sm:px-5 lg:col-span-2" aria-label="Trip form progress">
             <ol class="grid grid-cols-5 gap-1">
                 @foreach(['Details', 'Itinerary', 'Pricing', 'Media', 'Review'] as $index => $label)
                     <li><button type="button" data-trip-step-link="{{ $index }}" class="block w-full text-left text-[9px] font-medium text-slate-700" aria-current="{{ $index === 0 ? 'step' : 'false' }}"><span data-progress-segment class="mb-1.5 block h-[3px] rounded-full bg-slate-200"></span>{{ $index + 1 }}. {{ $label }}</button></li>
@@ -55,7 +55,11 @@
             </ol>
         </nav>
 
-        <section data-trip-step="0" class="space-y-5 px-3 py-4 sm:px-5" aria-labelledby="trip-step-title-0">
+        <aside data-trip-summary class="hidden lg:sticky lg:top-6 lg:col-start-2 lg:row-start-3 lg:row-span-2 lg:block lg:self-start lg:px-4 lg:pb-5" aria-label="Live trip summary">
+            <div class="sticky top-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div class="border-b border-slate-100 p-4"><p class="text-sm font-black">Live trip preview</p><p class="mt-1 text-xs text-slate-500">Updates as you fill out the form.</p></div><div data-side-cover class="grid h-44 place-items-center bg-emerald-50 text-xs text-emerald-900">Cover photo preview</div><div class="space-y-3 p-4"><p data-side-category class="text-[10px] font-black uppercase tracking-widest text-emerald-800">Trip category</p><h2 data-side-title class="text-lg font-black">{{ old('name', $trip->name ?: 'Your trip title') }}</h2><p data-side-destination class="text-sm text-slate-600">{{ old('destination_name', $trip->destination?->name ?: 'Destination') }}</p><p data-side-description class="line-clamp-4 whitespace-pre-line text-xs leading-5 text-slate-600">{{ old('description', $trip->description ?: 'Your trip description will appear here.') }}</p><div class="grid gap-2 border-t border-slate-100 pt-3 text-xs"><p><span class="font-bold text-slate-500">Route</span><br><span data-side-route>{{ old('starting_point', $trip->starting_point ?: 'Start') }} → {{ old('ending_point', $trip->ending_point ?: 'End') }}</span></p><p><span class="font-bold text-slate-500">Dates</span><br><span data-side-dates>Departure → Return</span></p><p><span class="font-bold text-slate-500">Starting price</span><br><span data-side-price class="font-black text-slate-900">KES {{ number_format(old('price_per_person', $trip->price_per_person ?: 0)) }} / adult</span></p></div><div class="border-t border-slate-100 pt-3"><p class="text-[10px] font-black uppercase tracking-wide text-slate-500">Hosted by</p><p class="mt-1 text-sm font-bold">{{ $profile?->company_name ?: $operator->name }}</p><p class="text-xs text-slate-500">{{ $operator->email }}</p></div></div></div>
+        </aside>
+
+        <section data-trip-step="0" class="space-y-5 px-3 py-4 sm:px-5 lg:col-start-1 lg:row-start-3" aria-labelledby="trip-step-title-0">
             <div><h2 id="trip-step-title-0" class="text-lg font-black">Basic trip details</h2><p class="mt-1 text-xs text-slate-600">Tell travelers about the trip and its departure.</p></div>
             <div class="grid gap-3 sm:grid-cols-2">
                 <label class="grid gap-1.5 text-xs font-semibold sm:col-span-2">Trip title <span class="text-red-700">*</span><input required maxlength="255" name="name" value="{{ old('name', $trip->name) }}" placeholder="e.g. 3-day Amboseli wildlife escape" class="min-h-9 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
@@ -73,7 +77,7 @@
             </div>
         </section>
 
-        <section data-trip-step="1" class="hidden space-y-4 px-3 py-4 sm:px-5" aria-labelledby="trip-step-title-1" hidden>
+        <section data-trip-step="1" class="hidden space-y-4 px-3 py-4 sm:px-5 lg:col-start-1 lg:row-start-3" aria-labelledby="trip-step-title-1" hidden>
             <div><h2 id="trip-step-title-1" class="text-lg font-black">Itinerary builder</h2><p class="mt-1 text-xs text-slate-600">Build a clear, day-by-day schedule for your guests.</p></div>
             <div class="grid gap-5 sm:grid-cols-2">
                 <label class="grid gap-1 text-xs font-semibold">Return time <input required type="time" name="return_time" value="{{ $returnTimeInput }}" class="min-h-10 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
@@ -88,7 +92,7 @@
             </div>
         </section>
 
-        <section data-trip-step="2" class="hidden space-y-4 px-3 py-4 sm:px-5" aria-labelledby="trip-step-title-2" hidden>
+        <section data-trip-step="2" class="hidden space-y-4 px-3 py-4 sm:px-5 lg:col-start-1 lg:row-start-3" aria-labelledby="trip-step-title-2" hidden>
             <div><h2 id="trip-step-title-2" class="text-lg font-black">Pricing & capacity</h2><p class="mt-1 text-xs text-slate-600">Set clear prices, group sizes, and what is included.</p></div>
             <div class="grid gap-5 sm:grid-cols-2">
                 <label class="grid gap-2 text-sm font-bold">Adult price <span class="text-red-700">*</span><span class="relative"><span class="absolute left-4 top-3 text-sm font-bold text-slate-500">KES</span><input required type="number" min="0" max="100000000" step="1" name="price_per_person" value="{{ old('price_per_person', $trip->price_per_person) }}" placeholder="0" class="min-h-12 w-full rounded-xl border border-slate-300 pl-16 pr-4 font-normal"></span></label>
@@ -103,7 +107,7 @@
             </div>
         </section>
 
-        <section data-trip-step="3" class="hidden space-y-4 px-3 py-4 sm:px-5" aria-labelledby="trip-step-title-3" hidden>
+        <section data-trip-step="3" class="hidden space-y-4 px-3 py-4 sm:px-5 lg:col-start-1 lg:row-start-3" aria-labelledby="trip-step-title-3" hidden>
             <div><h2 id="trip-step-title-3" class="text-lg font-black">Trip media</h2><p class="mt-1 text-xs text-slate-600">Add destination photos, select a cover, and arrange the gallery order.</p></div>
             <div class="grid gap-3">
                 <p class="text-xs text-slate-500">JPG, PNG, or WebP; 5 MB per image, 6 MB combined, up to 12 images. The first photo is the cover.</p>
@@ -118,7 +122,7 @@
             </div>
         </section>
 
-        <section data-trip-step="4" class="hidden space-y-4 px-3 py-4 sm:px-5" aria-labelledby="trip-step-title-4" hidden>
+        <section data-trip-step="4" class="hidden space-y-4 px-3 py-4 sm:px-5 lg:col-start-1 lg:row-start-3" aria-labelledby="trip-step-title-4" hidden>
             <div><h2 id="trip-step-title-4" class="text-lg font-black">Review & publish</h2><p class="mt-1 text-xs text-slate-600">Review how your trip will appear before sending it to our team.</p></div>
             <article class="overflow-hidden rounded-2xl border border-slate-200">
                 <div data-preview-cover class="grid min-h-48 place-items-center bg-emerald-50 text-sm font-bold text-emerald-900">Your trip cover photo will appear here</div>
@@ -128,9 +132,9 @@
             @if($vehicles->isNotEmpty())<label class="grid max-w-xl gap-2 text-sm font-bold">Associated vehicle <span class="font-normal text-slate-500">Optional</span><select name="required_vehicle_id" class="min-h-12 rounded-xl border border-slate-300 bg-white px-4 font-normal"><option value="">No specific vehicle</option>@foreach($vehicles as $vehicle)<option value="{{ $vehicle->id }}" @selected(old('required_vehicle_id', $trip->required_vehicle_id) === $vehicle->id)>{{ $vehicle->name }}</option>@endforeach</select></label>@endif
         </section>
 
-        <div class="sticky bottom-2 z-10 flex gap-2 border-t border-slate-100 bg-white px-3 py-2 sm:px-5">
-            <button type="button" data-trip-back class="min-h-[30px] flex-1 rounded-full border border-slate-300 px-4 py-1 text-xs font-medium text-slate-600 disabled:opacity-40">Back</button>
-            <button type="button" data-trip-next class="min-h-[30px] flex-1 rounded-full bg-neutral-950 px-5 py-1 text-xs font-bold text-white hover:bg-neutral-800">Continue <span aria-hidden="true">→</span></button>
+        <div class="sticky bottom-20 z-10 flex gap-2 border-t border-slate-100 bg-white px-3 py-3 sm:bottom-4 sm:px-5 lg:col-start-1 lg:row-start-4">
+            <button type="button" data-trip-back class="min-h-11 flex-1 rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 disabled:opacity-40">Back</button>
+            <button type="button" data-trip-next class="min-h-11 flex-1 rounded-full bg-neutral-950 px-5 py-2 text-sm font-bold text-white hover:bg-neutral-800">Continue <span aria-hidden="true">→</span></button>
             <button type="submit" formnovalidate name="submission_action" value="draft" data-trip-draft class="hidden min-h-11 rounded-full border border-emerald-800 px-4 text-sm font-bold text-emerald-900">Save draft</button>
             <button type="submit" formnovalidate name="submission_action" value="submit" data-trip-submit class="hidden min-h-11 flex-1 rounded-full bg-neutral-950 px-5 text-sm font-bold text-white">Submit for approval</button>
         </div>

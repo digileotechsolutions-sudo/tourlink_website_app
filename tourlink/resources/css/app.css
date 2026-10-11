@@ -120,6 +120,19 @@ html:has(.mobile-app-menu[open]), body:has(.mobile-app-menu[open]), html:has(.si
 @media (max-width: 1023px) { body.admin-app:has(.mobile-app-header) { padding-top: calc(112px + env(safe-area-inset-top)); } body.admin-app .mobile-app-header { min-height: calc(112px + env(safe-area-inset-top)); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
 
+@media (max-width: 639px) {
+    .trip-builder, .vehicle-wizard { width: 100%; min-width: 0; }
+    .trip-builder input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+    .trip-builder select, .trip-builder textarea,
+    .vehicle-wizard input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+    .vehicle-wizard select, .vehicle-wizard textarea { min-width: 0; font-size: 16px; }
+    .trip-builder [data-trip-repeater], .vehicle-wizard [data-vehicle-availability],
+    .vehicle-wizard [data-vehicle-charges], .vehicle-wizard [data-vehicle-service-areas] { min-width: 0; }
+    .trip-builder [data-trip-repeater] > *, .vehicle-wizard [data-vehicle-availability] > *,
+    .vehicle-wizard [data-vehicle-charges] > *, .vehicle-wizard [data-vehicle-service-areas] > * { min-width: 0; }
+    .trip-builder [data-trip-step-link], .vehicle-wizard [data-vehicle-step-link] { overflow-wrap: anywhere; }
+}
+
 .login-page { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 32px 20px; background: #fff; }
 .login-page:has(.auth-login-shell), .login-page:has(.auth-compact-shell) { background: #fff; animation: none; }
 .auth-wrapper { width: 100%; max-width: 1060px; min-height: 660px; display: flex; align-items: stretch; overflow: hidden; border: 1px solid #dce8e0; border-radius: 24px; background: #fff; box-shadow: 0 24px 70px rgba(24, 55, 39, .12); animation: auth-enter 440ms cubic-bezier(.2, .75, .25, 1) both; }
