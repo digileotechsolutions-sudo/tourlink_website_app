@@ -12,6 +12,8 @@
     };
     $departure = old('departure_date', $trip->departure_date?->format('Y-m-d\TH:i') ?? '');
     $return = old('return_date', $trip->return_date?->format('Y-m-d\TH:i') ?? '');
+    $itineraryInput = old('itinerary', $trip->itinerary ?? [['day' => 1, 'title' => '', 'detail' => '']]);
+    $itinerary = is_array($itineraryInput) ? $itineraryInput : [['day' => 1, 'title' => '', 'detail' => '']];
 @endphp
 
 @section('title', ($editing ? 'Edit trip' : 'Create trip').' | Havenedge Tourlink')
@@ -102,9 +104,26 @@
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Pickup points <span class="font-normal text-slate-500">One point per line</span>
                     <textarea name="pickup_points" rows="4" required class="rounded border border-slate-300 px-3 py-2 font-normal text-slate-950">{{ $textValue('pickup_points', $trip->pickup_points ?? []) }}</textarea>
                 </label>
-                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Itinerary <span class="font-normal text-slate-500">JSON array of day, title and detail</span>
-                    <textarea name="itinerary" rows="8" required class="rounded border border-slate-300 px-3 py-2 font-mono text-xs font-normal text-slate-950">{{ $jsonValue('itinerary', $trip->itinerary ?? [['day' => 1, 'title' => '', 'detail' => '']]) }}</textarea>
-                </label>
+                <div class="grid gap-3 sm:col-span-2" data-admin-itinerary>
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div><p class="text-sm font-semibold text-slate-700">Day-by-day itinerary</p><p class="text-xs text-slate-500">Add each day's title, time, and activity details.</p></div>
+                        <button type="button" data-admin-add-day class="min-h-10 rounded border border-emerald-800 px-4 text-xs font-bold text-emerald-900 hover:bg-emerald-50">＋ Add a day</button>
+                    </div>
+                    <div class="grid gap-3" data-admin-itinerary-rows>
+                        @foreach($itinerary as $index => $day)
+                            <article class="rounded border border-slate-200 bg-slate-50 p-4" data-admin-itinerary-day>
+                                <div class="mb-3 flex items-center justify-between"><p class="text-sm font-bold">Day <span data-admin-day-number>{{ $day['day'] ?? $index + 1 }}</span></p><button type="button" data-admin-remove-day class="text-xs font-bold text-red-700">Remove day</button></div>
+                                <div class="grid gap-3 sm:grid-cols-2">
+                                    <label class="grid gap-1 text-xs font-bold text-slate-700">Day number<input type="number" min="1" required name="itinerary[{{ $index }}][day]" value="{{ $day['day'] ?? $index + 1 }}" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label>
+                                    <label class="grid gap-1 text-xs font-bold text-slate-700">Title<input maxlength="120" required name="itinerary[{{ $index }}][title]" value="{{ $day['title'] ?? '' }}" placeholder="e.g. Arrival and welcome" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label>
+                                    <label class="grid gap-1 text-xs font-bold text-slate-700">Start time<input type="time" name="itinerary[{{ $index }}][start_time]" value="{{ $day['start_time'] ?? '' }}" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label>
+                                    <label class="grid gap-1 text-xs font-bold text-slate-700">End time<input type="time" name="itinerary[{{ $index }}][end_time]" value="{{ $day['end_time'] ?? '' }}" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label>
+                                    <label class="grid gap-1 text-xs font-bold text-slate-700 sm:col-span-2">Activities and details<textarea maxlength="4000" required rows="2" name="itinerary[{{ $index }}][detail]" placeholder="Describe the day's activities and schedule" class="rounded border border-slate-300 px-3 py-2 text-sm font-normal">{{ $day['detail'] ?? '' }}</textarea></label>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                </div>
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Accommodation
                     <textarea name="accommodation" rows="3" maxlength="5000" class="rounded border border-slate-300 px-3 py-2 font-normal text-slate-950">{{ old('accommodation', $trip->accommodation) }}</textarea>
                 </label>

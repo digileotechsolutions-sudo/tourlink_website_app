@@ -143,6 +143,8 @@ class AdminTripController extends Controller
             'itinerary.*.day' => ['required', 'integer', 'min:1'],
             'itinerary.*.title' => ['required', 'string', 'max:120'],
             'itinerary.*.detail' => ['required', 'string', 'max:4000'],
+            'itinerary.*.start_time' => ['nullable', 'date_format:H:i'],
+            'itinerary.*.end_time' => ['nullable', 'date_format:H:i'],
             'accommodation' => ['nullable', 'string', 'max:5000'],
             'meals' => ['nullable', 'array'],
             'meals.*' => ['required', 'string', 'max:255'],

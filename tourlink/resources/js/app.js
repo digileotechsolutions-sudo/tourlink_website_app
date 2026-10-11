@@ -658,6 +658,60 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
     showStep(0);
 });
 
+document.querySelectorAll('[data-admin-itinerary]').forEach((itinerary) => {
+    const rows = itinerary.querySelector('[data-admin-itinerary-rows]');
+
+    const reindexRows = () => {
+        [...rows.children].forEach((row, index) => {
+            row.querySelectorAll('[name]').forEach((input) => {
+                input.name = input.name.replace(/itinerary\[\d+\]/, `itinerary[${index}]`);
+            });
+            const dayInput = row.querySelector('[name$="[day]"]');
+            const dayNumber = row.querySelector('[data-admin-day-number]');
+            if (dayInput) {
+                dayInput.value = String(index + 1);
+            }
+            if (dayNumber) {
+                dayNumber.textContent = String(index + 1);
+            }
+        });
+    };
+
+    itinerary.addEventListener('click', (event) => {
+        const addButton = event.target.closest('[data-admin-add-day]');
+        if (addButton) {
+            if (rows.children.length >= 30) {
+                return;
+            }
+            const index = rows.children.length;
+            const row = document.createElement('article');
+            row.dataset.adminItineraryDay = '';
+            row.className = 'rounded border border-slate-200 bg-slate-50 p-4';
+            row.innerHTML = `<div class="mb-3 flex items-center justify-between"><p class="text-sm font-bold">Day <span data-admin-day-number>${index + 1}</span></p><button type="button" data-admin-remove-day class="text-xs font-bold text-red-700">Remove day</button></div><div class="grid gap-3 sm:grid-cols-2"><label class="grid gap-1 text-xs font-bold text-slate-700">Day number<input type="number" min="1" required name="itinerary[${index}][day]" value="${index + 1}" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold text-slate-700">Title<input maxlength="120" required name="itinerary[${index}][title]" placeholder="e.g. Arrival and welcome" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold text-slate-700">Start time<input type="time" name="itinerary[${index}][start_time]" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold text-slate-700">End time<input type="time" name="itinerary[${index}][end_time]" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-bold text-slate-700 sm:col-span-2">Activities and details<textarea maxlength="4000" required rows="2" name="itinerary[${index}][detail]" placeholder="Describe the day's activities and schedule" class="rounded border border-slate-300 px-3 py-2 text-sm font-normal"></textarea></label></div>`;
+            rows.append(row);
+            return;
+        }
+
+        const removeButton = event.target.closest('[data-admin-remove-day]');
+        if (!removeButton) {
+            return;
+        }
+        const row = removeButton.closest('[data-admin-itinerary-day]');
+        if (rows.children.length === 1) {
+            row.querySelectorAll('input:not([type="number"]), textarea').forEach((input) => {
+                input.value = '';
+            });
+            const title = row.querySelector('[name$="[title]"]');
+            const detail = row.querySelector('[name$="[detail]"]');
+            title.value = '';
+            detail.value = '';
+            return;
+        }
+        row.remove();
+        reindexRows();
+    });
+});
+
 document.querySelectorAll('[data-form-draft]').forEach((form) => {
     const draftKey = `tourlink-form-draft:${form.dataset.formDraft}`;
     const fields = [...form.querySelectorAll('[data-draft-field]')];
