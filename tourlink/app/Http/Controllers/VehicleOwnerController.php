@@ -86,7 +86,7 @@ class VehicleOwnerController extends Controller
         });
         $this->syncAvailability($request, $vehicle);
 
-        return redirect()->route('vehicle-owner.vehicles.edit', $vehicle)->with('status', 'Vehicle created and submitted for verification.');
+        return redirect()->route('vehicle-owner.vehicles.edit', $vehicle)->with('status', 'Vehicle added successfully. It is waiting for administrator approval.');
     }
 
     public function editVehicle(Request $request, Vehicle $vehicle): View
@@ -113,7 +113,7 @@ class VehicleOwnerController extends Controller
         });
         $this->syncAvailability($request, $vehicle);
 
-        return back()->with('status', 'Vehicle updated and resubmitted for verification.');
+        return back()->with('status', 'Vehicle updated successfully and is waiting for administrator approval.');
     }
 
     public function deleteVehicle(Request $request, Vehicle $vehicle): RedirectResponse
