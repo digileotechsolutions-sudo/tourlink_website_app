@@ -15,6 +15,7 @@ use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -292,8 +293,13 @@ class VehicleOwnerController extends Controller
             'name' => ['required', 'string', 'max:255'], 'slug' => ['nullable', 'string', 'max:255', 'alpha_dash'], 'registration_number' => ['required', 'string', 'max:30'], 'make' => ['required', 'string', 'max:120'], 'model' => ['required', 'string', 'max:120'],
             'year' => ['required', 'integer', 'min:1900', 'max:'.(now()->year + 2)], 'body_type' => ['required', Rule::in(['Safari Land Cruiser', 'Safari Van', 'Toyota Hiace', 'SUV', 'Minibus', 'Bus', 'Sedan', '4x4', 'Other'])], 'engine_cc' => ['nullable', 'integer', 'min:0'], 'colour' => ['nullable', 'string', 'max:80'], 'seating_capacity' => ['required', 'integer', 'min:1', 'max:100'], 'tare_weight' => ['nullable', 'integer', 'min:0'], 'axles' => ['nullable', 'integer', 'min:1', 'max:10'], 'load_capacity' => ['nullable', 'integer', 'min:0'], 'transmission' => ['required', 'string', 'max:80'], 'fuel_type' => ['required', 'string', 'max:80'],
             'air_conditioning' => ['required', 'boolean'], 'four_by_four' => ['required', 'boolean'], 'driver_included' => ['required', 'boolean'], 'price_per_day' => ['required', 'integer', 'min:0', 'max:100000000'], 'location' => ['required', 'string', 'max:255'], 'destination_id' => ['nullable', 'string', 'exists:destinations,id'],
-            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'], 'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'max:5120'],
+            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'], 'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
+
+        $imageUploadBytes = array_sum(array_map(static fn (UploadedFile $file): int => $file->getSize(), $request->file('images_files', [])));
+        if ($imageUploadBytes > 6 * 1024 * 1024) {
+            throw ValidationException::withMessages(['images_files' => 'The combined image upload must be 6 MB or less. Compress or remove images and try again.']);
+        }
 
         return $data;
     }

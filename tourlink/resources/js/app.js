@@ -591,6 +591,13 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
                 uploadStatus.textContent = `${oversizedFiles.map((file) => file.name).join(', ')} exceeds the 5 MB image size limit. Choose smaller image(s).`;
                 uploadStatus.classList.add('font-bold', 'text-red-700');
             }
+            if ([...(fileInput.files ?? [])].reduce((total, file) => total + file.size, 0) > 6 * 1024 * 1024) {
+                fileInput.value = '';
+                preview?.querySelectorAll('[data-new-image]').forEach((node) => node.remove());
+                uploadStatus.textContent = 'Combined image upload exceeds the 6 MB limit. Compress or remove images before continuing.';
+                uploadStatus.classList.add('font-bold', 'text-red-700');
+                return;
+            }
             if (existing + (fileInput.files?.length ?? 0) > 12) {
                 fileInput.value = '';
                 uploadStatus.textContent = 'Keep the total trip image count to 12 or fewer.';
@@ -788,6 +795,13 @@ document.querySelectorAll('[data-admin-image-upload]').forEach((uploader) => {
         }
         const files = [...(input.files ?? [])];
 
+        if (files.reduce((total, file) => total + file.size, 0) > 6 * 1024 * 1024) {
+            input.value = '';
+            status.textContent = 'Combined image upload exceeds the 6 MB limit. Compress or remove images before continuing.';
+            status.classList.add('font-bold', 'text-red-700');
+            return;
+        }
+
         if (existingCount + files.length > 12) {
             input.value = '';
             status.textContent = 'Keep the total trip image count to 12 or fewer.';
@@ -838,6 +852,51 @@ document.querySelectorAll('[data-admin-image-upload]').forEach((uploader) => {
             event.target.closest('[data-admin-existing-image]')?.remove();
             renderFiles();
         }
+    });
+});
+
+document.querySelectorAll('[data-vehicle-image-input]').forEach((input) => {
+    const uploader = input.closest('[data-vehicle-image-upload]');
+    const dropzone = uploader?.querySelector('[data-vehicle-image-dropzone]');
+    const status = uploader?.querySelector('[data-vehicle-image-status]');
+    if (!dropzone || !status) {
+        return;
+    }
+
+    const validateFiles = () => {
+        const files = [...(input.files ?? [])];
+        const oversized = files.find((file) => file.size > 5 * 1024 * 1024);
+        if (oversized) {
+            input.value = '';
+            status.textContent = `${oversized.name} exceeds the 5 MB image size limit. Choose a smaller image.`;
+            status.classList.add('font-bold', 'text-red-700');
+            return;
+        }
+        if (files.reduce((total, file) => total + file.size, 0) > 6 * 1024 * 1024) {
+            input.value = '';
+            status.textContent = 'Combined image upload exceeds the 6 MB limit. Compress or remove images before continuing.';
+            status.classList.add('font-bold', 'text-red-700');
+            return;
+        }
+        status.textContent = files.length ? `${files.length} image(s) selected and ready to upload.` : '';
+        status.classList.remove('font-bold', 'text-red-700');
+    };
+
+    input.addEventListener('change', validateFiles);
+    dropzone.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropzone.classList.add('border-emerald-700', 'bg-emerald-100');
+    });
+    dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('border-emerald-700', 'bg-emerald-100');
+    });
+    dropzone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('border-emerald-700', 'bg-emerald-100');
+        const transfer = new DataTransfer();
+        [...(input.files ?? []), ...(event.dataTransfer?.files ?? [])].forEach((file) => transfer.items.add(file));
+        input.files = transfer.files;
+        validateFiles();
     });
 });
 

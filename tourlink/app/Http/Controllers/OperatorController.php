@@ -19,6 +19,7 @@ use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -111,8 +112,8 @@ class OperatorController extends Controller
         $this->syncAvailability($request, $trip);
 
         $message = $submissionAction === 'submit'
-            ? 'Trip submitted for administrator approval.'
-            : 'Trip draft saved.';
+            ? 'You have successfully created your trip. It has been submitted for administrator approval.'
+            : 'Your trip draft was saved successfully.';
 
         return redirect()->route('operator.trips.index')->with('status', $message);
     }
@@ -150,8 +151,8 @@ class OperatorController extends Controller
         $this->syncAvailability($request, $trip);
 
         $message = $submissionAction === 'submit'
-            ? 'Trip changes submitted for administrator approval.'
-            : 'Trip draft saved. It is not visible to travelers.';
+            ? 'Your trip changes were saved and submitted for administrator approval.'
+            : 'Your trip draft was saved successfully. It is not visible to travelers.';
 
         return redirect()->route('operator.trips.edit', $trip)->with('status', $message);
     }
@@ -459,6 +460,11 @@ class OperatorController extends Controller
 
         if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {
             throw ValidationException::withMessages(['images_files' => 'A trip can have up to 12 cover and gallery images.']);
+        }
+
+        $imageUploadBytes = array_sum(array_map(static fn (UploadedFile $file): int => $file->getSize(), $request->file('images_files', [])));
+        if ($imageUploadBytes > 6 * 1024 * 1024) {
+            throw ValidationException::withMessages(['images_files' => 'The combined image upload must be 6 MB or less. Compress or remove images and try again.']);
         }
 
         $reservedSeats = $trip?->bookings()->whereNotIn('status', [BookingStatus::Cancelled, BookingStatus::Refunded, BookingStatus::Completed])->sum('travelers') ?? 0;

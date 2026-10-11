@@ -88,7 +88,7 @@ class TripDestinationEntryTest extends TestCase
         $trip = Trip::query()->where('name', 'Savannah Weekend')->firstOrFail();
 
         $response->assertRedirect(route('operator.trips.index'))
-            ->assertSessionHas('status', 'Trip submitted for administrator approval.');
+            ->assertSessionHas('status', 'You have successfully created your trip. It has been submitted for administrator approval.');
         $this->assertSame('savannah-weekend', $trip->slug);
         $this->assertSame($operator->id, $trip->operator_id);
         $this->assertSame(ListingStatus::Draft, $trip->status);
@@ -123,7 +123,7 @@ class TripDestinationEntryTest extends TestCase
                 'cancellation_policy' => 'Contact us to cancel.',
             ])
             ->assertRedirect(route('operator.trips.index'))
-            ->assertSessionHas('status', 'Trip draft saved.');
+            ->assertSessionHas('status', 'Your trip draft was saved successfully.');
 
         $trip = Trip::query()->where('name', 'Private Safari Draft')->firstOrFail();
         $this->assertSame(ListingStatus::Draft, $trip->status);

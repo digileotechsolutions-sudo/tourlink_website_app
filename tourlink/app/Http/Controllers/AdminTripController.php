@@ -15,6 +15,7 @@ use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -174,6 +175,11 @@ class AdminTripController extends Controller
 
         if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {
             throw ValidationException::withMessages(['images_files' => 'A trip can have up to 12 cover and gallery images.']);
+        }
+
+        $imageUploadBytes = array_sum(array_map(static fn (UploadedFile $file): int => $file->getSize(), $request->file('images_files', [])));
+        if ($imageUploadBytes > 6 * 1024 * 1024) {
+            throw ValidationException::withMessages(['images_files' => 'The combined image upload must be 6 MB or less. Compress or remove images and try again.']);
         }
 
         if ($data['status'] === ListingStatus::Published->value && $data['verification_status'] !== VerificationStatus::Approved->value) {
