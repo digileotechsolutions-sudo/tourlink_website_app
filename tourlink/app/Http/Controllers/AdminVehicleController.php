@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -56,7 +57,8 @@ class AdminVehicleController extends Controller
     {
         $data = $this->validatedData($request);
         $images = $data['images'] ?? [];
-        unset($data['images']);
+        unset($data['images'], $data['images_files']);
+        $images = $this->uploadedImages($request, $images);
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name']);
 
         $vehicle = DB::transaction(function () use ($request, $data, $images): Vehicle {
@@ -81,7 +83,8 @@ class AdminVehicleController extends Controller
     {
         $data = $this->validatedData($request, $vehicle);
         $images = $data['images'] ?? [];
-        unset($data['images']);
+        unset($data['images'], $data['images_files']);
+        $images = $this->uploadedImages($request, $images);
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name'], $vehicle);
 
         DB::transaction(function () use ($request, $vehicle, $data, $images): void {
@@ -120,6 +123,7 @@ class AdminVehicleController extends Controller
             'four_by_four' => $request->boolean('four_by_four'),
             'driver_included' => $request->boolean('driver_included'),
         ]);
+        $existingImageUrls = $vehicle?->images()->pluck('url')->all() ?? [];
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -147,9 +151,15 @@ class AdminVehicleController extends Controller
             'status' => ['required', Rule::in(array_column(ListingStatus::cases(), 'value'))],
             'verification_status' => ['required', Rule::in(array_values(array_diff(array_column(VerificationStatus::cases(), 'value'), [VerificationStatus::UnderReview->value])))],
             'images' => ['nullable', 'array', 'max:12'],
-            'images.*.url' => ['required', 'url:http,https', 'max:2048'],
+            'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],
+            'images_files' => ['nullable', 'array', 'max:12'],
+            'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
+
+        if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {
+            throw ValidationException::withMessages(['images_files' => 'A vehicle can have up to 12 images.']);
+        }
 
         if ($data['status'] === ListingStatus::Published->value && $data['verification_status'] !== VerificationStatus::Approved->value) {
             throw ValidationException::withMessages(['status' => 'A vehicle must be approved before it can be published.']);
@@ -192,6 +202,20 @@ class AdminVehicleController extends Controller
                 'alt' => $image['alt'] ?? $vehicle->name,
             ]);
         }
+    }
+
+    /**
+     * @param  array<int, array{url: string, alt?: ?string}>  $images
+     * @return array<int, array{url: string, alt?: ?string}>
+     */
+    private function uploadedImages(Request $request, array $images): array
+    {
+        foreach ($request->file('images_files', []) as $file) {
+            $path = $file->store('vehicle-images', 'public');
+            $images[] = ['url' => Storage::disk('public')->url($path), 'alt' => null];
+        }
+
+        return array_slice($images, 0, 12);
     }
 
     private function audit(Request $request, Vehicle $vehicle, string $action, array $fields, int $imageCount): void
