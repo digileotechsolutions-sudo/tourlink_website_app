@@ -396,7 +396,8 @@ class OperatorController extends Controller
             'name' => ['required', 'string', 'max:255'], 'slug' => ['nullable', 'string', 'max:255', 'alpha_dash'],
             'description' => ['required', 'string', 'max:20000'], 'starting_point' => ['required', 'string', 'max:255'], 'ending_point' => ['required', 'string', 'max:255'],
             'destination_name' => ['required', 'string', 'max:255'], 'category_id' => ['required', 'string', 'exists:trip_categories,id'],
-            'duration_days' => ['required', 'integer', 'min:1', 'max:365'], 'departure_date' => ['required', 'date'], 'return_date' => ['required', 'date', 'after:departure_date'],
+            'duration_days' => ['required', 'integer', 'min:1', 'max:365'], 'departure_date' => ['required', 'date'], 'return_date' => ['required', 'date'],
+            'departure_time' => ['nullable', 'date_format:H:i'], 'return_time' => ['nullable', 'date_format:H:i'],
             'price_per_person' => ['required', 'integer', 'min:0', 'max:100000000'], 'max_travelers' => ['required', 'integer', 'min:1', 'max:10000'],
             'child_price' => ['nullable', 'integer', 'min:0', 'max:100000000'], 'deposit_amount' => ['nullable', 'integer', 'min:0', 'lte:price_per_person'],
             'min_travelers' => ['required', 'integer', 'min:1', 'lte:max_travelers'], 'available_seats' => ['required', 'integer', 'min:0', 'lte:max_travelers'],
@@ -415,7 +416,21 @@ class OperatorController extends Controller
 
         $departure = \Illuminate\Support\Carbon::parse($data['departure_date']);
         $return = \Illuminate\Support\Carbon::parse($data['return_date']);
+        if (filled($data['departure_time'] ?? null)) {
+            $departure->setTimeFromTimeString($data['departure_time']);
+        }
+        if (filled($data['return_time'] ?? null)) {
+            $return->setTimeFromTimeString($data['return_time']);
+        }
+
+        if ($return->lessThanOrEqualTo($departure)) {
+            throw ValidationException::withMessages(['return_date' => 'The return date and time must be after departure.']);
+        }
+
         $data['duration_days'] = max(1, (int) ceil($departure->diffInMinutes($return) / 1440));
+        $data['departure_date'] = $departure;
+        $data['return_date'] = $return;
+        unset($data['departure_time'], $data['return_time']);
         $data['pickup_points'] = $data['pickup_points'] ?? [];
 
         if ($data['duration_days'] > 365) {

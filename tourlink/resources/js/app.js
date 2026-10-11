@@ -377,18 +377,30 @@ if (draftToClear) {
 document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
     const steps = [...form.querySelectorAll('[data-trip-step]')];
     const links = [...form.querySelectorAll('[data-trip-step-link]')];
-    const progress = form.querySelector('[data-trip-progress]');
-    const progressBar = progress?.parentElement;
+    const captionCount = form.querySelector('[data-trip-caption-count]');
+    const captionName = form.querySelector('[data-trip-caption-name]');
     const back = form.querySelector('[data-trip-back]');
     const next = form.querySelector('[data-trip-next]');
+    const draft = form.querySelector('[data-trip-draft]');
     const submit = form.querySelector('[data-trip-submit]');
     const fileInput = form.querySelector('[data-trip-images]');
     const preview = form.querySelector('[data-trip-image-preview]');
     const uploadStatus = form.querySelector('[data-trip-upload-status]');
+    const destinationInput = form.querySelector('[data-trip-destination]');
+    const endingPointInput = form.querySelector('[data-trip-ending]');
     let current = 0;
     let uploading = false;
     let objectUrls = [];
     const field = (name) => form.elements.namedItem(name);
+    const stepNames = ['Trip information', 'Schedule', 'Pricing', 'Publish'];
+
+    const isInvalid = (input) => {
+        if (input.type === 'radio') {
+            return !form.querySelector(`input[type="radio"][name="${CSS.escape(input.name)}"]:checked`);
+        }
+
+        return !input.checkValidity();
+    };
 
     const showStep = (index) => {
         current = Math.max(0, Math.min(index, steps.length - 1));
@@ -399,20 +411,20 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         links.forEach((link, item) => {
             const active = item === current;
             link.setAttribute('aria-current', active ? 'step' : 'false');
-            link.classList.toggle('border-emerald-700', active);
-            link.classList.toggle('bg-emerald-50', active);
-            link.classList.toggle('text-emerald-950', active);
-            link.querySelector('[data-step-number]')?.classList.toggle('bg-emerald-800', active);
-            link.querySelector('[data-step-number]')?.classList.toggle('text-white', active);
+            const segment = link.querySelector('[data-progress-segment]');
+            segment?.classList.toggle('bg-emerald-700', item <= current);
+            segment?.classList.toggle('bg-slate-200', item > current);
         });
+        if (captionCount) {
+            captionCount.textContent = `Step ${current + 1} of ${steps.length}`;
+        }
+        if (captionName) {
+            captionName.textContent = stepNames[current];
+        }
         back.disabled = current === 0;
-        back.classList.toggle('opacity-40', current === 0);
         next.classList.toggle('hidden', current === steps.length - 1);
         submit.classList.toggle('hidden', current !== steps.length - 1);
-        if (progress) {
-            progress.style.width = `${((current + 1) / steps.length) * 100}%`;
-        }
-        progressBar?.setAttribute('aria-valuenow', String(current + 1));
+        draft.classList.toggle('hidden', current !== steps.length - 1);
         if (current === steps.length - 1) {
             updatePreview();
         }
@@ -423,9 +435,11 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         const to = field('return_date')?.value;
         const duration = field('duration_days');
         if (from && to && duration) {
-            const hours = (new Date(to) - new Date(from)) / 3600000;
+            const departure = new Date(`${from}T${field('departure_time')?.value || '08:00'}`);
+            const returning = new Date(`${to}T${field('return_time')?.value || '18:00'}`);
+            const hours = (returning - departure) / 3600000;
             if (Number.isFinite(hours) && hours > 0) {
-                duration.value = String(Math.max(1, Math.ceil(hours / 24)));
+                duration.value = String(hours <= 24 ? 1 : hours <= 48 ? 2 : hours <= 120 ? 3 : 6);
             }
         }
     };
@@ -438,8 +452,8 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
             }
         };
         const category = field('category_id');
-        const date = (value) => {
-            const parsed = new Date(value);
+        const date = (value, time) => {
+            const parsed = new Date(value ? `${value}T${time || '00:00'}` : '');
             return value && !Number.isNaN(parsed.getTime())
                 ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(parsed)
                 : 'Date not set';
@@ -449,7 +463,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         text('[data-preview-destination]', field('destination_name')?.value, 'Destination');
         text('[data-preview-description]', field('description')?.value, 'Your trip description will appear here.');
         text('[data-preview-route]', `${field('starting_point')?.value || 'Start'} → ${field('ending_point')?.value || 'End'}`, 'Start → End');
-        text('[data-preview-dates]', `${date(field('departure_date')?.value)} → ${date(field('return_date')?.value)}`, 'Departure → Return');
+        text('[data-preview-dates]', `${date(field('departure_date')?.value, field('departure_time')?.value)} → ${date(field('return_date')?.value, field('return_time')?.value)}`, 'Departure → Return');
         text('[data-preview-price]', `KES ${field('price_per_person')?.value || '—'} per adult`, 'KES — per adult');
         const cover = form.querySelector('[data-preview-cover]');
         const chosenFile = fileInput?.files?.[0];
@@ -510,7 +524,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         } else if (target.closest('[data-trip-back]')) {
             showStep(current - 1);
         } else if (target.closest('[data-trip-next]')) {
-            const invalid = [...steps[current].querySelectorAll('input, select, textarea')].find((input) => !input.checkValidity());
+            const invalid = [...steps[current].querySelectorAll('input, select, textarea')].find(isInvalid);
             if (invalid) {
                 invalid.reportValidity();
             } else {
@@ -532,7 +546,10 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
     });
 
     form.addEventListener('input', (event) => {
-        if (['departure_date', 'return_date'].includes(event.target.name)) {
+        if (event.target === destinationInput && endingPointInput) {
+            endingPointInput.value = destinationInput.value;
+        }
+        if (['departure_date', 'departure_time', 'return_date', 'return_time'].includes(event.target.name)) {
             updateDuration();
         }
         if (current === steps.length - 1) {
@@ -577,7 +594,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         if (uploading) {
             return;
         }
-        const invalid = [...form.querySelectorAll('input, select, textarea')].find((input) => input.willValidate && !input.checkValidity());
+        const invalid = [...form.querySelectorAll('input, select, textarea')].find((input) => input.willValidate && isInvalid(input));
         if (invalid) {
             showStep(Number(invalid.closest('[data-trip-step]')?.dataset.tripStep ?? 0));
             window.setTimeout(() => invalid.reportValidity(), 0);
