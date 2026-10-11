@@ -713,6 +713,95 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
     showStep(0);
 });
 
+document.querySelectorAll('[data-admin-trip-wizard]').forEach((form) => {
+    const steps = [...form.querySelectorAll('[data-admin-trip-step]')];
+    const links = [...form.querySelectorAll('[data-admin-wizard-link]')];
+    const currentInput = form.querySelector('[data-admin-wizard-current]');
+    const count = form.querySelector('[data-admin-wizard-count]');
+    const name = form.querySelector('[data-admin-wizard-name]');
+    const back = form.querySelector('[data-admin-wizard-back]');
+    const next = form.querySelector('[data-admin-wizard-next]');
+    const submit = form.querySelector('[data-admin-wizard-submit]');
+    const cancel = form.querySelector('[data-admin-wizard-cancel]');
+    const stepNames = ['Trip information', 'Schedule', 'Pricing', 'Publish'];
+    let current = Number(currentInput?.value ?? 0);
+    const invalidFieldNames = form.dataset.adminInvalidFields?.split(',').filter(Boolean) ?? [];
+
+    const showStep = (index) => {
+        current = Math.max(0, Math.min(index, steps.length - 1));
+        steps.forEach((step, stepIndex) => {
+            step.hidden = stepIndex !== current;
+            step.classList.toggle('hidden', stepIndex !== current);
+        });
+        links.forEach((link, stepIndex) => {
+            link.setAttribute('aria-current', stepIndex === current ? 'step' : 'false');
+            const segment = link.querySelector('[data-admin-progress-segment]');
+            segment?.classList.toggle('bg-emerald-700', stepIndex <= current);
+            segment?.classList.toggle('bg-slate-200', stepIndex > current);
+        });
+        if (currentInput) {
+            currentInput.value = String(current);
+        }
+        if (count) {
+            count.textContent = `Step ${current + 1} of ${steps.length}`;
+        }
+        if (name) {
+            name.textContent = stepNames[current];
+        }
+        back.disabled = current === 0;
+        next.classList.toggle('hidden', current === steps.length - 1);
+        submit.classList.toggle('hidden', current !== steps.length - 1);
+        cancel.classList.toggle('hidden', current !== steps.length - 1);
+    };
+
+    if (invalidFieldNames.length > 0) {
+        const invalidName = invalidFieldNames[0]
+            .replace(/\.(\d+)\./g, '[$1][')
+            .replace(/\.(\w+)$/, '[$1]');
+        const invalidField = [...form.elements].find((field) => (
+            field.name === invalidName
+            || (field.name.endsWith('[]') && invalidName.startsWith(field.name.slice(0, -2)))
+        ));
+        if (invalidField) {
+            current = Number(invalidField.closest('[data-admin-trip-step]')?.dataset.adminTripStep ?? current);
+        }
+    }
+
+    form.addEventListener('click', (event) => {
+        const link = event.target.closest('[data-admin-wizard-link]');
+        if (link && Number(link.dataset.adminWizardLink) <= current) {
+            showStep(Number(link.dataset.adminWizardLink));
+        } else if (event.target.closest('[data-admin-wizard-back]')) {
+            showStep(current - 1);
+        } else if (event.target.closest('[data-admin-wizard-next]')) {
+            const invalid = [...steps[current].querySelectorAll('input, select, textarea')]
+                .find((input) => input.willValidate && !input.checkValidity());
+            if (invalid) {
+                invalid.reportValidity();
+                return;
+            }
+            showStep(current + 1);
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+
+    form.addEventListener('submit', (event) => {
+        const invalid = [...form.querySelectorAll('input, select, textarea')]
+            .find((input) => input.willValidate && !input.checkValidity());
+        if (!invalid) {
+            return;
+        }
+        event.preventDefault();
+        showStep(Number(invalid.closest('[data-admin-trip-step]')?.dataset.adminTripStep ?? 0));
+        window.setTimeout(() => invalid.reportValidity(), 0);
+    });
+
+    showStep(current);
+    if (invalidFieldNames.length > 0) {
+        form.scrollIntoView({ block: 'start' });
+    }
+});
+
 document.querySelectorAll('[data-admin-itinerary]').forEach((itinerary) => {
     const rows = itinerary.querySelector('[data-admin-itinerary-rows]');
 

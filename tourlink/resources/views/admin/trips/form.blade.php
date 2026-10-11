@@ -14,11 +14,11 @@
 @section('title', ($editing ? 'Edit trip' : 'Create trip').' | Havenedge Tourlink')
 
 @section('content')
-    <div class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
-        <header class="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-6">
+    <div class="mx-auto max-w-[614px] px-3 py-4 sm:px-5">
+        <header class="mb-3 flex flex-wrap items-center justify-between gap-4">
             <div>
                 <a href="{{ route('admin.trips.index') }}" class="text-sm font-semibold text-emerald-800 hover:underline">Back to trips</a>
-                <h1 class="mt-3 text-3xl font-black text-slate-950">{{ $editing ? 'Edit trip' : 'Create trip' }}</h1>
+                <h1 class="mt-1 text-xl font-black text-slate-950">{{ $editing ? 'Edit trip' : 'Create trip' }}</h1>
             </div>
             @if ($editing)
                 <span class="text-sm text-slate-600">{{ $trip->bookings()->count() }} bookings</span>
@@ -35,12 +35,32 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ $editing ? route('admin.trips.save', $trip) : route('admin.trips.store') }}" enctype="multipart/form-data" class="mt-8 space-y-10">
+        <form data-admin-trip-wizard data-admin-invalid-fields="{{ implode(',', $errors->keys()) }}" method="POST" action="{{ $editing ? route('admin.trips.save', $trip) : route('admin.trips.store') }}" enctype="multipart/form-data" novalidate class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             @csrf
             @if ($editing) @method('PUT') @endif
+            <input type="hidden" name="wizard_step" value="{{ old('wizard_step', 0) }}" data-admin-wizard-current>
 
-            <section class="grid gap-5 sm:grid-cols-2" aria-labelledby="trip-basics-heading">
-                <h2 id="trip-basics-heading" class="col-span-full border-b border-slate-200 pb-2 text-xl font-extrabold text-slate-950">Trip details</h2>
+            <header class="bg-[#176b4b] px-4 pb-3 pt-4 text-white">
+                <div class="flex items-center gap-3">
+                    <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-white/15" aria-hidden="true">HT</span>
+                    <div>
+                        <h2 class="text-base font-bold">{{ $editing ? 'Edit trip' : 'Publish a new trip' }}</h2>
+                        <p class="mt-0.5 text-[11px] text-emerald-50">Administration · Trip management</p>
+                    </div>
+                </div>
+                <p class="mt-2 flex items-center gap-2 text-[10px] font-semibold"><span data-admin-wizard-count class="rounded-full bg-white/15 px-2 py-1">Step 1 of 4</span><span data-admin-wizard-name>Trip information</span></p>
+            </header>
+
+            <nav class="px-3 pt-3 sm:px-5" aria-label="Trip form progress">
+                <ol class="grid grid-cols-4 gap-1">
+                    @foreach (['Details', 'Schedule', 'Pricing', 'Publish'] as $index => $label)
+                        <li><button type="button" data-admin-wizard-link="{{ $index }}" class="block w-full text-left text-[9px] font-medium text-slate-700" aria-current="{{ $index === 0 ? 'step' : 'false' }}"><span data-admin-progress-segment class="mb-1.5 block h-[3px] rounded-full bg-slate-200"></span>{{ $index + 1 }}. {{ $label }}</button></li>
+                    @endforeach
+                </ol>
+            </nav>
+
+            <section data-admin-trip-step="0" class="grid gap-4 px-3 py-4 sm:grid-cols-2 sm:px-5" aria-labelledby="trip-basics-heading">
+                <h2 id="trip-basics-heading" class="col-span-full text-lg font-black">Trip information</h2>
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Trip name
                     <input name="name" value="{{ old('name', $trip->name) }}" required maxlength="255" class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
                 </label>
@@ -58,46 +78,46 @@
                         @endforeach
                     </select>
                 </label>
-                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Starting point
-                    <input name="starting_point" value="{{ old('starting_point', $trip->starting_point) }}" required maxlength="255" class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
-                </label>
-                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Ending point
-                    <input name="ending_point" value="{{ old('ending_point', $trip->ending_point) }}" required maxlength="255" class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
-                </label>
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700 sm:col-span-2">Description
                     <textarea name="description" required rows="5" maxlength="20000" class="rounded border border-slate-300 px-3 py-2 font-normal text-slate-950">{{ old('description', $trip->description) }}</textarea>
                 </label>
             </section>
 
-            <section class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-labelledby="trip-schedule-heading">
-                <h2 id="trip-schedule-heading" class="col-span-full border-b border-slate-200 pb-2 text-xl font-extrabold text-slate-950">Dates, price and capacity</h2>
+            <section data-admin-trip-step="1" class="grid gap-4 px-3 py-4 sm:grid-cols-2 lg:grid-cols-3 sm:px-5" aria-labelledby="trip-schedule-heading" hidden>
+                <h2 id="trip-schedule-heading" class="col-span-full text-lg font-black">Route and schedule</h2>
+                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Starting point
+                    <input name="starting_point" value="{{ old('starting_point', $trip->starting_point) }}" required maxlength="255" class="min-h-11 rounded-full border border-slate-300 px-4 font-normal text-slate-950">
+                </label>
+                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Ending point
+                    <input name="ending_point" value="{{ old('ending_point', $trip->ending_point) }}" required maxlength="255" class="min-h-11 rounded-full border border-slate-300 px-4 font-normal text-slate-950">
+                </label>
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Duration in days
-                    <input type="number" name="duration_days" value="{{ old('duration_days', $trip->duration_days ?? 1) }}" min="1" max="365" required class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
+                    <input type="number" name="duration_days" value="{{ old('duration_days', $trip->duration_days ?? 1) }}" min="1" max="365" required class="min-h-11 rounded-full border border-slate-300 px-4 font-normal text-slate-950">
                 </label>
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Departure date
-                    <input type="datetime-local" name="departure_date" value="{{ $departure }}" required class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
+                    <input type="datetime-local" name="departure_date" value="{{ $departure }}" required class="min-h-11 rounded-full border border-slate-300 px-4 font-normal text-slate-950">
                 </label>
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Return date
-                    <input type="datetime-local" name="return_date" value="{{ $return }}" required class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
-                </label>
-                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Price per person (KES)
-                    <input type="number" name="price_per_person" value="{{ old('price_per_person', $trip->price_per_person ?? 0) }}" min="0" step="1" required class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
-                </label>
-                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Maximum travelers
-                    <input type="number" name="max_travelers" value="{{ old('max_travelers', $trip->max_travelers ?? 1) }}" min="1" required class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
-                </label>
-                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Minimum travelers
-                    <input type="number" name="min_travelers" value="{{ old('min_travelers', $trip->min_travelers ?? 1) }}" min="1" required class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
-                </label>
-                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Available seats
-                    <input type="number" name="available_seats" value="{{ old('available_seats', $trip->available_seats ?? 1) }}" min="0" required class="min-h-11 rounded border border-slate-300 px-3 font-normal text-slate-950">
+                    <input type="datetime-local" name="return_date" value="{{ $return }}" required class="min-h-11 rounded-full border border-slate-300 px-4 font-normal text-slate-950">
                 </label>
             </section>
 
-            <section class="grid gap-5 sm:grid-cols-2" aria-labelledby="trip-experience-heading">
-                <h2 id="trip-experience-heading" class="col-span-full border-b border-slate-200 pb-2 text-xl font-extrabold text-slate-950">Experience and itinerary</h2>
+            <section data-admin-trip-step="2" class="grid gap-4 px-3 py-4 sm:grid-cols-2 sm:px-5" aria-labelledby="trip-pricing-heading" hidden>
+                <h2 id="trip-pricing-heading" class="col-span-full text-lg font-black">Pricing and trip details</h2>
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Pickup points <span class="font-normal text-slate-500">One point per line</span>
-                    <textarea name="pickup_points" rows="4" required class="rounded border border-slate-300 px-3 py-2 font-normal text-slate-950">{{ $textValue('pickup_points', $trip->pickup_points ?? []) }}</textarea>
+                    <textarea name="pickup_points" rows="3" required class="rounded-xl border border-slate-300 px-4 py-2 font-normal text-slate-950">{{ $textValue('pickup_points', $trip->pickup_points ?? []) }}</textarea>
+                </label>
+                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Price per person (KES)
+                    <input type="number" name="price_per_person" value="{{ old('price_per_person', $trip->price_per_person ?? 0) }}" min="0" step="1" required class="min-h-11 rounded-full border border-slate-300 px-4 font-normal text-slate-950">
+                </label>
+                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Maximum travelers
+                    <input type="number" name="max_travelers" value="{{ old('max_travelers', $trip->max_travelers ?? 1) }}" min="1" required class="min-h-11 rounded-full border border-slate-300 px-4 font-normal text-slate-950">
+                </label>
+                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Minimum travelers
+                    <input type="number" name="min_travelers" value="{{ old('min_travelers', $trip->min_travelers ?? 1) }}" min="1" required class="min-h-11 rounded-full border border-slate-300 px-4 font-normal text-slate-950">
+                </label>
+                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Available seats
+                    <input type="number" name="available_seats" value="{{ old('available_seats', $trip->available_seats ?? 1) }}" min="0" required class="min-h-11 rounded-full border border-slate-300 px-4 font-normal text-slate-950">
                 </label>
                 <div class="grid gap-3 sm:col-span-2" data-admin-itinerary>
                     <div class="flex flex-wrap items-center justify-between gap-3">
@@ -161,8 +181,8 @@
                 </div>
             </section>
 
-            <section class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-labelledby="trip-ownership-heading">
-                <h2 id="trip-ownership-heading" class="col-span-full border-b border-slate-200 pb-2 text-xl font-extrabold text-slate-950">Operator and publication</h2>
+            <section data-admin-trip-step="3" class="grid gap-4 px-3 py-4 sm:grid-cols-2 lg:grid-cols-3 sm:px-5" aria-labelledby="trip-ownership-heading" hidden>
+                <h2 id="trip-ownership-heading" class="col-span-full text-lg font-black">Publish settings</h2>
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Tour operator
                     <select name="operator_id" required class="min-h-11 rounded border border-slate-300 bg-white px-3 font-normal text-slate-950">
                         <option value="">Select approved operator</option>
@@ -199,9 +219,11 @@
                 </label>
             </section>
 
-            <footer class="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
-                <a href="{{ route('admin.trips.index') }}" class="rounded border border-slate-300 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">Cancel</a>
-                <button class="rounded bg-emerald-800 px-6 py-3 text-sm font-bold text-white hover:bg-emerald-900">{{ $editing ? 'Save trip' : 'Create trip' }}</button>
+            <footer class="sticky bottom-0 z-10 flex gap-2 border-t border-slate-100 bg-white px-3 py-2 sm:px-5">
+                <button type="button" data-admin-wizard-back class="min-h-10 flex-1 rounded-full border border-slate-300 px-4 text-xs font-medium text-slate-600 disabled:opacity-40">Back</button>
+                <a data-admin-wizard-cancel href="{{ route('admin.trips.index') }}" class="hidden min-h-10 flex-1 items-center justify-center rounded-full border border-slate-300 px-4 py-2 text-center text-xs font-medium text-slate-600 hover:bg-slate-50">Cancel</a>
+                <button type="button" data-admin-wizard-next class="min-h-10 flex-1 rounded-full bg-neutral-950 px-5 text-xs font-bold text-white hover:bg-neutral-800">Continue <span aria-hidden="true">→</span></button>
+                <button type="submit" data-admin-wizard-submit class="hidden min-h-10 flex-1 rounded-full bg-neutral-950 px-5 text-xs font-bold text-white hover:bg-neutral-800">{{ $editing ? 'Save trip' : 'Create trip' }}</button>
             </footer>
         </form>
     </div>

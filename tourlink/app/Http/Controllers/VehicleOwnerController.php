@@ -72,7 +72,7 @@ class VehicleOwnerController extends Controller
     {
         $data = $this->validatedData($request);
         $images = $this->uploadedImages($request, $data['images'] ?? []);
-        unset($data['images']);
+        unset($data['images'], $data['images_files']);
         $data['owner_id'] = $request->user()->id;
         $data['status'] = ListingStatus::Draft;
         $data['verification_status'] = VerificationStatus::Pending;
@@ -102,7 +102,7 @@ class VehicleOwnerController extends Controller
         $this->ensureOwner($request, $vehicle);
         $data = $this->validatedData($request, $vehicle);
         $images = $this->uploadedImages($request, $data['images'] ?? []);
-        unset($data['images'], $data['status'], $data['verification_status'], $data['owner_id']);
+        unset($data['images'], $data['images_files'], $data['status'], $data['verification_status'], $data['owner_id']);
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name'], $vehicle);
         $data['status'] = ListingStatus::Draft;
         $data['verification_status'] = VerificationStatus::Pending;

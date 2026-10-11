@@ -92,7 +92,7 @@ class OperatorController extends Controller
         $data = $this->validatedTripData($request);
         $submissionAction = $data['submission_action'];
         $images = $data['images'] ?? [];
-        unset($data['images'], $data['submission_action']);
+        unset($data['images'], $data['images_files'], $data['submission_action']);
         $images = $this->uploadedImages($request, $images);
         $data['operator_id'] = $request->user()->id;
         $data['status'] = ListingStatus::Draft;
@@ -132,7 +132,7 @@ class OperatorController extends Controller
         $data = $this->validatedTripData($request, $trip);
         $submissionAction = $data['submission_action'];
         $images = $data['images'] ?? [];
-        unset($data['images'], $data['submission_action']);
+        unset($data['images'], $data['images_files'], $data['submission_action']);
         $images = $this->uploadedImages($request, $images);
         unset($data['status'], $data['verification_status'], $data['featured'], $data['operator_id'], $data['submitted_at']);
         $data['status'] = ListingStatus::Draft;
