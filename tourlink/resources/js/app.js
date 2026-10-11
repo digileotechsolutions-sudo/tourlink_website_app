@@ -404,6 +404,31 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         return !input.checkValidity();
     };
 
+    const advanceTripStep = () => {
+        const invalid = [...steps[current].querySelectorAll('input, select, textarea')].find(isInvalid);
+        if (invalid) {
+            invalid.focus();
+            invalid.reportValidity();
+            return;
+        }
+        showStep(current + 1);
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    next.addEventListener('click', (event) => {
+        event.preventDefault();
+        advanceTripStep();
+    });
+    back.addEventListener('click', (event) => {
+        event.preventDefault();
+        showStep(current - 1);
+    });
+    links.forEach((link) => link.addEventListener('click', (event) => {
+        event.preventDefault();
+        const destination = Number(link.dataset.tripStepLink);
+        if (destination <= current) showStep(destination);
+    }));
+
     const departureTimeValue = () => {
         const separateTime = field('departure_time')?.value;
         if (separateTime) {
@@ -545,20 +570,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
 
     form.addEventListener('click', (event) => {
         const target = event.target;
-        const stepLink = target.closest('[data-trip-step-link]');
-        if (stepLink && Number(stepLink.dataset.tripStepLink) <= current) {
-            showStep(Number(stepLink.dataset.tripStepLink));
-        } else if (target.closest('[data-trip-back]')) {
-            showStep(current - 1);
-        } else if (target.closest('[data-trip-next]')) {
-            const invalid = [...steps[current].querySelectorAll('input, select, textarea')].find(isInvalid);
-            if (invalid) {
-                invalid.reportValidity();
-            } else {
-                showStep(current + 1);
-                window.scrollTo({ top: form.offsetTop - 24, behavior: 'smooth' });
-            }
-        } else if (target.closest('[data-add-row]')) {
+        if (target.closest('[data-add-row]')) {
             addRow(target.closest('[data-add-row]').dataset.addRow);
         } else if (target.closest('[data-remove-row]')) {
             const container = target.closest('[data-trip-repeater]');
@@ -984,6 +996,32 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         }
         return !field.checkValidity();
     };
+
+    const advanceVehicleStep = () => {
+        const invalid = [...steps[current].querySelectorAll('input, select, textarea')]
+            .find((field) => field.willValidate && isInvalid(field));
+        if (invalid) {
+            invalid.focus();
+            invalid.reportValidity();
+            return;
+        }
+        showStep(current + 1);
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    next.addEventListener('click', (event) => {
+        event.preventDefault();
+        advanceVehicleStep();
+    });
+    back.addEventListener('click', (event) => {
+        event.preventDefault();
+        showStep(current - 1);
+    });
+    links.forEach((link) => link.addEventListener('click', (event) => {
+        event.preventDefault();
+        const destination = Number(link.dataset.vehicleStepLink);
+        if (destination <= current) showStep(destination);
+    }));
     const updatePreview = () => {
         const setText = (selector, value, fallback) => {
             const target = form.querySelector(selector);
@@ -1210,16 +1248,7 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
 
     form.addEventListener('click', (event) => {
         const target = event.target;
-        const link = target.closest('[data-vehicle-step-link]');
-        if (link && Number(link.dataset.vehicleStepLink) <= current) {
-            showStep(Number(link.dataset.vehicleStepLink));
-        } else if (target.closest('[data-vehicle-back]')) {
-            showStep(current - 1);
-        } else if (target.closest('[data-vehicle-next]')) {
-            const invalid = [...steps[current].querySelectorAll('input, select, textarea')].find((field) => field.willValidate && isInvalid(field));
-            if (invalid) invalid.reportValidity();
-            else { showStep(current + 1); form.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-        } else if (target.closest('[data-vehicle-add-charge]')) {
+        if (target.closest('[data-vehicle-add-charge]')) {
             appendSimpleRow(form.querySelector('[data-vehicle-charges]'), 'additional_charges', [], ['e.g. Cleaning fee']);
         } else if (target.closest('[data-vehicle-add-area]')) {
             appendSimpleRow(form.querySelector('[data-vehicle-service-areas]'), 'service_areas', [], ['e.g. Mombasa County']);
