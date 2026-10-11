@@ -428,7 +428,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         });
         links.forEach((link, item) => {
             const active = item === current;
-            const completedThrough = current === 0 ? 1 : current;
+            const completedThrough = current;
             link.setAttribute('aria-current', active ? 'step' : 'false');
             const segment = link.querySelector('[data-progress-segment]');
             segment?.classList.toggle('bg-emerald-700', item <= completedThrough);
