@@ -384,6 +384,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
     const draft = form.querySelector('[data-trip-draft]');
     const submit = form.querySelector('[data-trip-submit]');
     const fileInput = form.querySelector('[data-trip-images]');
+    const dropzone = form.querySelector('[data-trip-dropzone]');
     const preview = form.querySelector('[data-trip-image-preview]');
     const uploadStatus = form.querySelector('[data-trip-upload-status]');
     const destinationInput = form.querySelector('[data-trip-destination]');
@@ -400,6 +401,23 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         }
 
         return !input.checkValidity();
+    };
+
+    const departureTimeValue = () => {
+        const separateTime = field('departure_time')?.value;
+        if (separateTime) {
+            return separateTime;
+        }
+        const combinedValue = field('meeting_point_and_time')?.value ?? '';
+        const match = combinedValue.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?\s*$/i);
+        if (!match) {
+            return '08:00';
+        }
+        let hour = Number(match[1]);
+        if (match[3]) {
+            hour = hour % 12 + (match[3].toUpperCase() === 'PM' ? 12 : 0);
+        }
+        return `${String(hour).padStart(2, '0')}:${match[2]}`;
     };
 
     const showStep = (index) => {
@@ -435,7 +453,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         const to = field('return_date')?.value;
         const duration = field('duration_days');
         if (from && to && duration) {
-            const departure = new Date(`${from}T${field('departure_time')?.value || '08:00'}`);
+            const departure = new Date(`${from}T${departureTimeValue()}`);
             const returning = new Date(`${to}T${field('return_time')?.value || '18:00'}`);
             const hours = (returning - departure) / 3600000;
             if (Number.isFinite(hours) && hours > 0) {
@@ -463,7 +481,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         text('[data-preview-destination]', field('destination_name')?.value, 'Destination');
         text('[data-preview-description]', field('description')?.value, 'Your trip description will appear here.');
         text('[data-preview-route]', `${field('starting_point')?.value || 'Start'} → ${field('ending_point')?.value || 'End'}`, 'Start → End');
-        text('[data-preview-dates]', `${date(field('departure_date')?.value, field('departure_time')?.value)} → ${date(field('return_date')?.value, field('return_time')?.value)}`, 'Departure → Return');
+        text('[data-preview-dates]', `${date(field('departure_date')?.value, departureTimeValue())} → ${date(field('return_date')?.value, field('return_time')?.value)}`, 'Departure → Return');
         text('[data-preview-price]', `KES ${field('price_per_person')?.value || '—'} per adult`, 'KES — per adult');
         const cover = form.querySelector('[data-preview-cover]');
         const chosenFile = fileInput?.files?.[0];
@@ -549,7 +567,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         if (event.target === destinationInput && endingPointInput) {
             endingPointInput.value = destinationInput.value;
         }
-        if (['departure_date', 'departure_time', 'return_date', 'return_time'].includes(event.target.name)) {
+        if (['departure_date', 'departure_time', 'meeting_point_and_time', 'return_date', 'return_time'].includes(event.target.name)) {
             updateDuration();
         }
         if (current === steps.length - 1) {
@@ -589,6 +607,22 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         }
     });
 
+    dropzone?.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropzone.classList.add('border-emerald-700', 'bg-emerald-100');
+    });
+    dropzone?.addEventListener('dragleave', () => {
+        dropzone.classList.remove('border-emerald-700', 'bg-emerald-100');
+    });
+    dropzone?.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('border-emerald-700', 'bg-emerald-100');
+        const transfer = new DataTransfer();
+        [...(fileInput?.files ?? []), ...(event.dataTransfer?.files ?? [])].forEach((file) => transfer.items.add(file));
+        fileInput.files = transfer.files;
+        fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         if (uploading) {
@@ -603,7 +637,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         const action = event.submitter?.value ?? 'draft';
         const existing = preview?.querySelectorAll('[data-existing-image]').length ?? 0;
         if (action === 'submit' && existing === 0 && (fileInput?.files?.length ?? 0) === 0) {
-            showStep(0);
+            showStep(1);
             uploadStatus.textContent = 'Add at least one cover or gallery image before submitting.';
             uploadStatus.classList.add('font-bold', 'text-red-700');
             return;
@@ -709,6 +743,75 @@ document.querySelectorAll('[data-admin-itinerary]').forEach((itinerary) => {
         }
         row.remove();
         reindexRows();
+    });
+});
+
+document.querySelectorAll('[data-admin-image-upload]').forEach((uploader) => {
+    const input = uploader.querySelector('[data-admin-image-input]');
+    const dropzone = uploader.querySelector('[data-admin-dropzone]');
+    const preview = uploader.querySelector('[data-admin-image-preview]');
+    const status = uploader.querySelector('[data-admin-image-status]');
+    let previewUrls = [];
+
+    if (!input || !dropzone || !preview || !status) {
+        return;
+    }
+
+    const renderFiles = () => {
+        previewUrls.forEach((url) => URL.revokeObjectURL(url));
+        previewUrls = [];
+        preview.querySelectorAll('[data-admin-new-image]').forEach((image) => image.remove());
+        const existingCount = preview.querySelectorAll('[data-admin-existing-image]').length;
+        const files = [...(input.files ?? [])];
+
+        if (existingCount + files.length > 12) {
+            input.value = '';
+            status.textContent = 'Keep the total trip image count to 12 or fewer.';
+            status.classList.add('font-bold', 'text-red-700');
+            return;
+        }
+
+        files.forEach((file, index) => {
+            const url = URL.createObjectURL(file);
+            previewUrls.push(url);
+            const card = document.createElement('div');
+            card.dataset.adminNewImage = '';
+            card.className = 'overflow-hidden rounded-lg border border-slate-200';
+            const image = document.createElement('img');
+            image.src = url;
+            image.alt = `Selected trip image ${index + 1}`;
+            image.className = 'h-24 w-full object-cover';
+            const caption = document.createElement('p');
+            caption.className = 'truncate px-2 py-1 text-xs font-semibold';
+            caption.textContent = existingCount === 0 && index === 0 ? `${file.name} · Cover` : file.name;
+            card.append(image, caption);
+            preview.append(card);
+        });
+        status.textContent = files.length ? `${files.length} image(s) selected and ready to upload.` : '';
+        status.classList.remove('font-bold', 'text-red-700');
+    };
+
+    input.addEventListener('change', renderFiles);
+    dropzone.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropzone.classList.add('border-emerald-700', 'bg-emerald-100');
+    });
+    dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('border-emerald-700', 'bg-emerald-100');
+    });
+    dropzone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('border-emerald-700', 'bg-emerald-100');
+        const transfer = new DataTransfer();
+        [...(input.files ?? []), ...(event.dataTransfer?.files ?? [])].forEach((file) => transfer.items.add(file));
+        input.files = transfer.files;
+        renderFiles();
+    });
+    uploader.addEventListener('click', (event) => {
+        if (event.target.closest('[data-admin-remove-image]')) {
+            event.target.closest('[data-admin-existing-image]')?.remove();
+            renderFiles();
+        }
     });
 });
 

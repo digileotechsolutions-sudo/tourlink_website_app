@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -66,7 +67,8 @@ class AdminTripController extends Controller
     {
         $data = $this->validatedTripData($request);
         $images = $data['images'] ?? [];
-        unset($data['images']);
+        unset($data['images'], $data['images_files']);
+        $images = $this->uploadedImages($request, $images);
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name']);
 
         $trip = DB::transaction(function () use ($request, $data, $images, $destinationResolver): Trip {
@@ -93,7 +95,8 @@ class AdminTripController extends Controller
     {
         $data = $this->validatedTripData($request, $trip);
         $images = $data['images'] ?? [];
-        unset($data['images']);
+        unset($data['images'], $data['images_files']);
+        $images = $this->uploadedImages($request, $images);
         $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name'], $trip);
 
         DB::transaction(function () use ($request, $trip, $data, $images, $destinationResolver): void {
@@ -121,6 +124,7 @@ class AdminTripController extends Controller
     {
         $this->normalizeFields($request);
         $request->merge(['featured' => $request->boolean('featured')]);
+        $existingImageUrls = $trip?->images()->pluck('url')->all() ?? [];
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -162,9 +166,15 @@ class AdminTripController extends Controller
             'featured' => ['required', 'boolean'],
             'verification_status' => ['required', Rule::in(array_values(array_diff(array_column(VerificationStatus::cases(), 'value'), [VerificationStatus::UnderReview->value])))],
             'images' => ['nullable', 'array', 'max:12'],
-            'images.*.url' => ['required', 'url:http,https', 'max:2048'],
+            'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],
+            'images_files' => ['nullable', 'array', 'max:12'],
+            'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
+
+        if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {
+            throw ValidationException::withMessages(['images_files' => 'A trip can have up to 12 cover and gallery images.']);
+        }
 
         if ($data['status'] === ListingStatus::Published->value && $data['verification_status'] !== VerificationStatus::Approved->value) {
             throw ValidationException::withMessages(['status' => 'A trip must be approved before it can be published.']);
@@ -258,6 +268,20 @@ class AdminTripController extends Controller
                 'sort_order' => $sortOrder,
             ]);
         }
+    }
+
+    /**
+     * @param  array<int, array{url: string, alt?: ?string}>  $images
+     * @return array<int, array{url: string, alt?: ?string}>
+     */
+    private function uploadedImages(Request $request, array $images): array
+    {
+        foreach ($request->file('images_files', []) as $file) {
+            $path = $file->store('trip-images', 'public');
+            $images[] = ['url' => Storage::disk('public')->url($path), 'alt' => null];
+        }
+
+        return array_slice($images, 0, 12);
     }
 
     private function writeAuditLog(Request $request, Trip $trip, string $action, array $fields, int $imageCount): void

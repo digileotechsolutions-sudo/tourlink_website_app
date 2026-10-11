@@ -5,11 +5,6 @@
     $textValue = fn (string $key, array $fallback): string => is_array(old($key, $fallback))
         ? implode("\n", old($key, $fallback))
         : (string) old($key, implode("\n", $fallback));
-    $jsonValue = function (string $key, mixed $fallback): string {
-        $value = old($key, $fallback);
-
-        return is_string($value) ? $value : json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    };
     $departure = old('departure_date', $trip->departure_date?->format('Y-m-d\TH:i') ?? '');
     $return = old('return_date', $trip->return_date?->format('Y-m-d\TH:i') ?? '');
     $itineraryInput = old('itinerary', $trip->itinerary ?? [['day' => 1, 'title' => '', 'detail' => '']]);
@@ -40,7 +35,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ $editing ? route('admin.trips.save', $trip) : route('admin.trips.store') }}" class="mt-8 space-y-10">
+        <form method="POST" action="{{ $editing ? route('admin.trips.save', $trip) : route('admin.trips.store') }}" enctype="multipart/form-data" class="mt-8 space-y-10">
             @csrf
             @if ($editing) @method('PUT') @endif
 
@@ -145,9 +140,25 @@
                 <label class="grid gap-1.5 text-sm font-semibold text-slate-700 sm:col-span-2">Cancellation policy
                     <textarea name="cancellation_policy" required rows="4" maxlength="10000" class="rounded border border-slate-300 px-3 py-2 font-normal text-slate-950">{{ old('cancellation_policy', $trip->cancellation_policy) }}</textarea>
                 </label>
-                <label class="grid gap-1.5 text-sm font-semibold text-slate-700 sm:col-span-2">Trip images <span class="font-normal text-slate-500">JSON array of URL and optional alt text; up to 12</span>
-                    <textarea name="images" rows="7" class="rounded border border-slate-300 px-3 py-2 font-mono text-xs font-normal text-slate-950">{{ $jsonValue('images', $trip->images->map(fn ($image): array => ['url' => $image->url, 'alt' => $image->alt])->all()) }}</textarea>
-                </label>
+                <div class="grid gap-3 sm:col-span-2" data-admin-image-upload>
+                    <div><p class="text-sm font-semibold text-slate-700">Cover and gallery images</p><p class="mt-1 text-xs text-slate-500">Drag photos here or choose files. JPG, PNG, or WebP, up to 5 MB each and 12 images total. The first image is the cover.</p></div>
+                    <label data-admin-dropzone class="grid min-h-32 cursor-pointer place-items-center rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-5 text-center hover:bg-emerald-50">
+                        <input data-admin-image-input type="file" name="images_files[]" accept="image/jpeg,image/png,image/webp" multiple class="sr-only">
+                        <span><span class="mx-auto grid size-10 place-items-center rounded-full bg-white text-xl font-bold text-emerald-800 shadow-sm" aria-hidden="true">＋</span><span class="mt-2 block text-sm font-bold text-emerald-950">Drop images here or browse</span><span class="mt-1 block text-xs text-slate-500">Add one cover photo and optional gallery images</span></span>
+                    </label>
+                    <div data-admin-image-preview class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        @foreach($trip->images as $image)
+                            <div data-admin-existing-image class="relative overflow-hidden rounded-lg border border-slate-200">
+                                <img src="{{ $image->url }}" alt="{{ $image->alt ?: $trip->name }}" class="h-24 w-full object-cover">
+                                <input type="hidden" name="images[{{ $loop->index }}][url]" value="{{ $image->url }}">
+                                <input type="hidden" name="images[{{ $loop->index }}][alt]" value="{{ $image->alt }}">
+                                <button type="button" data-admin-remove-image class="absolute right-2 top-2 grid size-7 place-items-center rounded-full bg-white font-bold text-red-700 shadow" aria-label="Remove image">×</button>
+                                @if($loop->first)<span class="absolute bottom-1 left-1 rounded bg-white/95 px-2 py-1 text-[9px] font-bold uppercase">Cover</span>@endif
+                            </div>
+                        @endforeach
+                    </div>
+                    <p data-admin-image-status class="text-xs text-slate-600" aria-live="polite"></p>
+                </div>
             </section>
 
             <section class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-labelledby="trip-ownership-heading">

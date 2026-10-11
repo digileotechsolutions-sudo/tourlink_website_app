@@ -404,7 +404,8 @@ class OperatorController extends Controller
             'pickup_points' => ['nullable', 'array', 'max:20'], 'pickup_points.*' => ['string', 'max:255'],
             'itinerary' => ['required', 'array', 'min:1'], 'itinerary.*.day' => ['required', 'integer', 'min:1'], 'itinerary.*.title' => ['required', 'string', 'max:120'], 'itinerary.*.detail' => ['required', 'string', 'max:4000'],
             'itinerary.*.start_time' => ['nullable', 'date_format:H:i'], 'itinerary.*.end_time' => ['nullable', 'date_format:H:i'],
-            'meeting_point' => ['nullable', 'string', 'max:255'], 'transport_type' => ['nullable', Rule::in(['TOUR_VAN', 'BUS', '4X4_SAFARI', 'PRIVATE_CAR', 'NO_TRANSPORT'])],
+            'meeting_point' => ['nullable', 'string', 'max:255'], 'meeting_point_and_time' => ['nullable', 'string', 'max:255'],
+            'transport_type' => ['nullable', Rule::in(['TOUR_VAN', 'BUS', '4X4_SAFARI', 'PRIVATE_CAR', 'NO_TRANSPORT'])],
             'accommodation' => ['nullable', 'string', 'max:5000'], 'meals' => ['nullable', 'array'], 'meals.*' => ['string', 'max:255'], 'transport' => ['nullable', 'string', 'max:5000'],
             'activities' => ['nullable', 'array'], 'activities.*' => ['string', 'max:255'], 'included_items' => ['nullable', 'array'], 'included_items.*' => ['string', 'max:255'], 'excluded_items' => ['nullable', 'array'], 'excluded_items.*' => ['string', 'max:255'],
             'highlights' => ['nullable', 'array', 'max:20'], 'highlights.*' => ['string', 'max:255'],
@@ -414,10 +415,24 @@ class OperatorController extends Controller
             'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
+        $meetingPoint = $data['meeting_point'] ?? null;
+        $departureTime = $data['departure_time'] ?? null;
+        $meetingPointAndTime = trim((string) ($data['meeting_point_and_time'] ?? ''));
+        if ($meetingPointAndTime !== '') {
+            if (preg_match('/(?:^|[,\s]+)(\d{1,2}:\d{2}\s*(?:am|pm)?)\s*$/i', $meetingPointAndTime, $timeMatch) === 1) {
+                $departureTime = \Illuminate\Support\Carbon::parse($timeMatch[1])->format('H:i');
+                $meetingPoint = trim(substr($meetingPointAndTime, 0, -strlen($timeMatch[0])), " \t\n\r\0\x0B,");
+            } elseif (! filled($meetingPoint)) {
+                $meetingPoint = $meetingPointAndTime;
+            }
+        }
+
         $departure = \Illuminate\Support\Carbon::parse($data['departure_date']);
         $return = \Illuminate\Support\Carbon::parse($data['return_date']);
-        if (filled($data['departure_time'] ?? null)) {
-            $departure->setTimeFromTimeString($data['departure_time']);
+        if (filled($departureTime)) {
+            $departure->setTimeFromTimeString($departureTime);
+        } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $data['departure_date']) === 1) {
+            $departure->setTime(8, 0);
         }
         if (filled($data['return_time'] ?? null)) {
             $return->setTimeFromTimeString($data['return_time']);
@@ -430,7 +445,8 @@ class OperatorController extends Controller
         $data['duration_days'] = max(1, (int) ceil($departure->diffInMinutes($return) / 1440));
         $data['departure_date'] = $departure;
         $data['return_date'] = $return;
-        unset($data['departure_time'], $data['return_time']);
+        $data['meeting_point'] = $meetingPoint;
+        unset($data['meeting_point_and_time'], $data['departure_time'], $data['return_time']);
         $data['pickup_points'] = $data['pickup_points'] ?? [];
 
         if ($data['duration_days'] > 365) {

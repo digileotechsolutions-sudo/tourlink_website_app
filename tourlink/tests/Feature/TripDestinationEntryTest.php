@@ -138,6 +138,8 @@ class TripDestinationEntryTest extends TestCase
             ->get(route('admin.trips.create'))
             ->assertOk()
             ->assertSee('name="destination_name"', false)
+            ->assertSee('Drop images here or browse')
+            ->assertDontSee('JSON array of day, title and detail')
             ->assertDontSee('name="destination_id"', false);
     }
 
