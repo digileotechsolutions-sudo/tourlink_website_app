@@ -581,6 +581,16 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
             objectUrls.forEach((url) => URL.revokeObjectURL(url));
             objectUrls = [];
             const existing = preview?.querySelectorAll('[data-existing-image]').length ?? 0;
+            const selectedFiles = [...(fileInput.files ?? [])];
+            const oversizedFiles = selectedFiles.filter((file) => file.size > 5 * 1024 * 1024);
+            if (oversizedFiles.length > 0) {
+                const acceptedFiles = selectedFiles.filter((file) => file.size <= 5 * 1024 * 1024);
+                const transfer = new DataTransfer();
+                acceptedFiles.forEach((file) => transfer.items.add(file));
+                fileInput.files = transfer.files;
+                uploadStatus.textContent = `${oversizedFiles.map((file) => file.name).join(', ')} exceeds the 5 MB image size limit. Choose smaller image(s).`;
+                uploadStatus.classList.add('font-bold', 'text-red-700');
+            }
             if (existing + (fileInput.files?.length ?? 0) > 12) {
                 fileInput.value = '';
                 uploadStatus.textContent = 'Keep the total trip image count to 12 or fewer.';
@@ -603,7 +613,10 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
                 wrapper.append(image, name);
                 preview?.append(wrapper);
             });
-            uploadStatus.textContent = fileInput.files?.length ? `${fileInput.files.length} image(s) ready to upload.` : '';
+            if (oversizedFiles.length === 0) {
+                uploadStatus.textContent = fileInput.files?.length ? `${fileInput.files.length} image(s) ready to upload.` : '';
+                uploadStatus.classList.remove('font-bold', 'text-red-700');
+            }
             updatePreview();
         }
     });
@@ -763,6 +776,16 @@ document.querySelectorAll('[data-admin-image-upload]').forEach((uploader) => {
         previewUrls = [];
         preview.querySelectorAll('[data-admin-new-image]').forEach((image) => image.remove());
         const existingCount = preview.querySelectorAll('[data-admin-existing-image]').length;
+        const selectedFiles = [...(input.files ?? [])];
+        const oversizedFiles = selectedFiles.filter((file) => file.size > 5 * 1024 * 1024);
+        if (oversizedFiles.length > 0) {
+            const acceptedFiles = selectedFiles.filter((file) => file.size <= 5 * 1024 * 1024);
+            const transfer = new DataTransfer();
+            acceptedFiles.forEach((file) => transfer.items.add(file));
+            input.files = transfer.files;
+            status.textContent = `${oversizedFiles.map((file) => file.name).join(', ')} exceeds the 5 MB image size limit. Choose smaller image(s).`;
+            status.classList.add('font-bold', 'text-red-700');
+        }
         const files = [...(input.files ?? [])];
 
         if (existingCount + files.length > 12) {
@@ -788,8 +811,10 @@ document.querySelectorAll('[data-admin-image-upload]').forEach((uploader) => {
             card.append(image, caption);
             preview.append(card);
         });
-        status.textContent = files.length ? `${files.length} image(s) selected and ready to upload.` : '';
-        status.classList.remove('font-bold', 'text-red-700');
+        if (oversizedFiles.length === 0) {
+            status.textContent = files.length ? `${files.length} image(s) selected and ready to upload.` : '';
+            status.classList.remove('font-bold', 'text-red-700');
+        }
     };
 
     input.addEventListener('change', renderFiles);
