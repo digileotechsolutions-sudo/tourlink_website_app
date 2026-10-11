@@ -206,13 +206,6 @@
                         @endforeach
                     </select>
                 </label>
-                <label class="grid gap-1.5 text-sm font-semibold text-slate-700">Verification status
-                    <select name="verification_status" required class="min-h-11 rounded border border-slate-300 bg-white px-3 font-normal text-slate-950">
-                        @foreach ($verificationStatuses as $status)
-                            <option value="{{ $status->value }}" @selected(old('verification_status', $trip->verification_status?->value ?? 'PENDING') === $status->value)>{{ str($status->value)->replace('_', ' ')->title() }}</option>
-                        @endforeach
-                    </select>
-                </label>
                 <label class="flex min-h-11 items-center gap-3 text-sm font-semibold text-slate-700">
                     <input type="checkbox" name="featured" value="1" @checked(old('featured', $trip->featured ?? false)) class="size-4 accent-emerald-800">
                     Featured listing

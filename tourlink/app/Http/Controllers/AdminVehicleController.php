@@ -150,7 +150,6 @@ class AdminVehicleController extends Controller
             'owner_id' => ['required', 'string', Rule::exists('users', 'id')->where('role', Role::VehicleOwner->value)->where('account_status', AccountStatus::Active->value)->where('approval_status', AccountApprovalStatus::Approved->value)],
             'destination_id' => ['nullable', 'string', 'exists:destinations,id'],
             'status' => ['required', Rule::in(array_column(ListingStatus::cases(), 'value'))],
-            'verification_status' => ['required', Rule::in(array_values(array_diff(array_column(VerificationStatus::cases(), 'value'), [VerificationStatus::UnderReview->value])))],
             'images' => ['nullable', 'array', 'max:12'],
             'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],
@@ -167,6 +166,8 @@ class AdminVehicleController extends Controller
             throw ValidationException::withMessages(['images_files' => 'The combined image upload must be 6 MB or less. Compress or remove images and try again.']);
         }
 
+        $data['verification_status'] = $vehicle?->verification_status->value ?? VerificationStatus::Pending->value;
+
         if ($data['status'] === ListingStatus::Published->value && $data['verification_status'] !== VerificationStatus::Approved->value) {
             throw ValidationException::withMessages(['status' => 'A vehicle must be approved before it can be published.']);
         }
@@ -181,7 +182,6 @@ class AdminVehicleController extends Controller
             'owners' => User::query()->where('role', Role::VehicleOwner)->where('account_status', AccountStatus::Active)->where('approval_status', AccountApprovalStatus::Approved)->orderBy('name')->get(['id', 'name', 'email']),
             'destinations' => Destination::query()->orderBy('name')->get(['id', 'name']),
             'listingStatuses' => ListingStatus::cases(),
-            'verificationStatuses' => VerificationStatus::cases(),
         ];
     }
 

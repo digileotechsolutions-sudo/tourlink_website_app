@@ -63,7 +63,6 @@
             <section class="grid gap-4 sm:grid-cols-2" aria-labelledby="vehicle-status-heading">
                 <h2 id="vehicle-status-heading" class="col-span-full border-b border-slate-200 pb-2 text-xl font-extrabold text-slate-950">Publication</h2>
                 <label class="grid gap-1 text-sm font-semibold">Listing status<select name="status" required class="min-h-11 rounded border border-slate-300 bg-white px-3 font-normal">@foreach($listingStatuses as $status)<option value="{{ $status->value }}" @selected(old('status', $vehicle->status?->value ?? 'DRAFT') === $status->value)>{{ str($status->value)->title() }}</option>@endforeach</select></label>
-                <label class="grid gap-1 text-sm font-semibold">Verification status<select name="verification_status" required class="min-h-11 rounded border border-slate-300 bg-white px-3 font-normal">@foreach($verificationStatuses as $status)<option value="{{ $status->value }}" @selected(old('verification_status', $vehicle->verification_status?->value ?? 'PENDING') === $status->value)>{{ str($status->value)->replace('_', ' ')->title() }}</option>@endforeach</select></label>
             </section>
 
             <footer class="flex justify-end gap-3 border-t border-slate-200 pt-5"><a href="{{ route('admin.vehicles.index') }}" class="rounded border border-slate-300 px-5 py-3 text-sm font-bold text-slate-700">Cancel</a><button class="rounded bg-emerald-800 px-6 py-3 text-sm font-bold text-white">{{ $editing ? 'Save vehicle' : 'Add vehicle' }}</button></footer>

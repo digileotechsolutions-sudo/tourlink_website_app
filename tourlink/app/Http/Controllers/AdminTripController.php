@@ -67,6 +67,7 @@ class AdminTripController extends Controller
     public function store(Request $request, DestinationResolver $destinationResolver): RedirectResponse
     {
         $data = $this->validatedTripData($request);
+        $data['submitted_at'] = $data['verification_status'] === VerificationStatus::Pending->value ? now() : null;
         $images = $data['images'] ?? [];
         unset($data['images'], $data['images_files']);
         $images = $this->uploadedImages($request, $images);
@@ -165,7 +166,6 @@ class AdminTripController extends Controller
             'required_vehicle_id' => ['nullable', 'string', 'exists:vehicles,id'],
             'status' => ['required', Rule::in(array_column(ListingStatus::cases(), 'value'))],
             'featured' => ['required', 'boolean'],
-            'verification_status' => ['required', Rule::in(array_values(array_diff(array_column(VerificationStatus::cases(), 'value'), [VerificationStatus::UnderReview->value])))],
             'images' => ['nullable', 'array', 'max:12'],
             'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],
@@ -181,6 +181,8 @@ class AdminTripController extends Controller
         if ($imageUploadBytes > 6 * 1024 * 1024) {
             throw ValidationException::withMessages(['images_files' => 'The combined image upload must be 6 MB or less. Compress or remove images and try again.']);
         }
+
+        $data['verification_status'] = $trip?->verification_status->value ?? VerificationStatus::Pending->value;
 
         if ($data['status'] === ListingStatus::Published->value && $data['verification_status'] !== VerificationStatus::Approved->value) {
             throw ValidationException::withMessages(['status' => 'A trip must be approved before it can be published.']);
@@ -246,7 +248,6 @@ class AdminTripController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name', 'owner_id', 'status']),
             'listingStatuses' => ListingStatus::cases(),
-            'verificationStatuses' => VerificationStatus::cases(),
         ];
     }
 
