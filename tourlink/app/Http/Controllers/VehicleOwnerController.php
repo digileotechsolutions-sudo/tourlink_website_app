@@ -76,7 +76,7 @@ class VehicleOwnerController extends Controller
         $data['owner_id'] = $request->user()->id;
         $data['status'] = ListingStatus::Draft;
         $data['verification_status'] = VerificationStatus::Pending;
-        $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name']);
+        $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name']);
 
         $vehicle = DB::transaction(function () use ($data, $images): Vehicle {
             $vehicle = Vehicle::query()->create($data);
@@ -103,7 +103,7 @@ class VehicleOwnerController extends Controller
         $data = $this->validatedData($request, $vehicle);
         $images = $this->uploadedImages($request, $data['images'] ?? []);
         unset($data['images'], $data['images_files'], $data['status'], $data['verification_status'], $data['owner_id']);
-        $data['slug'] = $this->uniqueSlug($data['slug'] ?: $data['name'], $vehicle);
+        $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name'], $vehicle);
         $data['status'] = ListingStatus::Draft;
         $data['verification_status'] = VerificationStatus::Pending;
 
