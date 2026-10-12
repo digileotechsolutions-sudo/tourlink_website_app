@@ -1,4 +1,4 @@
-<meta name="theme-color" content="#1F0052">
+<meta name="theme-color" content="#190c6e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
