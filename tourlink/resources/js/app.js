@@ -344,6 +344,22 @@ document.querySelectorAll('img[loading="lazy"]').forEach((image) => {
     image.addEventListener('error', clearSkeleton, { once: true });
 });
 
+document.querySelectorAll('[data-category-marquee]').forEach((marquee) => {
+    const track = marquee.querySelector('.home-category-track');
+    const sequence = marquee.querySelector('[data-category-sequence]');
+    if (!track || !sequence || sequence.children.length === 0) return;
+
+    const duplicate = sequence.cloneNode(true);
+    duplicate.removeAttribute('data-category-sequence');
+    duplicate.setAttribute('aria-hidden', 'true');
+    duplicate.querySelectorAll('button').forEach((button) => {
+        button.disabled = true;
+        button.tabIndex = -1;
+    });
+    track.append(duplicate);
+    marquee.classList.add('is-moving');
+});
+
 document.addEventListener('submit', (event) => {
     const form = event.target;
 

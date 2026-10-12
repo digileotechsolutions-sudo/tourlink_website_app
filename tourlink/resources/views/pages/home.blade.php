@@ -78,7 +78,9 @@
         </div>
     </div>
 
-    <div class="home-category-row" aria-label="{{ __('Travel categories') }}">
+    <div class="home-category-marquee" data-category-marquee>
+        <div class="home-category-track">
+            <div class="home-category-sequence" data-category-sequence aria-label="{{ __('Travel categories') }}">
         @foreach($homeCategories as $category)
             <button type="button" class="home-category-card {{ $loop->first ? 'is-active' : '' }}">
                 <span class="home-category-icon" aria-hidden="true">
@@ -106,6 +108,8 @@
                 <span>{{ $category['name'] }}</span>
             </button>
         @endforeach
+            </div>
+        </div>
     </div>
 </section>
 
