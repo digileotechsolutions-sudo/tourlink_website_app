@@ -141,7 +141,11 @@ class AdminTripController extends Controller
             'duration_days' => ['required', 'integer', 'min:1', 'max:365'],
             'departure_date' => ['required', 'date'],
             'return_date' => ['required', 'date', 'after:departure_date'],
+            'meeting_point' => ['nullable', 'string', 'max:255'],
+            'transport_type' => ['nullable', Rule::in(['TOUR_VAN', 'BUS', '4X4_SAFARI', 'PRIVATE_CAR', 'NO_TRANSPORT'])],
             'price_per_person' => ['required', 'integer', 'min:0', 'max:100000000'],
+            'child_price' => ['nullable', 'integer', 'min:0', 'max:100000000'],
+            'deposit_amount' => ['nullable', 'integer', 'min:0', 'lte:price_per_person'],
             'group_discount_percent' => ['nullable', 'integer', 'between:0,100'],
             'max_travelers' => ['required', 'integer', 'min:1', 'max:10000'],
             'min_travelers' => ['required', 'integer', 'min:1', 'lte:max_travelers'],
@@ -154,6 +158,11 @@ class AdminTripController extends Controller
             'itinerary.*.detail' => ['required', 'string', 'max:4000'],
             'itinerary.*.start_time' => ['nullable', 'date_format:H:i'],
             'itinerary.*.end_time' => ['nullable', 'date_format:H:i'],
+            'itinerary.*.location' => ['nullable', 'string', 'max:255'],
+            'itinerary.*.meals' => ['nullable', 'string', 'max:500'],
+            'additional_charges' => ['nullable', 'array', 'max:20'],
+            'additional_charges.*.name' => ['required', 'string', 'max:120'],
+            'additional_charges.*.amount' => ['required', 'integer', 'min:0', 'max:100000000'],
             'accommodation' => ['nullable', 'string', 'max:5000'],
             'meals' => ['nullable', 'array'],
             'meals.*' => ['required', 'string', 'max:255'],
@@ -230,6 +239,11 @@ class AdminTripController extends Controller
 
             $normalized[$field] = is_array($value) ? $value : null;
         }
+
+        $charges = $request->input('additional_charges', []);
+        $normalized['additional_charges'] = is_array($charges)
+            ? array_values(array_filter($charges, static fn (mixed $charge): bool => is_array($charge) && (filled($charge['name'] ?? null) || filled($charge['amount'] ?? null))))
+            : [];
 
         $request->merge($normalized);
     }

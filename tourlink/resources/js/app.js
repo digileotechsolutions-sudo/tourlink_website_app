@@ -861,7 +861,7 @@ document.querySelectorAll('[data-admin-trip-wizard]').forEach((form) => {
     const next = form.querySelector('[data-admin-wizard-next]');
     const submit = form.querySelector('[data-admin-wizard-submit]');
     const cancel = form.querySelector('[data-admin-wizard-cancel]');
-    const stepNames = ['Trip information', 'Schedule', 'Pricing', 'Publish'];
+    const stepNames = (form.dataset.adminStepNames ?? 'Trip information|Schedule|Pricing|Media|Publish').split('|');
     let current = Number(currentInput?.value ?? 0);
     const invalidFieldNames = form.dataset.adminInvalidFields?.split(',').filter(Boolean) ?? [];
 

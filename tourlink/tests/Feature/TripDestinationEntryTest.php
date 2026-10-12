@@ -143,6 +143,9 @@ class TripDestinationEntryTest extends TestCase
             ->assertOk()
             ->assertSee('name="destination_name"', false)
             ->assertSee('Drop images here or browse')
+            ->assertSee('data-admin-trip-step="4"', false)
+            ->assertSee('name="child_price"', false)
+            ->assertSee('name="group_discount_percent"', false)
             ->assertDontSee('JSON array of day, title and detail')
             ->assertDontSee('name="destination_id"', false);
     }

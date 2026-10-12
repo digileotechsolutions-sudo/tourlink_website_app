@@ -143,6 +143,12 @@ html:has(.mobile-app-menu[open]), body:has(.mobile-app-menu[open]), html:has(.si
 .trip-builder .accent-emerald-800 { accent-color: var(--brand-purple) !important; }
 .trip-builder .hover\:bg-emerald-50:hover { background-color: var(--brand-purple-soft) !important; }
 .trip-builder input:focus-visible, .trip-builder select:focus-visible, .trip-builder textarea:focus-visible, .trip-builder button:focus-visible { outline-color: var(--brand-pink); }
+.admin-trip-wizard .text-emerald-800, .admin-trip-wizard .text-emerald-900, .admin-trip-wizard .text-emerald-950 { color: var(--brand-purple) !important; }
+.admin-trip-wizard .bg-emerald-50, .admin-trip-wizard [class~="bg-emerald-50/50"] { background-color: var(--brand-purple-soft) !important; }
+.admin-trip-wizard .bg-emerald-800, .admin-trip-wizard .bg-neutral-950 { background-color: var(--brand-purple) !important; }
+.admin-trip-wizard .border-emerald-200, .admin-trip-wizard .border-emerald-300, .admin-trip-wizard .border-emerald-700, .admin-trip-wizard .border-emerald-800 { border-color: rgb(31 0 82 / 28%) !important; }
+.admin-trip-wizard .accent-emerald-800 { accent-color: var(--brand-purple) !important; }
+.admin-trip-wizard input:focus-visible, .admin-trip-wizard select:focus-visible, .admin-trip-wizard textarea:focus-visible, .admin-trip-wizard button:focus-visible { outline-color: var(--brand-pink); }
 
 .login-page { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 32px 20px; background: #fff; }
 .login-page:has(.auth-login-shell), .login-page:has(.auth-compact-shell) { background: #fff; animation: none; }
