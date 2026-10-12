@@ -10,6 +10,11 @@
         </div>
         <div class="p-4">
             <div class="flex items-start justify-between gap-3"><div><h3 class="font-extrabold text-ink">{{ $vehicle->name }}</h3><p class="mt-1 text-xs text-slate-500">{{ $vehicle->body_type }} · {{ $vehicle->location }}</p></div><span class="shrink-0 text-xs font-bold text-ink">{{ $vehicle->reviews_avg_rating ? number_format((float) $vehicle->reviews_avg_rating, 1) : 'New' }} <span class="font-normal text-slate-400">({{ $vehicle->reviews_count }})</span></span></div>
+            <div class="mt-3 flex min-w-0 items-center gap-2 text-xs">
+                <svg class="size-4 shrink-0 text-slate-400" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20a7 7 0 0 1 14 0"></path></svg>
+                <span class="shrink-0 text-slate-500">{{ __('Listed by') }}</span>
+                <strong class="truncate text-ink">{{ $vehicle->owner?->name ?? __('Vehicle owner') }}</strong>
+            </div>
             <div class="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-500"><span class="rounded-full bg-mist px-2.5 py-1">{{ $vehicle->seating_capacity }} seats</span>@if($vehicle->four_by_four)<span class="rounded-full bg-mist px-2.5 py-1">4×4</span>@endif @if($vehicle->driver_included)<span class="rounded-full bg-mist px-2.5 py-1">Driver included</span>@endif</div>
             <p class="mt-4 text-lg font-black text-ink">KES {{ number_format($vehicle->price_per_day) }} <span class="text-xs font-medium text-slate-400">/ day</span></p>
         </div>

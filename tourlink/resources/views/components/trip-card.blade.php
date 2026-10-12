@@ -12,6 +12,11 @@
         </div>
         <div class="p-4">
             <div class="mb-4 flex items-center justify-between gap-3"><span class="truncate text-xs font-semibold text-slate-500">{{ $trip->destination?->name }}</span><span class="shrink-0 text-xs font-bold text-ink">{{ $trip->reviews_avg_rating ? number_format((float) $trip->reviews_avg_rating, 1) : 'New' }} <span class="font-normal text-slate-400">({{ $trip->reviews_count }})</span></span></div>
+            <div class="mb-4 flex min-w-0 items-center gap-2 border-t border-slate-100 pt-3 text-xs">
+                <svg class="size-4 shrink-0 text-slate-400" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20a7 7 0 0 1 14 0"></path></svg>
+                <span class="shrink-0 text-slate-500">{{ __('Listed by') }}</span>
+                <strong class="truncate text-ink">{{ $trip->operator?->name ?? __('Tourlink provider') }}</strong>
+            </div>
             <div class="flex items-end justify-between gap-3"><div><span class="text-xs text-slate-400">from</span><p class="text-lg font-black text-ink">KES {{ number_format($trip->price_per_person) }} <span class="text-xs font-medium text-slate-400">/ person</span></p></div><span class="rounded-full bg-sand px-3 py-1.5 text-xs font-bold text-ink">{{ $trip->duration_days }} days</span></div>
         </div>
     </a>
