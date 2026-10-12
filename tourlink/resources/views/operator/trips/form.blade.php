@@ -38,6 +38,16 @@
 @endphp
 @section('content')
 <div class="mx-auto w-full max-w-7xl space-y-0 px-3 sm:px-6 lg:px-8">
+        @if ($errors->any())
+            <div role="alert" class="mb-3 rounded-xl border-l-4 border-red-700 bg-red-50 px-4 py-3 text-sm text-red-950">
+                <p class="font-bold">We could not save your trip yet. Please fix the following and try again:</p>
+                <ul class="mt-1 list-disc space-y-0.5 pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <form id="trip-wizard" data-trip-wizard data-step-names="Basic details|Itinerary|Pricing|Media|Review & publish" method="POST" action="{{ $trip->exists ? route('operator.trips.update', $trip) : route('operator.trips.store') }}" enctype="multipart/form-data" class="trip-builder overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:grid lg:grid-cols-[minmax(0,1fr)_320px]">
         @csrf
         @if($trip->exists) @method('PUT') @endif

@@ -773,6 +773,29 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         fileInput.dispatchEvent(new Event('change', { bubbles: true }));
     });
 
+    const toInputName = (key) => key.replace(/\.(\d+)\./g, '[$1][').replace(/\.(\w+)$/, '[$1]');
+    const findInput = (key) => {
+        const name = toInputName(key);
+        return [...form.elements].find((element) => element.name === name || (element.name.endsWith('[]') && name.startsWith(element.name.slice(0, -2))));
+    };
+    const showServerErrors = (errors) => {
+        const keys = Object.keys(errors ?? {});
+        if (keys.length === 0) {
+            return;
+        }
+        const stepOf = (key) => Number(findInput(key)?.closest('[data-trip-step]')?.dataset.tripStep ?? -1);
+        const firstMatched = keys.map(stepOf).find((step) => step >= 0);
+        const targetStep = firstMatched ?? 0;
+        showStep(targetStep);
+        const panel = steps[targetStep]?.querySelector('[data-trip-step-error]');
+        if (panel) {
+            const messages = keys.filter((key) => stepOf(key) === targetStep).flatMap((key) => errors[key]);
+            panel.textContent = messages.join(' ') || 'Please correct the highlighted fields before continuing.';
+            panel.classList.remove('hidden');
+        }
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         if (uploading) {
@@ -800,6 +823,9 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
             button.textContent = 'Saving…';
             button.setAttribute('aria-busy', 'true');
         }
+        if (destinationInput && endingPointInput && !endingPointInput.value.trim()) {
+            endingPointInput.value = destinationInput.value;
+        }
         const data = new FormData(form);
         data.set('submission_action', action);
         tripMediaOrder().forEach((token) => data.append('media_order[]', token));
@@ -807,13 +833,32 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
         const request = new XMLHttpRequest();
         uploading = true;
         request.open(form.method.toUpperCase(), form.action);
-        request.setRequestHeader('Accept', 'text/html');
+        request.setRequestHeader('Accept', 'application/json');
+        request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         request.upload.addEventListener('progress', (progressEvent) => {
             if (uploadStatus && progressEvent.lengthComputable) {
                 uploadStatus.textContent = `Uploading trip photos: ${Math.round((progressEvent.loaded / progressEvent.total) * 100)}%`;
             }
         });
         request.addEventListener('load', () => {
+            if (request.status === 422) {
+                uploading = false;
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = originalText;
+                    button.removeAttribute('aria-busy');
+                }
+                let errors = {};
+                try {
+                    errors = JSON.parse(request.responseText).errors ?? {};
+                } catch {
+                    errors = {};
+                }
+                showServerErrors(errors);
+                uploadStatus.textContent = 'Please correct the highlighted fields and try again.';
+                uploadStatus.classList.add('font-bold', 'text-red-700');
+                return;
+            }
             if (request.status >= 200 && request.status < 400 && request.responseURL) {
                 window.location.assign(request.responseURL);
                 return;
@@ -824,7 +869,14 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
                 button.textContent = originalText;
                 button.removeAttribute('aria-busy');
             }
-            uploadStatus.textContent = 'The trip could not be saved. Check your connection and try again.';
+            let message = 'The trip could not be saved. Check your connection and try again.';
+            try {
+                const payload = JSON.parse(request.responseText);
+                if (payload?.message) {
+                    message = `The trip could not be saved: ${payload.message}`;
+                }
+            } catch {}
+            uploadStatus.textContent = message;
             uploadStatus.classList.add('font-bold', 'text-red-700');
         });
         request.addEventListener('error', () => {
@@ -1403,6 +1455,29 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         }
     });
 
+    const toInputName = (key) => key.replace(/\.(\d+)\./g, '[$1][').replace(/\.(\w+)$/, '[$1]');
+    const findInput = (key) => {
+        const name = toInputName(key);
+        return [...form.elements].find((element) => element.name === name || (element.name.endsWith('[]') && name.startsWith(element.name.slice(0, -2))));
+    };
+    const showServerErrors = (errors) => {
+        const keys = Object.keys(errors ?? {});
+        if (keys.length === 0) {
+            return;
+        }
+        const stepOf = (key) => Number(findInput(key)?.closest('[data-vehicle-step]')?.dataset.vehicleStep ?? -1);
+        const firstMatched = keys.map(stepOf).find((step) => step >= 0);
+        const targetStep = firstMatched ?? 0;
+        showStep(targetStep);
+        const panel = steps[targetStep]?.querySelector('[data-vehicle-step-error]');
+        if (panel) {
+            const messages = keys.filter((key) => stepOf(key) === targetStep).flatMap((key) => errors[key]);
+            panel.textContent = messages.join(' ') || 'Please correct the highlighted fields before continuing.';
+            panel.classList.remove('hidden');
+        }
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         if (busy) return;
@@ -1430,11 +1505,26 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         const request = new XMLHttpRequest();
         busy = true;
         request.open(form.method.toUpperCase(), form.action);
-        request.setRequestHeader('Accept', 'text/html');
+        request.setRequestHeader('Accept', 'application/json');
+        request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         request.upload.addEventListener('progress', (progressEvent) => {
             if (progressEvent.lengthComputable) imageStatus.textContent = `Uploading photos: ${Math.round(progressEvent.loaded / progressEvent.total * 100)}%`;
         });
         request.addEventListener('load', () => {
+            if (request.status === 422) {
+                busy = false;
+                if (button) { button.disabled = false; button.textContent = originalText; button.removeAttribute('aria-busy'); }
+                let errors = {};
+                try {
+                    errors = JSON.parse(request.responseText).errors ?? {};
+                } catch {
+                    errors = {};
+                }
+                showServerErrors(errors);
+                imageStatus.textContent = 'Please correct the highlighted fields and try again.';
+                imageStatus.classList.add('font-bold', 'text-red-700');
+                return;
+            }
             if (request.status >= 200 && request.status < 400 && request.responseURL) {
                 sessionStorage.removeItem(storageKey);
                 window.location.assign(request.responseURL);
@@ -1442,7 +1532,14 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
             }
             busy = false;
             if (button) { button.disabled = false; button.textContent = originalText; button.removeAttribute('aria-busy'); }
-            imageStatus.textContent = 'Could not save the vehicle. Review the form and try again.';
+            let message = 'Could not save the vehicle. Review the form and try again.';
+            try {
+                const payload = JSON.parse(request.responseText);
+                if (payload?.message) {
+                    message = `Could not save the vehicle: ${payload.message}`;
+                }
+            } catch {}
+            imageStatus.textContent = message;
             imageStatus.classList.add('font-bold', 'text-red-700');
         });
         request.addEventListener('error', () => {

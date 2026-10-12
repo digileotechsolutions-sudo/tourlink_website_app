@@ -29,17 +29,16 @@
         @if (session('status'))
             <p role="status" class="mt-5 border-l-4 border-emerald-700 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-950">{{ session('status') }}</p>
         @endif
-        @if ($errors->any())
-            <div role="alert" class="mt-5 border-l-4 border-red-700 bg-red-50 px-4 py-3 text-sm text-red-950">
-                <p class="font-bold">Review the highlighted fields.</p>
-                @foreach ($errors->all() as $error)<p class="mt-1">{{ $error }}</p>@endforeach
-            </div>
-        @endif
-
         <form data-admin-trip-wizard data-admin-step-names="Details|Itinerary|Pricing|Media|Publish" data-admin-invalid-fields="{{ implode(',', $errors->keys()) }}" method="POST" action="{{ $editing ? route('admin.trips.save', $trip) : route('admin.trips.store') }}" enctype="multipart/form-data" novalidate class="admin-trip-wizard overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             @csrf
             @if ($editing) @method('PUT') @endif
             <input type="hidden" name="wizard_step" value="{{ old('wizard_step', 0) }}" data-admin-wizard-current>
+            @if ($errors->any())
+                <div role="alert" class="border-b border-red-200 bg-red-50 px-4 py-3 text-sm text-red-950">
+                    <p class="font-bold">Review the highlighted fields.</p>
+                    @foreach ($errors->all() as $error)<p class="mt-1">{{ $error }}</p>@endforeach
+                </div>
+            @endif
 
             <header class="bg-ink px-4 pb-3 pt-4 text-white">
                 <div class="flex items-center gap-3">
