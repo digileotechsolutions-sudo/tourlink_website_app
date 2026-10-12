@@ -13,11 +13,18 @@
         @if (request()->routeIs('home'))
             <div class="site-header__mobile-app-shell" aria-label="{{ __('Tourlink app header') }}">
                 <div class="site-header__mobile-app-bar">
-                    <button class="site-header__mobile-app-menu" type="button" aria-label="{{ __('Open navigation menu') }}">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <details class="site-header__mobile site-header__mobile-app-navigation">
+                        <summary class="site-header__mobile-app-menu" aria-label="{{ __('Open navigation menu') }}">
+                        <svg class="site-header__menu-open" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                             <path d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
-                    </button>
+                        <svg class="site-header__menu-close" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="m6 6 12 12M18 6 6 18"></path>
+                        </svg>
+                        <span class="sr-only">{{ __('Toggle navigation menu') }}</span>
+                        </summary>
+                        @include('components.site-header-mobile-panel', ['dashboardRoute' => $dashboardRoute])
+                    </details>
 
                     <a class="site-header__mobile-brand" href="{{ route('home') }}" aria-label="{{ __('Havenedge Tourlink home') }}">
                         <span class="site-header__mobile-brand-mark" aria-hidden="true">HT</span>
@@ -111,31 +118,7 @@
                     </svg>
                     <span class="sr-only">{{ __('Toggle navigation menu') }}</span>
                 </summary>
-                <div class="site-header__mobile-panel">
-                    <p class="site-header__mobile-eyebrow">{{ __('Explore Havenedge Tourlink') }}</p>
-                    <nav aria-label="{{ __('Mobile navigation') }}">
-                        <a href="{{ route('trips.index') }}">{{ __('Find a trip') }} <span aria-hidden="true">→</span></a>
-                        <a href="{{ route('vehicles.index') }}">{{ __('Hire a vehicle') }} <span aria-hidden="true">→</span></a>
-                        <a href="{{ route('blog.index') }}">{{ __('Journal') }} <span aria-hidden="true">→</span></a>
-                        <a href="{{ route('about') }}">{{ __('About us') }} <span aria-hidden="true">→</span></a>
-                        <a href="{{ route('contact') }}">{{ __('Talk to us') }} <span aria-hidden="true">→</span></a>
-                        <a href="{{ route('home') }}#destinations">{{ __('Destinations') }} <span aria-hidden="true">→</span></a>
-                    </nav>
-                    <div class="site-header__mobile-account">
-                        @auth
-                            @if (Route::has($dashboardRoute))
-                                <a class="site-header__mobile-primary" href="{{ route($dashboardRoute) }}">{{ __('My account') }}</a>
-                            @endif
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit">{{ __('Log out') }}</button>
-                            </form>
-                        @else
-                            <a href="{{ route('login') }}">{{ __('Log in') }}</a>
-                            <a class="site-header__mobile-primary" href="{{ route('register') }}">{{ __('Join Tourlink') }}</a>
-                        @endauth
-                    </div>
-                </div>
+                @include('components.site-header-mobile-panel', ['dashboardRoute' => $dashboardRoute])
             </details>
     </div>
 </header>
