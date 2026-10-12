@@ -1100,6 +1100,14 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
     let dirty = false;
     let previewUrls = [];
     let imageSelectionVersion = 0;
+    let coverPreviewDataUrl = null;
+
+    const imageDataUrl = (file) => new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => resolve(typeof reader.result === 'string' ? reader.result : null), { once: true });
+        reader.addEventListener('error', () => resolve(null), { once: true });
+        reader.readAsDataURL(file);
+    });
 
     const imageDimensions = async (file) => {
         if (typeof createImageBitmap === 'function') {
@@ -1203,9 +1211,12 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         if (imageTarget) {
             if (firstFile || existingImage) {
                 const image = document.createElement('img');
-                image.src = firstFile ? (previewUrls[0] ?? URL.createObjectURL(firstFile)) : existingImage.src;
+                image.src = firstFile ? (coverPreviewDataUrl ?? previewUrls[0] ?? URL.createObjectURL(firstFile)) : existingImage.src;
                 image.alt = 'Vehicle cover preview';
                 image.className = 'h-52 w-full object-cover';
+                image.addEventListener('error', () => {
+                    imageTarget.textContent = 'This image format cannot be previewed in this browser. It will still be checked when uploaded.';
+                }, { once: true });
                 imageTarget.replaceChildren(image);
             } else {
                 imageTarget.textContent = 'Vehicle photo preview';
@@ -1319,6 +1330,7 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         if (event.target !== imageInput) return;
         const selectionVersion = ++imageSelectionVersion;
         dirty = true;
+        coverPreviewDataUrl = null;
         previewUrls.forEach(URL.revokeObjectURL);
         previewUrls = [];
         imagePreview.querySelectorAll('[data-vehicle-new-image]').forEach((node) => node.remove());
@@ -1401,6 +1413,11 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         });
         reindexVehicleImages();
         updatePreview();
+        if (selectedFiles[0]) {
+            coverPreviewDataUrl = await imageDataUrl(selectedFiles[0]);
+            if (selectionVersion !== imageSelectionVersion) return;
+            updatePreview();
+        }
         const dimensionFailures = [];
         let undecodableCount = 0;
         for (const [index, file] of selectedFiles.entries()) {
@@ -1432,6 +1449,10 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
 
             imageInput.files = transfer.files;
             previewUrls = nextPreviewUrls;
+            if (failedIndices.has(0)) {
+                coverPreviewDataUrl = imageInput.files[0] ? await imageDataUrl(imageInput.files[0]) : null;
+                if (selectionVersion !== imageSelectionVersion) return;
+            }
             imagePreview.querySelectorAll('[data-vehicle-new-image]').forEach((card) => {
                 const nextIndex = nextIndexByPrevious.get(Number(card.dataset.vehicleFileIndex));
                 if (nextIndex !== undefined) card.dataset.vehicleFileIndex = String(nextIndex);
