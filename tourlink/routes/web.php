@@ -38,6 +38,18 @@ use App\Http\Middleware\RequireTermsAcceptance;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+
+Route::get('/storage/{path}', function (string $path) {
+    abort_unless(preg_match('~^(?:trip-images|vehicle-images|blog-images|operator-logos|traveler-avatars)/[A-Za-z0-9_-][A-Za-z0-9._-]*$~D', $path) === 1, 404);
+
+    $disk = Storage::disk('public');
+    abort_unless($disk->exists($path), 404);
+
+    return $disk->response($path, basename($path), [
+        'Cache-Control' => 'public, max-age=604800',
+    ]);
+})->where('path', '.*')->name('public.uploads.show');
 
 Route::post('/language', function (Request $request) {
     $data = $request->validate([
