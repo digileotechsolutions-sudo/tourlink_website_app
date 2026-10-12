@@ -31,6 +31,78 @@
             <a href="{{ route('admin.verification.index') }}" class="grid min-h-11 place-items-center text-sm font-semibold text-slate-600 hover:text-slate-950">Clear</a>
         </form>
 
+        @if ($showListingSubmissions)
+            <section class="border-b border-slate-200 py-6" aria-labelledby="verification-trips-heading">
+                <div class="flex flex-wrap items-baseline justify-between gap-3">
+                    <h2 id="verification-trips-heading" class="text-xl font-extrabold text-slate-950">Trip submissions</h2>
+                    <span class="text-sm text-slate-500">{{ $pendingTrips->count() }} awaiting verification</span>
+                </div>
+                @forelse ($pendingTrips as $trip)
+                    <article class="grid gap-5 border-b border-slate-100 py-6 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
+                        <div>
+                            <div class="flex flex-wrap items-baseline justify-between gap-3">
+                                <h3 class="text-lg font-extrabold text-slate-950">{{ $trip->name }}</h3>
+                                <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-900">Trip</span>
+                            </div>
+                            <p class="mt-1 text-sm text-slate-600">{{ $trip->operator?->name ?? 'Operator unavailable' }} · {{ $trip->operator?->email }}</p>
+                            <p class="mt-1 text-xs text-slate-500">{{ $trip->destination?->name ?? 'Destination not set' }} · {{ $trip->duration_days }} days · KES {{ number_format($trip->price_per_person) }} per person · Submitted {{ $trip->submitted_at?->format('Y-m-d H:i') }}</p>
+                            <a href="{{ route('admin.trips.edit', $trip) }}" class="mt-3 inline-block rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100">Open full trip</a>
+                        </div>
+                        <form method="POST" action="{{ route('admin.trips.update', $trip) }}" class="grid content-start gap-3">
+                            @csrf @method('PATCH')
+                            <label class="grid gap-1 text-sm font-semibold text-slate-700">Reviewer note
+                                <input name="approval_note" maxlength="2000" class="min-h-11 rounded border border-slate-300 px-3 text-sm font-normal" placeholder="Optional note to the operator">
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                                <button name="verification_status" value="APPROVED" class="rounded bg-emerald-800 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-900">Verify</button>
+                                <button name="verification_status" value="MORE_INFO" class="rounded border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Request info</button>
+                                <button name="verification_status" value="REJECTED" class="rounded border border-red-300 px-4 py-2.5 text-sm font-bold text-red-700 hover:bg-red-50">Reject</button>
+                            </div>
+                        </form>
+                    </article>
+                @empty
+                    <p class="py-6 text-sm text-slate-600">No trip submissions are waiting for verification.</p>
+                @endforelse
+            </section>
+
+            <section class="border-b border-slate-200 py-6" aria-labelledby="verification-vehicles-heading">
+                <div class="flex flex-wrap items-baseline justify-between gap-3">
+                    <h2 id="verification-vehicles-heading" class="text-xl font-extrabold text-slate-950">Vehicle submissions</h2>
+                    <span class="text-sm text-slate-500">{{ $pendingVehicles->count() }} awaiting verification</span>
+                </div>
+                @forelse ($pendingVehicles as $vehicle)
+                    <article class="grid gap-5 border-b border-slate-100 py-6 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
+                        <div>
+                            <div class="flex flex-wrap items-baseline justify-between gap-3">
+                                <h3 class="text-lg font-extrabold text-slate-950">{{ $vehicle->name }}</h3>
+                                <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-900">Vehicle</span>
+                            </div>
+                            <p class="mt-1 text-sm text-slate-600">{{ $vehicle->owner?->name ?? 'Owner unavailable' }} · {{ $vehicle->owner?->email }}</p>
+                            <p class="mt-1 text-xs text-slate-500">{{ $vehicle->registration_number }} · {{ $vehicle->destination?->name ?? $vehicle->location }} · {{ $vehicle->seating_capacity }} seats · KES {{ number_format($vehicle->price_per_day) }} per day · Submitted {{ $vehicle->submitted_at?->format('Y-m-d H:i') }}</p>
+                            <a href="{{ route('admin.vehicles.edit', $vehicle) }}" class="mt-3 inline-block rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100">Open full vehicle</a>
+                        </div>
+                        <form method="POST" action="{{ route('admin.vehicles.update', $vehicle) }}" class="grid content-start gap-3">
+                            @csrf @method('PATCH')
+                            <label class="grid gap-1 text-sm font-semibold text-slate-700">Reviewer note
+                                <input name="approval_note" maxlength="2000" class="min-h-11 rounded border border-slate-300 px-3 text-sm font-normal" placeholder="Optional note to the owner">
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                                <button name="verification_status" value="APPROVED" class="rounded bg-emerald-800 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-900">Verify</button>
+                                <button name="verification_status" value="MORE_INFO" class="rounded border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Request info</button>
+                                <button name="verification_status" value="REJECTED" class="rounded border border-red-300 px-4 py-2.5 text-sm font-bold text-red-700 hover:bg-red-50">Reject</button>
+                            </div>
+                        </form>
+                    </article>
+                @empty
+                    <p class="py-6 text-sm text-slate-600">No vehicle submissions are waiting for verification.</p>
+                @endforelse
+            </section>
+        @endif
+
+        <div class="flex flex-wrap items-baseline justify-between gap-3 pt-6">
+            <h2 class="text-xl font-extrabold text-slate-950">Document verification requests</h2>
+        </div>
+
         @forelse ($requests as $verificationRequest)
             <article class="grid gap-5 border-b border-slate-200 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
                 <div>
@@ -93,7 +165,7 @@
                 </form>
             </article>
         @empty
-            <p class="py-10 text-sm text-slate-600">No verification requests match these filters.</p>
+            <p class="py-10 text-sm text-slate-600">No document verification requests match these filters.</p>
         @endforelse
         <div class="mt-6">{{ $requests->links() }}</div>
     </div>

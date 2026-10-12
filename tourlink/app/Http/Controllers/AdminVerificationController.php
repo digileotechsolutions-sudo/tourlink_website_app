@@ -51,7 +51,45 @@ class AdminVerificationController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        return view('admin.verification.index', compact('requests', 'filters'));
+        // Trip and vehicle submissions are their own kind of verification request.
+        // They only surface while the queue is unfiltered or filtered to PENDING,
+        // because once approved/rejected they stop being requests.
+        $showListingSubmissions = ! isset($filters['status']) || $filters['status'] === VerificationStatus::Pending->value;
+        $search = $filters['search'] ?? null;
+
+        $pendingTrips = collect();
+        $pendingVehicles = collect();
+
+        if ($showListingSubmissions) {
+            $pendingTrips = Trip::query()
+                ->with(['operator:id,name,email', 'destination:id,name'])
+                ->where('verification_status', VerificationStatus::Pending)
+                ->whereNotNull('submitted_at')
+                ->when($search, fn (Builder $query, string $search): Builder => $query->where(function (Builder $query) use ($search): void {
+                    $query->where('name', 'like', '%'.$search.'%')
+                        ->orWhereHas('operator', fn (Builder $operator): Builder => $operator
+                            ->where('name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%'));
+                }))
+                ->orderBy('submitted_at')
+                ->get();
+
+            $pendingVehicles = Vehicle::query()
+                ->with(['owner:id,name,email', 'destination:id,name'])
+                ->where('verification_status', VerificationStatus::Pending)
+                ->whereNotNull('submitted_at')
+                ->when($search, fn (Builder $query, string $search): Builder => $query->where(function (Builder $query) use ($search): void {
+                    $query->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('registration_number', 'like', '%'.$search.'%')
+                        ->orWhereHas('owner', fn (Builder $owner): Builder => $owner
+                            ->where('name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%'));
+                }))
+                ->orderBy('submitted_at')
+                ->get();
+        }
+
+        return view('admin.verification.index', compact('requests', 'filters', 'pendingTrips', 'pendingVehicles', 'showListingSubmissions'));
     }
 
     public function update(Request $request, VerificationRequest $verificationRequest, ReferralService $referrals): RedirectResponse

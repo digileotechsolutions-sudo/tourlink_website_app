@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VerificationRequest;
@@ -182,6 +183,33 @@ class VehicleOwnerVerificationDocumentsTest extends TestCase
 
         $this->assertSame(VerificationStatus::Pending, $verificationRequest->refresh()->status);
         $this->assertSame(VerificationStatus::Pending, $vehicle->refresh()->verification_status);
+    }
+
+    public function test_pending_trip_and_vehicle_submissions_are_listed_with_a_verify_button(): void
+    {
+        $admin = User::factory()->create(['role' => 'ADMIN']);
+        $operator = User::factory()->create(['role' => 'OPERATOR']);
+        $owner = User::factory()->create(['role' => 'VEHICLE_OWNER']);
+
+        $trip = Trip::factory()->create([
+            'operator_id' => $operator->id,
+            'verification_status' => VerificationStatus::Pending,
+            'submitted_at' => now(),
+        ]);
+        $vehicle = Vehicle::factory()->create([
+            'owner_id' => $owner->id,
+            'verification_status' => VerificationStatus::Pending,
+            'submitted_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.verification.index'))
+            ->assertOk()
+            ->assertSee('Trip submissions')
+            ->assertSee('Vehicle submissions')
+            ->assertSee($trip->name)
+            ->assertSee($vehicle->registration_number)
+            ->assertSee('Verify');
     }
 
     /** @return array<string, UploadedFile> */
