@@ -63,4 +63,26 @@ class VehicleOwnerVehicleCreationTest extends TestCase
         $this->assertSame(VerificationStatus::Pending, $vehicle->verification_status);
         $this->assertDatabaseCount('vehicle_images', 1);
     }
+
+    public function test_vehicle_cannot_be_saved_without_at_least_one_photo(): void
+    {
+        $owner = User::factory()->create(['role' => Role::VehicleOwner]);
+
+        $this->actingAs($owner)->from(route('vehicle-owner.vehicles.create'))->post(route('vehicle-owner.vehicles.store'), [
+            'submission_action' => 'draft',
+            'name' => 'Photo required vehicle',
+            'registration_number' => 'KDA 456B',
+            'make' => 'Toyota',
+            'model' => 'Hiace',
+            'year' => now()->year,
+            'body_type' => 'Safari Van',
+            'seating_capacity' => 8,
+            'transmission' => 'Automatic',
+            'fuel_type' => 'Diesel',
+            'price_per_day' => 12000,
+            'location' => 'Nairobi',
+        ])->assertSessionHasErrors(['images_files' => 'Please upload at least one vehicle photo.']);
+
+        $this->assertDatabaseMissing('vehicles', ['name' => 'Photo required vehicle']);
+    }
 }

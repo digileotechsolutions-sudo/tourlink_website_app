@@ -166,7 +166,7 @@ class AdminVehicleController extends Controller
             'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],
             'images_files' => ['nullable', 'array', 'max:12'],
-            'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'images_files.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'extensions:jpg,jpeg,png,webp', 'dimensions:min_width=320,min_height=240', 'max:'.config('services.tourlink.vehicle_image_max_kb', 5120)],
         ]);
 
         if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {
@@ -174,8 +174,8 @@ class AdminVehicleController extends Controller
         }
 
         $imageUploadBytes = array_sum(array_map(static fn (UploadedFile $file): int => $file->getSize(), $request->file('images_files', [])));
-        if ($imageUploadBytes > 6 * 1024 * 1024) {
-            throw ValidationException::withMessages(['images_files' => 'The combined image upload must be 6 MB or less. Compress or remove images and try again.']);
+        if ($imageUploadBytes > config('services.tourlink.vehicle_image_total_max_kb', 6144) * 1024) {
+            throw ValidationException::withMessages(['images_files' => 'Combined vehicle photos exceed the upload size limit. Compress or remove photos and try again.']);
         }
 
         $data['verification_status'] = $vehicle?->verification_status->value ?? VerificationStatus::Pending->value;

@@ -1007,6 +1007,9 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
     const imageStatus = form.querySelector('[data-vehicle-media-status]');
     const storageKey = `tourlink-vehicle-draft:${form.dataset.formDraft}`;
     const stepNames = (form.dataset.stepNames ?? 'Details|Features|Multimedia|Pricing|Location|Review').split('|');
+    const imageMaxBytes = Number(form.dataset.imageMaxBytes || 5 * 1024 * 1024);
+    const imageTotalMaxBytes = Number(form.dataset.imageTotalMaxBytes || 6 * 1024 * 1024);
+    const supportedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
     let current = 0;
     let busy = false;
     let dirty = false;
@@ -1020,6 +1023,15 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
     };
 
     const advanceVehicleStep = () => {
+        if (current === 2 && imagePreview.querySelectorAll('[data-vehicle-existing-image]').length + imageInput.files.length === 0) {
+            const imageError = steps[current].querySelector('[data-vehicle-step-error]');
+            imageError.textContent = 'Please upload at least one vehicle photo.';
+            imageError.classList.remove('hidden');
+            imageStatus.textContent = 'Please upload at least one vehicle photo.';
+            imageStatus.classList.add('font-bold', 'text-red-700');
+            imageInput.focus();
+            return;
+        }
         const invalid = [...steps[current].querySelectorAll('input, select, textarea')]
             .find((field) => field.willValidate && isInvalid(field));
         if (invalid) {
@@ -1188,24 +1200,51 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         }
         updatePreview();
     });
-    form.addEventListener('change', (event) => {
+    form.addEventListener('change', async (event) => {
         if (event.target !== imageInput) return;
         dirty = true;
         previewUrls.forEach(URL.revokeObjectURL);
         previewUrls = [];
         imagePreview.querySelectorAll('[data-vehicle-new-image]').forEach((node) => node.remove());
         const files = [...(imageInput.files ?? [])];
-        const oversized = files.filter((file) => file.size > 5 * 1024 * 1024);
-        if (oversized.length) {
+        const oversized = files.filter((file) => file.size > imageMaxBytes);
+        const unsupported = files.filter((file) => {
+            const extension = file.name.split('.').pop()?.toLowerCase();
+            return !supportedImageTypes.has(file.type) || !['jpg', 'jpeg', 'png', 'webp'].includes(extension);
+        });
+        if (oversized.length || unsupported.length) {
             const transfer = new DataTransfer();
-            files.filter((file) => file.size <= 5 * 1024 * 1024).forEach((file) => transfer.items.add(file));
+            files.filter((file) => file.size <= imageMaxBytes && supportedImageTypes.has(file.type) && ['jpg', 'jpeg', 'png', 'webp'].includes(file.name.split('.').pop()?.toLowerCase())).forEach((file) => transfer.items.add(file));
             imageInput.files = transfer.files;
-            imageStatus.textContent = `${oversized.map((file) => file.name).join(', ')} exceeds the 5 MB per-image limit.`;
+            const errors = [];
+            if (oversized.length) errors.push(`${oversized.map((file) => file.name).join(', ')} exceeds the ${Math.round(imageMaxBytes / 1024 / 1024)} MB per-image limit`);
+            if (unsupported.length) errors.push(`${unsupported.map((file) => file.name).join(', ')} is not a supported image format`);
+            imageStatus.textContent = `${errors.join('; ')}. Choose valid JPG, JPEG, PNG or WebP photos.`;
             imageStatus.classList.add('font-bold', 'text-red-700');
         }
-        if ([...(imageInput.files ?? [])].reduce((total, file) => total + file.size, 0) > 6 * 1024 * 1024) {
+        const dimensionFailures = [];
+        const dimensionValidFiles = [];
+        for (const file of [...(imageInput.files ?? [])]) {
+            try {
+                const bitmap = await createImageBitmap(file);
+                const isLargeEnough = bitmap.width >= 320 && bitmap.height >= 240;
+                bitmap.close();
+                if (isLargeEnough) dimensionValidFiles.push(file);
+                else dimensionFailures.push(file.name);
+            } catch {
+                dimensionFailures.push(file.name);
+            }
+        }
+        if (dimensionFailures.length > 0) {
+            const transfer = new DataTransfer();
+            dimensionValidFiles.forEach((file) => transfer.items.add(file));
+            imageInput.files = transfer.files;
+            imageStatus.textContent = `${dimensionFailures.join(', ')} could not be read as a clear image of at least 320 × 240 pixels. Choose another photo.`;
+            imageStatus.classList.add('font-bold', 'text-red-700');
+        }
+        if ([...(imageInput.files ?? [])].reduce((total, file) => total + file.size, 0) > imageTotalMaxBytes) {
             imageInput.value = '';
-            imageStatus.textContent = 'Combined photo upload exceeds the 6 MB limit. Compress or remove photos.';
+            imageStatus.textContent = `Combined vehicle photos exceed the ${Math.round(imageTotalMaxBytes / 1024 / 1024)} MB limit. Compress or remove photos.`;
             imageStatus.classList.add('font-bold', 'text-red-700');
             return;
         }
@@ -1257,7 +1296,7 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
             imagePreview.append(card);
         });
         reindexVehicleImages();
-        if (!oversized.length) {
+        if (!oversized.length && !unsupported.length && !dimensionFailures.length) {
             imageStatus.textContent = imageInput.files.length ? `${imageInput.files.length} photo(s) ready to upload.` : '';
             imageStatus.classList.remove('font-bold', 'text-red-700');
         }
@@ -1342,9 +1381,9 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         }
         const action = event.submitter?.value ?? 'draft';
         const existingCount = imagePreview.querySelectorAll('[data-vehicle-existing-image]').length;
-        if (action === 'submit' && existingCount + imageInput.files.length === 0) {
+        if (existingCount + imageInput.files.length === 0) {
             showStep(2);
-            imageStatus.textContent = 'Add at least one vehicle photo before submitting for approval.';
+            imageStatus.textContent = 'Please upload at least one vehicle photo.';
             imageStatus.classList.add('font-bold', 'text-red-700');
             return;
         }

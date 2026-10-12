@@ -318,20 +318,20 @@ class VehicleOwnerController extends Controller
             'hourly_price' => ['nullable', 'integer', 'min:0', 'max:100000000'], 'trip_price' => ['nullable', 'integer', 'min:0', 'max:100000000'], 'driver_charge' => ['nullable', 'integer', 'min:0', 'max:100000000'],
             'additional_charges' => ['nullable', 'array', 'max:20'], 'additional_charges.*.name' => ['required', 'string', 'max:120'], 'additional_charges.*.amount' => ['required', 'integer', 'min:0', 'max:100000000'],
             'service_areas' => ['nullable', 'array', 'max:50'], 'service_areas.*' => ['required', 'string', 'max:255'],
-            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'], 'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'], 'media_order' => ['nullable', 'array', 'max:12'], 'media_order.*' => ['string', 'max:2048'],
+            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'], 'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'extensions:jpg,jpeg,png,webp', 'dimensions:min_width=320,min_height=240', 'max:'.config('services.tourlink.vehicle_image_max_kb', 5120)], 'media_order' => ['nullable', 'array', 'max:12'], 'media_order.*' => ['string', 'max:2048'],
         ]);
 
         if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {
             throw ValidationException::withMessages(['images_files' => 'A vehicle can have up to 12 photos.']);
         }
 
-        if ($data['submission_action'] === 'submit' && ($data['images'] ?? []) === [] && $request->file('images_files', []) === []) {
-            throw ValidationException::withMessages(['images_files' => 'Add at least one vehicle photo before submitting for approval.']);
+        if (($data['images'] ?? []) === [] && $request->file('images_files', []) === []) {
+            throw ValidationException::withMessages(['images_files' => 'Please upload at least one vehicle photo.']);
         }
 
         $imageUploadBytes = array_sum(array_map(static fn (UploadedFile $file): int => $file->getSize(), $request->file('images_files', [])));
-        if ($imageUploadBytes > 6 * 1024 * 1024) {
-            throw ValidationException::withMessages(['images_files' => 'The combined image upload must be 6 MB or less. Compress or remove images and try again.']);
+        if ($imageUploadBytes > config('services.tourlink.vehicle_image_total_max_kb', 6144) * 1024) {
+            throw ValidationException::withMessages(['images_files' => 'Combined vehicle photos exceed the upload size limit. Compress or remove photos and try again.']);
         }
 
         return $data;

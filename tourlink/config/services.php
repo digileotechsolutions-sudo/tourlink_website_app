@@ -7,6 +7,8 @@ return [
         'support_phone' => env('TOURLINK_SUPPORT_PHONE') ?: '+254783366409',
         'support_phone_secondary' => env('TOURLINK_SUPPORT_PHONE_SECONDARY') ?: '+254799591373',
         'location' => env('TOURLINK_LOCATION'),
+        'vehicle_image_max_kb' => (int) env('TOURLINK_VEHICLE_IMAGE_MAX_KB', 5120),
+        'vehicle_image_total_max_kb' => (int) env('TOURLINK_VEHICLE_IMAGE_TOTAL_MAX_KB', 6144),
         'social' => [
             'facebook' => env('TOURLINK_FACEBOOK_URL'),
             'instagram' => env('TOURLINK_INSTAGRAM_URL'),
