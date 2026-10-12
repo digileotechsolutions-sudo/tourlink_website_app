@@ -9,6 +9,7 @@ use App\Models\Destination;
 use App\Models\Review;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleImage;
 use App\Models\VehicleAvailability;
 use App\Models\VerificationRequest;
 use App\Services\Booking\BookingService;
@@ -317,7 +318,7 @@ class VehicleOwnerController extends Controller
         $request->merge(['additional_charges' => is_array($charges)
             ? array_values(array_filter($charges, static fn (mixed $charge): bool => is_array($charge) && (filled($charge['name'] ?? null) || filled($charge['amount'] ?? null))))
             : []]);
-        $existingImageUrls = $vehicle?->images()->pluck('url')->all() ?? [];
+        $existingImageUrls = $vehicle?->images()->get()->map(static fn (VehicleImage $image): string => (string) $image->url)->all() ?? [];
         $data = $request->validate([
             'submission_action' => ['required', Rule::in(['draft', 'submit'])],
             'name' => ['required', 'string', 'max:255'], 'slug' => ['nullable', 'string', 'max:255', 'alpha_dash'], 'registration_number' => ['required', 'string', 'max:30'], 'make' => ['required', 'string', 'max:120'], 'model' => ['required', 'string', 'max:120'],
@@ -326,7 +327,7 @@ class VehicleOwnerController extends Controller
             'hourly_price' => ['nullable', 'integer', 'min:0', 'max:100000000'], 'trip_price' => ['nullable', 'integer', 'min:0', 'max:100000000'], 'driver_charge' => ['nullable', 'integer', 'min:0', 'max:100000000'],
             'additional_charges' => ['nullable', 'array', 'max:20'], 'additional_charges.*.name' => ['required', 'string', 'max:120'], 'additional_charges.*.amount' => ['required', 'integer', 'min:0', 'max:100000000'],
             'service_areas' => ['nullable', 'array', 'max:50'], 'service_areas.*' => ['required', 'string', 'max:255'],
-            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'], 'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['required', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'dimensions:min_width=320,min_height=240', 'max:'.config('services.tourlink.vehicle_image_max_kb', 5120)], 'media_order' => ['nullable', 'array', 'max:12'], 'media_order.*' => ['string', 'max:2048'],
+            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'string', Rule::in($existingImageUrls), 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'], 'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['required', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'dimensions:min_width=320,min_height=240', 'max:'.config('services.tourlink.vehicle_image_max_kb', 5120)], 'media_order' => ['nullable', 'array', 'max:12'], 'media_order.*' => ['string', 'max:2048'],
         ]);
 
         if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {
@@ -365,7 +366,12 @@ class VehicleOwnerController extends Controller
             $orderedImages['existing:'.$image['url']] = $image;
         }
         foreach ($request->file('images_files', []) as $index => $file) {
-            $orderedImages['file:'.$index] = ['url' => Storage::disk('public')->url($file->store('vehicle-images', 'public')), 'alt' => null];
+            $path = $file->store('vehicle-images', 'public');
+            if (! is_string($path) || ! Storage::disk('public')->exists($path)) {
+                throw ValidationException::withMessages(['images_files' => 'A vehicle photo could not be saved. Please retry the upload.']);
+            }
+
+            $orderedImages['file:'.$index] = ['url' => '/storage/'.$path, 'alt' => null];
         }
         $images = [];
         foreach ((array) $request->input('media_order', []) as $token) {

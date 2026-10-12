@@ -8,6 +8,7 @@ use App\ListingStatus;
 use App\Models\Booking;
 use App\Models\Review;
 use App\Models\Trip;
+use App\Models\TripImage;
 use App\Models\TripAvailability;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -399,7 +400,7 @@ class OperatorController extends Controller
     private function validatedTripData(Request $request, ?Trip $trip = null): array
     {
         $this->normalizeFields($request);
-        $existingImageUrls = $trip?->images()->pluck('url')->all() ?? [];
+        $existingImageUrls = $trip?->images()->get()->map(static fn (TripImage $image): string => (string) $image->url)->all() ?? [];
         $data = $request->validate([
             'submission_action' => ['required', Rule::in(['draft', 'submit'])],
             'name' => ['required', 'string', 'max:255'], 'slug' => ['nullable', 'string', 'max:255', 'alpha_dash'],
@@ -424,7 +425,7 @@ class OperatorController extends Controller
             'highlights' => ['nullable', 'array', 'max:20'], 'highlights.*' => ['string', 'max:255'],
             'additional_charges' => ['nullable', 'array', 'max:20'], 'additional_charges.*.name' => ['required', 'string', 'max:120'], 'additional_charges.*.amount' => ['required', 'integer', 'min:0', 'max:100000000'],
             'cancellation_policy' => ['required', 'string', 'max:10000'], 'required_vehicle_id' => ['nullable', 'string', Rule::exists('vehicles', 'id')->where('owner_id', $request->user()->id)],
-            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'],
+            'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'string', Rule::in($existingImageUrls), 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'],
             'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:5120'],
             'media_order' => ['nullable', 'array', 'max:12'], 'media_order.*' => ['string', 'max:2048'],
         ]);
@@ -554,7 +555,12 @@ class OperatorController extends Controller
             $orderedImages['existing:'.$image['url']] = $image;
         }
         foreach ($request->file('images_files', []) as $index => $file) {
-            $orderedImages['file:'.$index] = ['url' => Storage::disk('public')->url($file->store('trip-images', 'public')), 'alt' => null];
+            $path = $file->store('trip-images', 'public');
+            if (! is_string($path) || ! Storage::disk('public')->exists($path)) {
+                throw ValidationException::withMessages(['images_files' => 'A trip photo could not be saved. Please retry the upload.']);
+            }
+
+            $orderedImages['file:'.$index] = ['url' => '/storage/'.$path, 'alt' => null];
         }
         $images = [];
         foreach ((array) $request->input('media_order', []) as $token) {

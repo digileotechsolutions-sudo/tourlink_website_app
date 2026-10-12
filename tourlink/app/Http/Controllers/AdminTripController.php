@@ -7,6 +7,7 @@ use App\AccountStatus;
 use App\BookingType;
 use App\ListingStatus;
 use App\Models\Trip;
+use App\Models\TripImage;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Role;
@@ -139,7 +140,7 @@ class AdminTripController extends Controller
     {
         $this->normalizeFields($request);
         $request->merge(['featured' => $request->boolean('featured')]);
-        $existingImageUrls = $trip?->images()->pluck('url')->all() ?? [];
+        $existingImageUrls = $trip?->images()->get()->map(static fn (TripImage $image): string => (string) $image->url)->all() ?? [];
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -190,7 +191,7 @@ class AdminTripController extends Controller
             'status' => ['required', Rule::in(array_column(ListingStatus::cases(), 'value'))],
             'featured' => ['required', 'boolean'],
             'images' => ['nullable', 'array', 'max:12'],
-            'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'],
+            'images.*.url' => ['required', 'string', Rule::in($existingImageUrls), 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],
             'images_files' => ['nullable', 'array', 'max:12'],
             'images_files.*' => ['mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:5120'],
@@ -314,7 +315,11 @@ class AdminTripController extends Controller
     {
         foreach ($request->file('images_files', []) as $file) {
             $path = $file->store('trip-images', 'public');
-            $images[] = ['url' => Storage::disk('public')->url($path), 'alt' => null];
+            if (! is_string($path) || ! Storage::disk('public')->exists($path)) {
+                throw ValidationException::withMessages(['images_files' => 'A trip photo could not be saved. Please retry the upload.']);
+            }
+
+            $images[] = ['url' => '/storage/'.$path, 'alt' => null];
         }
 
         return array_slice($images, 0, 12);

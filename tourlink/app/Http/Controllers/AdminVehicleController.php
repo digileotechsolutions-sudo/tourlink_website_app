@@ -8,6 +8,7 @@ use App\ListingStatus;
 use App\Models\Destination;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleImage;
 use App\Role;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
@@ -140,7 +141,7 @@ class AdminVehicleController extends Controller
         $request->merge(['additional_charges' => is_array($charges)
             ? array_values(array_filter($charges, static fn (mixed $charge): bool => is_array($charge) && (filled($charge['name'] ?? null) || filled($charge['amount'] ?? null))))
             : []]);
-        $existingImageUrls = $vehicle?->images()->pluck('url')->all() ?? [];
+        $existingImageUrls = $vehicle?->images()->get()->map(static fn (VehicleImage $image): string => (string) $image->url)->all() ?? [];
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -175,7 +176,7 @@ class AdminVehicleController extends Controller
             'destination_id' => ['nullable', 'string', 'exists:destinations,id'],
             'status' => ['required', Rule::in(array_column(ListingStatus::cases(), 'value'))],
             'images' => ['nullable', 'array', 'max:12'],
-            'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'],
+            'images.*.url' => ['required', 'string', Rule::in($existingImageUrls), 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],
             'images_files' => ['nullable', 'array', 'max:12'],
             'images_files.*' => ['required', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'extensions:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'dimensions:min_width=320,min_height=240', 'max:'.config('services.tourlink.vehicle_image_max_kb', 5120)],
@@ -243,7 +244,11 @@ class AdminVehicleController extends Controller
     {
         foreach ($request->file('images_files', []) as $file) {
             $path = $file->store('vehicle-images', 'public');
-            $images[] = ['url' => Storage::disk('public')->url($path), 'alt' => null];
+            if (! is_string($path) || ! Storage::disk('public')->exists($path)) {
+                throw ValidationException::withMessages(['images_files' => 'A vehicle photo could not be saved. Please retry the upload.']);
+            }
+
+            $images[] = ['url' => '/storage/'.$path, 'alt' => null];
         }
 
         return array_slice($images, 0, 12);

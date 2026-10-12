@@ -99,6 +99,21 @@ class TripDestinationEntryTest extends TestCase
         $this->assertSame(VerificationStatus::Pending, $trip->verification_status);
         $this->assertNotNull($trip->submitted_at);
         $this->assertDatabaseCount('trip_images', 1);
+        $image = $trip->images()->firstOrFail();
+        $this->assertStringStartsWith('/storage/trip-images/', $image->url);
+        $this->get($image->url)->assertOk();
+    }
+
+    public function test_legacy_trip_upload_urls_are_normalized_to_the_current_host(): void
+    {
+        $trip = Trip::factory()->create();
+        $trip->images()->create([
+            'url' => 'https://old-host.example/storage/trip-images/namanga-cover.jpg',
+            'alt' => 'Namanga Road Trip',
+            'sort_order' => 0,
+        ]);
+
+        $this->assertSame('/storage/trip-images/namanga-cover.jpg', $trip->images()->firstOrFail()->url);
     }
 
     public function test_operator_can_save_a_trip_as_a_private_draft(): void
