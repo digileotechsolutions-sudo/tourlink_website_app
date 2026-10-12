@@ -151,8 +151,7 @@ class AdminContentController extends Controller
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('blog_posts', 'slug')->ignore($post?->id)],
             'excerpt' => ['required', 'string', 'max:1000'],
             'body' => ['required', 'string', 'max:100000'],
-            'image' => ['nullable', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:5120'],
-            'image_url' => ['nullable', 'required_without:image', 'url:http,https', 'max:2048'],
+            'image' => [$post ? 'nullable' : 'required', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:5120'],
             'published' => ['required', 'boolean'],
         ]);
 
