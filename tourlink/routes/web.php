@@ -45,9 +45,28 @@ Route::get('/storage/{path}', function (string $path) {
 
     $disk = Storage::disk('public');
     abort_unless($disk->exists($path), 404);
+    $contentType = $disk->mimeType($path);
 
-    return $disk->response($path, basename($path), [
+    if (! is_string($contentType) || ! str_starts_with($contentType, 'image/')) {
+        $contentType = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            'gif' => 'image/gif',
+            'avif' => 'image/avif',
+            'heic' => 'image/heic',
+            'heif' => 'image/heif',
+            'bmp' => 'image/bmp',
+            'tif', 'tiff' => 'image/tiff',
+            'ico' => 'image/x-icon',
+            default => abort(404),
+        };
+    }
+
+    return response()->file($disk->path($path), [
+        'Content-Type' => $contentType,
         'Cache-Control' => 'public, max-age=604800',
+        'X-Content-Type-Options' => 'nosniff',
     ]);
 })->where('path', '.*')->name('public.uploads.show');
 

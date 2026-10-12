@@ -62,6 +62,10 @@ class VehicleOwnerVehicleCreationTest extends TestCase
         $this->assertSame(ListingStatus::Draft, $vehicle->status);
         $this->assertSame(VerificationStatus::Pending, $vehicle->verification_status);
         $this->assertDatabaseCount('vehicle_images', 1);
+        $image = $vehicle->images()->firstOrFail();
+        $this->assertStringStartsWith('/storage/vehicle-images/', $image->url);
+        $this->assertStringEndsWith('.jpg', $image->url);
+        $this->get($image->url)->assertOk();
     }
 
     public function test_vehicle_cannot_be_saved_without_at_least_one_photo(): void
