@@ -211,10 +211,24 @@
     <x-sign-in-prompt />
 @endguest
 
-<section class="container-page home-section-block">
-    <div><div class="mb-7 flex items-end justify-between gap-5"><div><p class="eyebrow mb-2">{{ __('The right ride changes everything') }}</p><h2 class="display text-3xl font-bold leading-tight text-ink sm:text-[42px]">{{ __('Move your way') }}</h2><p class="mt-3 max-w-xl text-sm leading-6 text-slate-500">{{ __('Compare verified vehicles for game drives, road trips and everything in between.') }}</p></div><a class="hidden shrink-0 text-sm font-extrabold text-lagoon sm:block" href="{{ route('vehicles.index') }}">{{ __('Browse vehicles') }} <span aria-hidden="true">›</span></a></div>
-        @if($vehicles->isEmpty())<div class="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">{{ __('No verified vehicles are available just yet.') }}</div>@else<div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">@foreach($vehicles as $vehicle)<x-vehicle-card :vehicle="$vehicle" />@endforeach</div>@endif
+<section class="container-page home-section-block home-vehicles-section">
+    <div class="home-section-header">
+        <div>
+            <p class="eyebrow mb-2">{{ __('The right ride changes everything') }}</p>
+            <h2>{{ __('Move your way') }}</h2>
+            <p class="home-vehicle-description">{{ __('Compare verified vehicles for game drives, road trips and everything in between.') }}</p>
+        </div>
+        <a href="{{ route('vehicles.index') }}" class="home-view-all">{{ __('Browse vehicles') }} <span aria-hidden="true">→</span></a>
     </div>
+    @if($vehicles->isEmpty())
+        <div class="home-empty-state">{{ __('No verified vehicles are available just yet.') }}</div>
+    @else
+        <div class="home-vehicle-grid">
+            @foreach($vehicles as $vehicle)
+                <x-vehicle-card :vehicle="$vehicle" />
+            @endforeach
+        </div>
+    @endif
 </section>
 
 <section id="how-it-works" class="container-page grid items-center gap-12 py-20 sm:py-24 lg:grid-cols-[.9fr_1.1fr]">
