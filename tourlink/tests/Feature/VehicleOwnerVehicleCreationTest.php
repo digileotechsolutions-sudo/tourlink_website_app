@@ -9,7 +9,6 @@ use App\Role;
 use App\VerificationStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class VehicleOwnerVehicleCreationTest extends TestCase
@@ -34,7 +33,6 @@ class VehicleOwnerVehicleCreationTest extends TestCase
 
     public function test_vehicle_owner_can_create_a_vehicle_with_photos_for_admin_approval(): void
     {
-        Storage::fake('public');
         $owner = User::factory()->create(['role' => Role::VehicleOwner]);
 
         $response = $this->actingAs($owner)->post(route('vehicle-owner.vehicles.store'), [
@@ -63,9 +61,13 @@ class VehicleOwnerVehicleCreationTest extends TestCase
         $this->assertSame(VerificationStatus::Pending, $vehicle->verification_status);
         $this->assertDatabaseCount('vehicle_images', 1);
         $image = $vehicle->images()->firstOrFail();
-        $this->assertStringStartsWith('/storage/vehicle-images/', $image->url);
+        $this->assertStringStartsWith('/media/vehicle-images/', $image->url);
         $this->assertStringEndsWith('.jpg', $image->url);
         $this->get($image->url)->assertOk();
+        $storedImage = public_path('media/'.substr($image->url, strlen('/media/')));
+        @unlink($storedImage);
+        @rmdir(dirname($storedImage));
+        @rmdir(public_path('media'));
     }
 
     public function test_vehicle_cannot_be_saved_without_at_least_one_photo(): void

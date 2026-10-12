@@ -12,7 +12,6 @@ use App\Services\Catalog\TripCategoryCatalog;
 use App\VerificationStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class TripDestinationEntryTest extends TestCase
@@ -61,7 +60,6 @@ class TripDestinationEntryTest extends TestCase
 
     public function test_operator_can_create_trip_without_submitting_a_slug(): void
     {
-        Storage::fake('public');
         $operator = User::factory()->create(['role' => Role::Operator]);
         $category = app(TripCategoryCatalog::class)->all()->first();
 
@@ -100,8 +98,12 @@ class TripDestinationEntryTest extends TestCase
         $this->assertNotNull($trip->submitted_at);
         $this->assertDatabaseCount('trip_images', 1);
         $image = $trip->images()->firstOrFail();
-        $this->assertStringStartsWith('/storage/trip-images/', $image->url);
+        $this->assertStringStartsWith('/media/trip-images/', $image->url);
         $this->get($image->url)->assertOk();
+        $storedImage = public_path('media/'.substr($image->url, strlen('/media/')));
+        @unlink($storedImage);
+        @rmdir(dirname($storedImage));
+        @rmdir(public_path('media'));
     }
 
     public function test_legacy_trip_upload_urls_are_normalized_to_the_current_host(): void

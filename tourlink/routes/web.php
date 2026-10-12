@@ -27,6 +27,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentReceiptController;
 use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\PublicUploadController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\TravelerController;
@@ -40,46 +41,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
-Route::get('/storage/{path}', function (string $path) {
-    abort_unless(preg_match('~^(?:trip-images|vehicle-images|blog-images|operator-logos|traveler-avatars)/[A-Za-z0-9_-][A-Za-z0-9._-]*$~D', $path) === 1, 404);
-
-    $disk = Storage::disk('public');
-    $fallbackPath = public_path('form-image1.png');
-
-    if (! $disk->exists($path)) {
-        abort_unless(file_exists($fallbackPath), 404);
-
-        return response()->file($fallbackPath, [
-            'Content-Type' => 'image/png',
-            'Cache-Control' => 'public, max-age=604800',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
-    }
-
-    $contentType = $disk->mimeType($path);
-
-    if (! is_string($contentType) || ! str_starts_with($contentType, 'image/')) {
-        $contentType = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
-            'jpg', 'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
-            'webp' => 'image/webp',
-            'gif' => 'image/gif',
-            'avif' => 'image/avif',
-            'heic' => 'image/heic',
-            'heif' => 'image/heif',
-            'bmp' => 'image/bmp',
-            'tif', 'tiff' => 'image/tiff',
-            'ico' => 'image/x-icon',
-            default => abort(404),
-        };
-    }
-
-    return response()->file($disk->path($path), [
-        'Content-Type' => $contentType,
-        'Cache-Control' => 'public, max-age=604800',
-        'X-Content-Type-Options' => 'nosniff',
-    ]);
-})->where('path', '.*')->name('public.uploads.show');
+Route::get('/storage/{path}', [PublicUploadController::class, 'show'])->where('path', '.*')->name('public.uploads.storage');
+Route::get('/media/{path}', [PublicUploadController::class, 'show'])->where('path', '.*')->name('public.uploads.show');
 
 Route::post('/language', function (Request $request) {
     $data = $request->validate([

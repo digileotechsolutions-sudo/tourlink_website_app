@@ -15,15 +15,20 @@ class PublicUploadImageTest extends TestCase
             $this->markTestSkipped('The GD extension is required to fabricate test images.');
         }
 
-        Storage::fake('public');
-
         $url = app(PublicImageStorage::class)->store(UploadedFile::fake()->image('safari.jpeg'), 'trip-images');
-        $storedPath = substr($url, strlen('/storage/'));
+        $storedPath = substr($url, strlen('/media/'));
+        $filePath = public_path('media/'.$storedPath);
 
-        $this->assertStringStartsWith('/storage/trip-images/', $url);
-        $this->assertStringEndsWith('.jpg', $url);
-        Storage::disk('public')->assertExists($storedPath);
-        $this->get($url)->assertOk();
+        try {
+            $this->assertStringStartsWith('/media/trip-images/', $url);
+            $this->assertStringEndsWith('.jpg', $url);
+            $this->assertFileExists($filePath);
+            $this->get($url)->assertOk();
+        } finally {
+            @unlink($filePath);
+            @rmdir(dirname($filePath));
+            @rmdir(public_path('media'));
+        }
     }
 
     public function test_uploaded_trip_image_is_served_from_the_public_disk_without_a_storage_symlink(): void

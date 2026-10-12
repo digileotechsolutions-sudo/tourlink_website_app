@@ -3,12 +3,14 @@
 namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class PublicImageStorage
 {
+    /** @var list<string> */
+    private const DIRECTORIES = ['trip-images', 'vehicle-images', 'blog-images', 'operator-logos', 'traveler-avatars'];
+
     /**
      * @var array<string, string>
      */
@@ -44,24 +46,35 @@ class PublicImageStorage
             ]);
         }
 
-        $disk = Storage::disk('public');
-        if (! $disk->exists($directory)) {
-            $disk->makeDirectory($directory);
+        if (! in_array($directory, self::DIRECTORIES, true)) {
+            throw new \InvalidArgumentException('The public image directory is not allowed.');
         }
 
-        $path = $file->storeAs($directory, Str::ulid().'.'.$extension, 'public');
+        $filename = Str::ulid().'.'.$extension;
+        $directoryPath = public_path('media/'.$directory);
 
-        if (! is_string($path) || ! $disk->exists($path)) {
-            if (is_string($path)) {
-                $disk->delete($path);
-            }
+        if (! is_dir($directoryPath) && ! @mkdir($directoryPath, 0775, true) && ! is_dir($directoryPath)) {
+            throw ValidationException::withMessages([
+                $errorKey => 'The public media folder is not writable. Please contact support.',
+            ]);
+        }
 
+        try {
+            $file->move($directoryPath, $filename);
+        } catch (\Throwable) {
             throw ValidationException::withMessages([
                 $errorKey => 'The image could not be saved. Check the server storage permissions and retry the upload.',
             ]);
         }
 
-        return '/storage/'.$path;
+        $filePath = $directoryPath.DIRECTORY_SEPARATOR.$filename;
+        if (! is_file($filePath) || ! is_readable($filePath)) {
+            throw ValidationException::withMessages([
+                $errorKey => 'The image could not be saved. Check the server storage permissions and retry the upload.',
+            ]);
+        }
+
+        return '/media/'.$directory.'/'.$filename;
     }
 
     private function extensionFor(UploadedFile $file): ?string

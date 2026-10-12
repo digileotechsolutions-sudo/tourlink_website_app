@@ -19,8 +19,8 @@ class TripImage extends TourLinkModel
         return Attribute::get(static function (?string $value): ?string {
             $path = is_string($value) ? parse_url($value, PHP_URL_PATH) : null;
 
-            return is_string($path) && preg_match('~^/storage/trip-images/[A-Za-z0-9_-][A-Za-z0-9._-]*$~D', $path) === 1
-                ? $path
+            return is_string($path) && preg_match('~^/(?:storage|media)/trip-images/[A-Za-z0-9_-][A-Za-z0-9._-]*$~D', $path) === 1
+                ? (preg_replace('~^/storage/~', '/media/', $path) ?? $path)
                 : $value;
         });
     }
