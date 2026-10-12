@@ -464,7 +464,7 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
             const completedThrough = current;
             link.setAttribute('aria-current', active ? 'step' : 'false');
             const segment = link.querySelector('[data-progress-segment]');
-            segment?.classList.toggle('bg-emerald-700', item <= completedThrough);
+            segment?.classList.toggle('bg-blue-700', item <= completedThrough);
             segment?.classList.toggle('bg-slate-200', item > completedThrough);
         });
         if (captionCount) {
