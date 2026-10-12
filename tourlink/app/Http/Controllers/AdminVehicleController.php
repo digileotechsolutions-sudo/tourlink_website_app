@@ -128,6 +128,18 @@ class AdminVehicleController extends Controller
             'four_by_four' => $request->boolean('four_by_four'),
             'driver_included' => $request->boolean('driver_included'),
         ]);
+        $serviceAreas = $request->input('service_areas', []);
+        if (is_string($serviceAreas)) {
+            $serviceAreas = preg_split('/\R/u', $serviceAreas) ?: [];
+        }
+        $request->merge(['service_areas' => array_values(array_filter(array_map(
+            static fn (mixed $area): string => is_scalar($area) ? trim((string) $area) : '',
+            is_array($serviceAreas) ? $serviceAreas : [],
+        )))]);
+        $charges = $request->input('additional_charges', []);
+        $request->merge(['additional_charges' => is_array($charges)
+            ? array_values(array_filter($charges, static fn (mixed $charge): bool => is_array($charge) && (filled($charge['name'] ?? null) || filled($charge['amount'] ?? null))))
+            : []]);
         $existingImageUrls = $vehicle?->images()->pluck('url')->all() ?? [];
 
         $data = $request->validate([

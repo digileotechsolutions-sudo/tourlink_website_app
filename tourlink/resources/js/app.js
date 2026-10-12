@@ -994,6 +994,39 @@ document.querySelectorAll('[data-admin-itinerary]').forEach((itinerary) => {
     });
 });
 
+document.querySelectorAll('[data-admin-vehicle-charges]').forEach((charges) => {
+    const rows = charges.querySelector('[data-admin-vehicle-charge-rows]');
+    const reindex = () => {
+        [...rows.children].forEach((row, index) => {
+            row.querySelectorAll('[name]').forEach((field) => {
+                field.name = field.name.replace(/additional_charges\[\d+\]/, `additional_charges[${index}]`);
+            });
+        });
+    };
+
+    charges.addEventListener('click', (event) => {
+        if (event.target.closest('[data-admin-vehicle-add-charge]')) {
+            if (rows.children.length >= 20) return;
+            const index = rows.children.length;
+            const row = document.createElement('div');
+            row.dataset.adminVehicleChargeRow = '';
+            row.className = 'grid gap-2 rounded border border-slate-200 p-3 sm:grid-cols-[1fr_180px_auto]';
+            row.innerHTML = `<label class="grid gap-1 text-xs font-semibold">Fee name<input name="additional_charges[${index}][name]" placeholder="e.g. Cleaning fee" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label><label class="grid gap-1 text-xs font-semibold">Amount<input type="number" min="0" name="additional_charges[${index}][amount]" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label><button type="button" data-admin-vehicle-remove-charge class="self-end rounded border px-3 py-2 text-xs text-red-700">Remove</button>`;
+            rows.append(row);
+            return;
+        }
+        const remove = event.target.closest('[data-admin-vehicle-remove-charge]');
+        if (!remove) return;
+        const row = remove.closest('[data-admin-vehicle-charge-row]');
+        if (rows.children.length === 1) {
+            row.querySelectorAll('input').forEach((field) => { field.value = ''; });
+        } else {
+            row.remove();
+            reindex();
+        }
+    });
+});
+
 document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
     const steps = [...form.querySelectorAll('[data-vehicle-step]')];
     const links = [...form.querySelectorAll('[data-vehicle-step-link]')];
