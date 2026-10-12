@@ -138,6 +138,7 @@
         <div>
             <p class="eyebrow mb-2">{{ __('Recommended') }}</p>
             <h2>{{ __('Discover your next adventure') }}</h2>
+            <p class="home-destination-intro">{{ __('Choose a destination and find the experiences waiting there.') }}</p>
         </div>
         <a href="{{ route('trips.index') }}" class="home-view-all">{{ __('Explore more') }} <span aria-hidden="true">→</span></a>
     </div>

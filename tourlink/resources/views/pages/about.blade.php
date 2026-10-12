@@ -11,6 +11,10 @@
                 <p class="about-page__tagline">Connecting People, Vehicles, Tours and Travel Services</p>
                 <p>Havenedge Tourlink is a digital platform designed to make travel, tourism, transportation, and roadside assistance easier, more accessible, and more connected.</p>
                 <p>We bring together <strong>tourists, travellers, vehicle owners, tour operators, drivers, and towing/recovery operators</strong> on one convenient platform, making it easier for users to discover services, connect with service providers, and arrange the support they need.</p>
+                <div class="about-page__actions">
+                    <a href="{{ route('trips.index') }}">{{ __('Explore trips') }}<span aria-hidden="true">→</span></a>
+                    <a href="{{ route('vehicles.index') }}">{{ __('Find a vehicle') }}<span aria-hidden="true">→</span></a>
+                </div>
             </div>
             <div class="about-page__hero-media">
                 <img src="{{ asset('images/about-kenya-community.jpg') }}" alt="A Maasai host and a traveler work together to light a fire in a Kenyan village" fetchpriority="high" decoding="async">
