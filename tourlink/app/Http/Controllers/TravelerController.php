@@ -10,13 +10,13 @@ use App\Models\Notification;
 use App\Models\Review;
 use App\Models\Trip;
 use App\Services\Booking\BookingService;
+use App\Services\PublicImageStorage;
 use App\Services\Payments\PaymentService;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use RuntimeException;
@@ -49,7 +49,9 @@ class TravelerController extends Controller
         $request->user()->update(['name' => $data['name'], 'phone' => $data['phone']]);
         unset($data['name'], $data['phone'], $data['avatar']);
         if ($request->hasFile('avatar')) {
-            $request->user()->forceFill(['avatar_url' => Storage::disk('public')->url($request->file('avatar')->store('traveler-avatars', 'public'))])->save();
+            $request->user()->forceFill([
+                'avatar_url' => app(PublicImageStorage::class)->store($request->file('avatar'), 'traveler-avatars', 'avatar'),
+            ])->save();
         }
         $request->user()->travelerProfile()->updateOrCreate([], $data);
 

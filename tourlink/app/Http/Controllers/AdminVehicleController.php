@@ -10,13 +10,13 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleImage;
 use App\Role;
+use App\Services\PublicImageStorage;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -242,13 +242,9 @@ class AdminVehicleController extends Controller
      */
     private function uploadedImages(Request $request, array $images): array
     {
+        $imageStorage = app(PublicImageStorage::class);
         foreach ($request->file('images_files', []) as $file) {
-            $path = $file->store('vehicle-images', 'public');
-            if (! is_string($path) || ! Storage::disk('public')->exists($path)) {
-                throw ValidationException::withMessages(['images_files' => 'A vehicle photo could not be saved. Please retry the upload.']);
-            }
-
-            $images[] = ['url' => '/storage/'.$path, 'alt' => null];
+            $images[] = ['url' => $imageStorage->store($file, 'vehicle-images'), 'alt' => null];
         }
 
         return array_slice($images, 0, 12);

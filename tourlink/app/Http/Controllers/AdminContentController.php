@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\BlogPost;
 use App\Models\Event;
+use App\Services\PublicImageStorage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -157,13 +157,7 @@ class AdminContentController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $storedPath = $request->file('image')->store('blog-images', 'public');
-
-            if (! is_string($storedPath)) {
-                throw ValidationException::withMessages(['image' => 'The uploaded image could not be saved. Please try again.']);
-            }
-
-            $data['image_url'] = route('blog.image', ['filename' => basename($storedPath)], false);
+            $data['image_url'] = app(PublicImageStorage::class)->store($request->file('image'), 'blog-images', 'image');
         }
 
         unset($data['image']);

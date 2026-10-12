@@ -13,6 +13,7 @@ use App\Models\VehicleImage;
 use App\Models\VehicleAvailability;
 use App\Models\VerificationRequest;
 use App\Services\Booking\BookingService;
+use App\Services\PublicImageStorage;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -365,13 +366,9 @@ class VehicleOwnerController extends Controller
         foreach ($images as $image) {
             $orderedImages['existing:'.$image['url']] = $image;
         }
+        $imageStorage = app(PublicImageStorage::class);
         foreach ($request->file('images_files', []) as $index => $file) {
-            $path = $file->store('vehicle-images', 'public');
-            if (! is_string($path) || ! Storage::disk('public')->exists($path)) {
-                throw ValidationException::withMessages(['images_files' => 'A vehicle photo could not be saved. Please retry the upload.']);
-            }
-
-            $orderedImages['file:'.$index] = ['url' => '/storage/'.$path, 'alt' => null];
+            $orderedImages['file:'.$index] = ['url' => $imageStorage->store($file, 'vehicle-images'), 'alt' => null];
         }
         $images = [];
         foreach ((array) $request->input('media_order', []) as $token) {
