@@ -57,7 +57,7 @@
                 <div class="grid gap-3 sm:col-span-2 lg:col-span-3" data-admin-image-upload>
                     <div><p class="text-sm font-semibold">Vehicle images</p><p class="mt-1 text-xs text-slate-500">Drag images here or choose files. JPG, JPEG, PNG, or WebP, max {{ number_format(config('services.tourlink.vehicle_image_max_kb', 5120) / 1024, 1) }} MB each and {{ number_format(config('services.tourlink.vehicle_image_total_max_kb', 6144) / 1024, 1) }} MB combined, up to 12 images.</p></div>
                     <label data-admin-dropzone class="grid min-h-32 cursor-pointer place-items-center rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-5 text-center hover:bg-emerald-50">
-                        <input data-admin-image-input type="file" name="images_files[]" accept="image/jpeg,image/png,image/webp" multiple class="sr-only">
+                        <input data-admin-image-input type="file" name="images_files[]" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic" multiple class="sr-only">
                         <span><span class="mx-auto grid size-10 place-items-center rounded-full bg-white text-xl font-bold text-emerald-800 shadow-sm" aria-hidden="true">＋</span><span class="mt-2 block text-sm font-bold text-emerald-950">Drop images here or browse</span><span class="mt-1 block text-xs text-slate-500">Add up to 12 vehicle photos</span></span>
                     </label>
                     <div data-admin-image-preview class="grid grid-cols-2 gap-3 sm:grid-cols-4">
