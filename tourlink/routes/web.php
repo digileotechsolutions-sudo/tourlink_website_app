@@ -19,6 +19,7 @@ use App\Http\Controllers\AdminVerificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MpesaPaymentController;
@@ -103,6 +104,7 @@ Route::view('/contact', 'pages.contact')->name('contact');
 Route::view('/how-it-works', 'pages.how-it-works')->name('how-it-works');
 
 Route::get('/', HomeController::class)->middleware('pwa.public')->name('home');
+Route::get('/destinations/{destination:slug}', [DestinationController::class, 'show'])->middleware('pwa.public')->name('destinations.show');
 Route::get('/trips', [TripController::class, 'index'])->middleware('pwa.public')->name('trips.index');
 Route::get('/trips/{trip:slug}', [TripController::class, 'show'])->name('trips.show');
 Route::get('/vehicles', [VehicleController::class, 'index'])->middleware('pwa.public')->name('vehicles.index');

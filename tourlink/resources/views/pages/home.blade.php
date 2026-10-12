@@ -168,7 +168,7 @@
     @else
         <div class="home-destination-grid">
             @foreach($destinations as $destination)
-                <a href="{{ route('trips.index', ['destination' => $destination->slug]) }}" class="home-destination-card">
+                <a href="{{ route('destinations.show', ['destination' => $destination->slug]) }}" class="home-destination-card">
                     <img src="{{ $destination->image_url }}" alt="{{ $destination->name }}" loading="lazy" decoding="async">
                     <div class="home-destination-overlay"></div>
                     <div class="home-destination-copy">
