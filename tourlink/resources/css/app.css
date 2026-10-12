@@ -7,8 +7,8 @@
 
 @theme {
     --color-ink: #111827;
-    --color-lagoon: #16A34A;
-    --color-leaf: #16A34A;
+    --color-lagoon: #17456A;
+    --color-leaf: #17456A;
     --color-sun: #FFD51E;
     --color-sand: #F8FAFC;
     --color-mist: #F8FAFC;
@@ -335,11 +335,11 @@ body:has(.pwa-status) { padding-bottom: 64px; }
 
 /* Site-wide brand palette: solid yellow, purple, and pink with no gradients. */
 :root {
-    --brand-pink: #16A34A;
-    --brand-purple: #16A34A;
+    --brand-pink: #17456A;
+    --brand-purple: #17456A;
     --brand-yellow: #FFD51E;
     --brand-yellow-soft: #F8FAFC;
-    --brand-purple-soft: #F0FDF4;
+    --brand-purple-soft: #F3F9FE;
 }
 
 [class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-lime-"], [class*="bg-teal-"] { background-color: var(--brand-purple); }
@@ -433,8 +433,8 @@ th, td { overflow-wrap: anywhere; }
 
 :root {
     --portal-sidebar-width: 264px;
-    --portal-ink: #16A34A;
-    --portal-accent: #16A34A;
+    --portal-ink: #123B5D;
+    --portal-accent: #17456A;
     --portal-line: #E2E8F0;
     --portal-muted: #64748B;
 }
@@ -1297,9 +1297,9 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 
 /* Global Tourlink typography, color and elevation system. */
 :root {
-    --tourlink-primary: #16A34A;
-    --tourlink-primary-hover: #15803D;
-    --tourlink-primary-text: #15803D;
+    --tourlink-primary: #17456A;
+    --tourlink-primary-hover: #123B5D;
+    --tourlink-primary-text: #123B5D;
     --tourlink-text: #111827;
     --tourlink-secondary: #64748B;
     --tourlink-page: #F8FAFC;
@@ -1332,11 +1332,11 @@ input, select, textarea { font-weight: 400; }
 .site-header { color: var(--tourlink-text); background: var(--tourlink-surface); box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--tourlink-border); }
 .site-header__brand, .site-header__brand-name strong, .site-header__account-link, .site-header__login { color: var(--tourlink-text); }
 .site-header__tagline, .site-header--floating .site-header__tagline { color: var(--tourlink-secondary); }
-.site-header__brand-icon { border-color: #DCFCE7; color: var(--tourlink-primary); background: #F0FDF4; box-shadow: none; }
+.site-header__brand-icon { border-color: #CFE3F5; color: var(--tourlink-primary); background: #F3F9FE; box-shadow: none; }
 .site-header__nav a, .site-header--floating .site-header__nav a { color: #374151; }
-.site-header__nav a:hover, .site-header__nav a.is-active, .site-header--floating .site-header__nav a:hover, .site-header--floating .site-header__nav a.is-active { color: var(--tourlink-primary-text); background: #F0FDF4; border-color: #DCFCE7; }
+.site-header__nav a:hover, .site-header__nav a.is-active, .site-header--floating .site-header__nav a:hover, .site-header--floating .site-header__nav a.is-active { color: var(--tourlink-primary-text); background: #F3F9FE; border-color: #CFE3F5; }
 .site-header__join, .site-header--floating .site-header__join, .home-primary-button, .home-native-search button, .home-search-row button { border-color: var(--tourlink-primary-hover); color: #fff; background: var(--tourlink-primary-hover); box-shadow: var(--shadow-sm); }
-.site-header__join:hover, .site-header--floating .site-header__join:hover, .home-primary-button:hover, .home-native-search button:hover { background: #166534; box-shadow: var(--shadow-md); }
+.site-header__join:hover, .site-header--floating .site-header__join:hover, .home-primary-button:hover, .home-native-search button:hover { background: #0F2F4A; box-shadow: var(--shadow-md); }
 .site-header__mobile > summary, .site-header__mobile-app-menu, .site-header__mobile-app-action { border-color: var(--tourlink-border); color: var(--tourlink-text); background: #fff; }
 .site-header__mobile-search-button { background: var(--tourlink-primary); }
 
@@ -1347,8 +1347,8 @@ input, select, textarea { font-weight: 400; }
 .public-support-launcher__button, .portal-topbar { box-shadow: var(--shadow-sm); }
 .home-native-eyebrow, .home-view-all, .home-category-heading .eyebrow, .home-category-card.is-active { color: var(--tourlink-primary-text); }
 .home-primary-button, .home-cta-card .home-primary-button { color: #fff; }
-.home-category-card.is-active { border-color: #BBF7D0; background: #F0FDF4; }
-.home-category-card.is-active .home-category-icon { color: var(--tourlink-primary); background: #DCFCE7; }
+.home-category-card.is-active { border-color: #CFE3F5; background: #F3F9FE; }
+.home-category-card.is-active .home-category-icon { color: var(--tourlink-primary-text); background: #E5F1F8; }
 .home-cta-card { border-color: var(--tourlink-border); background: #fff; box-shadow: var(--shadow-md); }
 .home-cta-card .home-primary-button { color: #fff; background: var(--tourlink-primary-hover); }
 .home-cta-card .home-secondary-button { border-color: var(--tourlink-border); color: var(--tourlink-text); background: #fff; }
@@ -1356,30 +1356,30 @@ input, select, textarea { font-weight: 400; }
 .contact-page__hero, .bg-hero-glow { background: var(--tourlink-primary); }
 .about-page__hero .eyebrow, .terms-document__dates, .terms-section a, .about-page__contact address a, .support-page-back, .support-back-link, .support-unavailable-back { color: var(--tourlink-primary-text); }
 .about-page__hero h1, .about-page__tagline, .about-page__section h2, .about-page__contact h2, .about-services dt, .about-reasons dt, .about-page__closing { color: var(--tourlink-text) !important; }
-.about-page__contact { border-color: #BBF7D0; background: #F0FDF4; }
-.terms-preamble, .terms-acceptance { border-color: #BBF7D0; background: #F0FDF4; }
+.about-page__contact { border-color: #CFE3F5; background: #F3F9FE; }
+.terms-preamble, .terms-acceptance { border-color: #CFE3F5; background: #F3F9FE; }
 .terms-document__title-row h1, .terms-section h2, .terms-acceptance h2 { color: var(--tourlink-text); }
 .terms-download { color: var(--tourlink-primary-text); border-color: var(--tourlink-border); box-shadow: var(--shadow-sm); }
 .terms-acceptance__check input { accent-color: var(--tourlink-primary); }
 .terms-acceptance__submit { background: var(--tourlink-primary-hover); box-shadow: var(--shadow-sm); }
 .terms-acceptance__submit:hover { background: var(--tourlink-primary-hover); }
 .site-header__mobile-account .site-header__mobile-primary { border-color: var(--tourlink-primary-hover); color: #fff; background: var(--tourlink-primary-hover); }
-.sign-in-prompt__mark { color: var(--tourlink-primary-text); background: #F0FDF4; }
+.sign-in-prompt__mark { color: var(--tourlink-primary-text); background: #F3F9FE; }
 .sign-in-prompt__primary { color: #fff; background: var(--tourlink-primary-hover); box-shadow: var(--shadow-sm); }
 .sign-in-prompt__signup a, .auth-terms-check a { color: var(--tourlink-primary-text); }
 .auth-login-submit, .auth-compact-submit, .auth-btn { background: var(--tourlink-primary-hover); box-shadow: var(--shadow-sm); }
-.auth-login-submit:hover, .auth-compact-submit:hover, .auth-btn:hover, .terms-acceptance__submit:hover { background: #166534; }
+.auth-login-submit:hover, .auth-compact-submit:hover, .auth-btn:hover, .terms-acceptance__submit:hover { background: #0F2F4A; }
 .mobile-bottom-nav, .portal-bottom-nav { box-shadow: var(--shadow-sm); }
-.mobile-bottom-nav__item.is-active, .portal-bottom-nav__item.is-active { color: var(--tourlink-primary-text); background: #F0FDF4; }
+.mobile-bottom-nav__item.is-active, .portal-bottom-nav__item.is-active { color: var(--tourlink-primary-text); background: #F3F9FE; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline-color: var(--tourlink-primary) !important; }
 ::selection { color: #fff; background: var(--tourlink-primary); }
-.site-header__mobile-panel nav a:hover, .mobile-menu-panel a:hover, .mobile-menu-panel a:focus-visible { color: var(--tourlink-primary-text); background: #F0FDF4; }
+.site-header__mobile-panel nav a:hover, .mobile-menu-panel a:hover, .mobile-menu-panel a:focus-visible { color: var(--tourlink-primary-text); background: #F3F9FE; }
 .portal-sidebar, .portal-topbar, .portal-drawer, .mobile-bottom-nav, .portal-bottom-nav { background-color: var(--tourlink-surface); }
-.portal-nav-link.is-active, .portal-bottom-nav__item.is-active, .mobile-bottom-nav__item.is-active { color: var(--tourlink-primary-text); background: #F0FDF4; }
+.portal-nav-link.is-active, .portal-bottom-nav__item.is-active, .mobile-bottom-nav__item.is-active { color: var(--tourlink-primary-text); background: #F3F9FE; }
 .portal-nav-link.is-active::before, .portal-nav-badge, .portal-notification-count, .profile-reminder { border-color: var(--tourlink-primary); }
 .portal-nav-badge, .portal-notification-count { background: var(--tourlink-primary-hover); }
 .profile-reminder { border-left-color: var(--tourlink-primary); box-shadow: var(--shadow-lg); }
-.profile-reminder__icon { color: var(--tourlink-primary-text); background: #F0FDF4; }
+.profile-reminder__icon { color: var(--tourlink-primary-text); background: #F3F9FE; }
 .profile-reminder__content a, .portal-footer a { color: var(--tourlink-primary-text); }
 .home-native-eyebrow, .home-view-all, .home-category-heading .eyebrow, .about-page__hero .eyebrow { color: var(--tourlink-primary-text); }
 .home-native-search input:focus, .home-native-search select:focus, .home-category-card:focus-visible, .home-primary-button:focus-visible, .home-secondary-button:focus-visible, .home-native-search button:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline-color: var(--tourlink-primary); }
@@ -1388,9 +1388,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .support-page-eyebrow, .support-chat-heading strong, .support-back-link, .support-unavailable-heading h1, .support-unavailable-card h2, .terms-section a, .terms-acceptance__check input { color: var(--tourlink-primary-text); }
 .support-page-header h1, .terms-document__title-row h1, .terms-section h2, .terms-acceptance h2, .about-page__hero h1, .about-page__section h2, .contact-page__intro h2 { color: var(--tourlink-text); }
 .about-page__closing, .terms-document, .contact-page__content { color: var(--tourlink-text); }
-.contact-method__icon, .support-unavailable-link-icon, .support-booking-reference { color: var(--tourlink-primary-text); background: #F0FDF4; }
-.about-page__contact, .support-booking-reference--new { border-color: #BBF7D0; background: #F0FDF4; }
-.public-support-launcher__button:hover, .public-support-launcher__action:hover, .support-send-button:hover, .support-widget__form button:hover { background: #166534; }
+.contact-method__icon, .support-unavailable-link-icon, .support-booking-reference { color: var(--tourlink-primary-text); background: #F3F9FE; }
+.about-page__contact, .support-booking-reference--new { border-color: #CFE3F5; background: #F3F9FE; }
+.public-support-launcher__button:hover, .public-support-launcher__action:hover, .support-send-button:hover, .support-widget__form button:hover { background: #0F2F4A; }
 .home-category-card, .home-review-card, .home-post-card, .home-destination-card, .home-trip-grid > .group, .home-vehicle-grid > .group { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
 .home-category-card:hover, .home-review-card:hover, .home-post-card:hover, .home-trip-grid > .group:hover, .home-vehicle-grid > .group:hover { box-shadow: var(--shadow-hover); }
 p { font-weight: 400; }
