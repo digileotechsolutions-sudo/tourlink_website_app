@@ -1295,16 +1295,16 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         const oversized = files.filter((file) => file.size > imageMaxBytes);
         const unsupported = files.filter((file) => {
             const extension = file.name.split('.').pop()?.toLowerCase();
-            return !supportedImageTypes.has(file.type) || !['jpg', 'jpeg', 'png', 'webp'].includes(extension);
+            return !supportedImageTypes.has(file.type) || !['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic', 'bmp', 'tiff', 'tif', 'ico'].includes(extension);
         });
         if (oversized.length || unsupported.length) {
             const transfer = new DataTransfer();
-            files.filter((file) => file.size <= imageMaxBytes && supportedImageTypes.has(file.type) && ['jpg', 'jpeg', 'png', 'webp'].includes(file.name.split('.').pop()?.toLowerCase())).forEach((file) => transfer.items.add(file));
+            files.filter((file) => file.size <= imageMaxBytes && supportedImageTypes.has(file.type) && ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic', 'bmp', 'tiff', 'tif', 'ico'].includes(file.name.split('.').pop()?.toLowerCase())).forEach((file) => transfer.items.add(file));
             imageInput.files = transfer.files;
             const errors = [];
             if (oversized.length) errors.push(`${oversized.map((file) => file.name).join(', ')} exceeds the ${Math.round(imageMaxBytes / 1024 / 1024)} MB per-image limit`);
             if (unsupported.length) errors.push(`${unsupported.map((file) => file.name).join(', ')} is not a supported image format`);
-            imageStatus.textContent = `${errors.join('; ')}. Choose valid JPG, JPEG, PNG or WebP photos.`;
+            imageStatus.textContent = `${errors.join('; ')}. Choose valid JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, or ICO photos.`;
             imageStatus.classList.add('font-bold', 'text-red-700');
         }
         const dimensionFailures = [];

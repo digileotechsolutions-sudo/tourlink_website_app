@@ -240,7 +240,7 @@ class OperatorController extends Controller
             'documents' => ['nullable', 'array'],
         ];
         foreach (OperatorVerificationDocument::cases() as $document) {
-            $rules['documents.'.$document->value] = ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'];
+            $rules['documents.'.$document->value] = ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:10240'];
         }
         $data = $request->validate($rules);
 
@@ -419,7 +419,7 @@ class OperatorController extends Controller
             'additional_charges' => ['nullable', 'array', 'max:20'], 'additional_charges.*.name' => ['required', 'string', 'max:120'], 'additional_charges.*.amount' => ['required', 'integer', 'min:0', 'max:100000000'],
             'cancellation_policy' => ['required', 'string', 'max:10000'], 'required_vehicle_id' => ['nullable', 'string', Rule::exists('vehicles', 'id')->where('owner_id', $request->user()->id)],
             'images' => ['nullable', 'array', 'max:12'], 'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'], 'images.*.alt' => ['nullable', 'string', 'max:255'],
-            'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp,gif,avif,heic', 'max:5120'],
+            'images_files' => ['nullable', 'array', 'max:12'], 'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:5120'],
             'media_order' => ['nullable', 'array', 'max:12'], 'media_order.*' => ['string', 'max:2048'],
         ]);
 

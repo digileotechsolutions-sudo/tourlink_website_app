@@ -182,7 +182,7 @@ class AdminTripController extends Controller
             'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],
             'images_files' => ['nullable', 'array', 'max:12'],
-            'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp,gif,avif,heic', 'max:5120'],
+            'images_files.*' => ['image', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:5120'],
         ]);
 
         if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {
