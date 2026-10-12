@@ -2684,6 +2684,8 @@ const showVerificationFeedback = (tone, message) => {
     } else {
         verificationFeedback.classList.add('border-emerald-700', 'bg-emerald-50', 'text-emerald-950');
     }
+
+    verificationFeedback.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 };
 
 const removeVerificationItem = (item) => {
@@ -2722,6 +2724,13 @@ document.querySelectorAll('[data-verification-form]').forEach((form) => {
         const buttons = [...form.querySelectorAll('button')];
         buttons.forEach((button) => { button.disabled = true; });
 
+        const data = new FormData(form);
+        if (submitter && submitter.name && !data.has(submitter.name)) {
+            data.append(submitter.name, submitter.value);
+        }
+
+        const decision = data.get('status') ?? data.get('verification_status') ?? submitter?.value ?? '';
+
         try {
             const response = await window.fetch(form.action, {
                 method: 'POST',
@@ -2730,29 +2739,29 @@ document.querySelectorAll('[data-verification-form]').forEach((form) => {
                     Accept: 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
                 },
-                body: new FormData(form, submitter ?? undefined),
+                body: data,
             });
 
+            const contentType = response.headers.get('content-type') ?? '';
+            const payload = contentType.includes('application/json')
+                ? await response.json().catch(() => ({}))
+                : {};
+
             if (response.status === 422) {
-                const payload = await response.json().catch(() => ({}));
                 const firstError = Object.values(payload.errors ?? {}).flat()[0];
                 showVerificationFeedback('error', firstError ?? 'The review could not be saved.');
                 return;
             }
 
             if (!response.ok) {
-                showVerificationFeedback('error', 'The review could not be saved. Please try again.');
+                showVerificationFeedback('error', payload.message ?? 'The review could not be saved. Please try again.');
                 return;
             }
 
-            const status = new FormData(form, submitter ?? undefined).get('status')
-                ?? submitter?.value
-                ?? '';
-
             removeVerificationItem(item);
-            showVerificationFeedback('success', status === 'APPROVED'
+            showVerificationFeedback('success', payload.message ?? (decision === 'APPROVED'
                 ? 'Verified. The item has been removed from the verification list.'
-                : 'Review saved. The item has been removed from the verification list.');
+                : 'Review saved. The item has been removed from the verification list.'));
         } catch (error) {
             showVerificationFeedback('error', 'Network error. Please try again.');
         } finally {

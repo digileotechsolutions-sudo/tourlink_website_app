@@ -13,6 +13,7 @@ use App\Services\Referral\ReferralService;
 use App\VerificationLevel;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -92,7 +93,7 @@ class AdminVerificationController extends Controller
         return view('admin.verification.index', compact('requests', 'filters', 'pendingTrips', 'pendingVehicles', 'showListingSubmissions'));
     }
 
-    public function update(Request $request, VerificationRequest $verificationRequest, ReferralService $referrals): RedirectResponse
+    public function update(Request $request, VerificationRequest $verificationRequest, ReferralService $referrals): RedirectResponse|JsonResponse
     {
         $data = $request->validate([
             'status' => ['required', Rule::in([
@@ -206,10 +207,15 @@ class AdminVerificationController extends Controller
         }
 
         $publishedCount = array_sum($published);
-
-        return back()->with('status', $publishedCount > 0
+        $message = $publishedCount > 0
             ? "Verification request reviewed. {$publishedCount} listing(s) are now live on the public pages."
-            : 'Verification request reviewed.');
+            : 'Verification request reviewed.';
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message]);
+        }
+
+        return back()->with('status', $message);
     }
 
     /**

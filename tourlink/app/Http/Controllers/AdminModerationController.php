@@ -8,6 +8,7 @@ use App\Models\Trip;
 use App\Models\Vehicle;
 use App\Services\Admin\AdminDashboardMetrics;
 use App\VerificationStatus;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,7 +54,7 @@ class AdminModerationController extends Controller
         return $this->updateListing($request, $vehicle, 'Vehicle', 'Vehicle review saved.');
     }
 
-    private function updateListing(Request $request, Trip|Vehicle $listing, string $entity, string $message): RedirectResponse
+    private function updateListing(Request $request, Trip|Vehicle $listing, string $entity, string $message): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'verification_status' => [
@@ -88,6 +89,13 @@ class AdminModerationController extends Controller
                 ],
             ]);
         });
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'verification_status' => $validated['verification_status'],
+            ]);
+        }
 
         return back()->with('status', $message);
     }
