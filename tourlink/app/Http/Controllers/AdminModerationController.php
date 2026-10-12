@@ -44,12 +44,12 @@ class AdminModerationController extends Controller
         ]));
     }
 
-    public function updateTrip(Request $request, Trip $trip): RedirectResponse
+    public function updateTrip(Request $request, Trip $trip): RedirectResponse|JsonResponse
     {
         return $this->updateListing($request, $trip, 'Trip', 'Trip review saved.');
     }
 
-    public function updateVehicle(Request $request, Vehicle $vehicle): RedirectResponse
+    public function updateVehicle(Request $request, Vehicle $vehicle): RedirectResponse|JsonResponse
     {
         return $this->updateListing($request, $vehicle, 'Vehicle', 'Vehicle review saved.');
     }
