@@ -20,7 +20,7 @@
             </div>
         @endif
         @yield('content')
+        <x-mobile-bottom-nav />
     </main>
-    <x-mobile-bottom-nav />
 </body>
 </html>

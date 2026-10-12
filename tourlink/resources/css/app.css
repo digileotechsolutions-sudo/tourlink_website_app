@@ -444,6 +444,7 @@ body:has(.dashboard-chrome) > div.flex > div.flex > main { padding-top: 70px; }
 body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 { width: calc(100% - var(--portal-sidebar-width)); margin-left: var(--portal-sidebar-width); }
 body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 > header.admin-topbar { display: none !important; }
 body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 > main { padding-top: 70px; }
+body:has(.dashboard-chrome) > main#main-content { display: flex; width: calc(100% - var(--portal-sidebar-width)); min-width: 0; min-height: 100svh; flex-direction: column; margin-left: var(--portal-sidebar-width); padding-top: 70px; }
 body:has(.dashboard-chrome) > div.flex > main { display: flex; flex-direction: column; }
 body:has(.dashboard-chrome) > div.flex > div.flex,
 body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 { display: flex; min-height: 100svh; flex-direction: column; }
@@ -675,6 +676,7 @@ html[dir="rtl"] .auth-language-switcher { right: auto; left: max(16px, env(safe-
     body:has(.dashboard-chrome) > div.flex > div.flex > main { padding-top: 0; }
     body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 { width: 100%; margin-left: 0; }
     body:has(.dashboard-chrome) > div.flex > div.min-w-0.flex-1 > main { padding-top: 0; }
+    body:has(.dashboard-chrome) > main#main-content { width: 100%; min-height: 0; margin-left: 0; padding-top: 0; }
     body:has(.dashboard-chrome) > div.flex { min-height: calc(100svh - 64px - 86px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
     body:has(.dashboard-chrome .portal-topbar--search) > div.flex { min-height: calc(100svh - 112px - 86px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
     body:has(.dashboard-chrome) > div.flex > div.flex,
