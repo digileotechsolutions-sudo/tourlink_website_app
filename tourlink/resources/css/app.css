@@ -1129,6 +1129,21 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 .home-destination-copy { position: absolute; inset: auto 0 0 0; padding: 18px; }
 .home-destination-badge { display: inline-flex; padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .home-destination-copy h3 { margin: 10px 0 0; color: #fff; font-size: 1.5rem; line-height: 1.1; }
+
+@media (max-width: 1023px) {
+    .home-destination-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .home-destination-card { min-height: 230px; }
+}
+
+@media (max-width: 767px) {
+    .home-recommend-section { min-width: 0; overflow: hidden; }
+    .home-destination-grid { grid-template-columns: none; grid-auto-columns: 82%; grid-auto-flow: column; gap: 14px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    .home-destination-grid::-webkit-scrollbar { display: none; }
+    .home-destination-card { height: 232px; min-height: 0; scroll-snap-align: start; }
+    .home-destination-copy { padding: 16px; }
+    .home-destination-copy h3 { max-width: 18ch; font-size: 1.3rem; line-height: 1.15; }
+}
+
 .home-cta-wrap { padding: 28px 0 24px; }
 .home-cta-card { display: flex; align-items: center; justify-content: space-between; gap: 22px; padding: 26px 26px; border: 1px solid #E5E7EB; border-radius: 28px; background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 60%, #DCFCE7 100%); box-shadow: 0 18px 32px rgba(22,163,74,.06); }
 .home-cta-card h2 { margin: 8px 0 0; color: #111827; font-size: clamp(1.9rem, 3vw, 3rem); line-height: 1.15; letter-spacing: -.05em; }
