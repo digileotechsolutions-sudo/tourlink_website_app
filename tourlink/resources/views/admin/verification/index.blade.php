@@ -16,6 +16,7 @@
         @if ($errors->any())
             <div role="alert" class="mt-5 border-l-4 border-red-700 bg-red-50 px-4 py-3 text-sm text-red-950"><p class="font-bold">The review could not be saved.</p>@foreach ($errors->all() as $error)<p class="mt-1">{{ $error }}</p>@endforeach</div>
         @endif
+        <p data-verification-feedback role="status" hidden class="mt-5 border-l-4 px-4 py-3 text-sm font-semibold"></p>
 
         <form method="GET" class="mt-6 grid gap-3 border-b border-slate-200 pb-6 sm:grid-cols-[minmax(240px,1fr)_200px_auto_auto]">
             <label class="sr-only" for="verification-search">Search applicants</label>
@@ -32,13 +33,14 @@
         </form>
 
         @if ($showListingSubmissions)
-            <section class="border-b border-slate-200 py-6" aria-labelledby="verification-trips-heading">
+            <section data-verification-section class="border-b border-slate-200 py-6" aria-labelledby="verification-trips-heading">
                 <div class="flex flex-wrap items-baseline justify-between gap-3">
                     <h2 id="verification-trips-heading" class="text-xl font-extrabold text-slate-950">Trip submissions</h2>
-                    <span class="text-sm text-slate-500">{{ $pendingTrips->count() }} awaiting verification</span>
+                    <span data-verification-count class="text-sm text-slate-500">{{ $pendingTrips->count() }} awaiting verification</span>
                 </div>
+                <p data-verification-empty hidden class="py-6 text-sm text-slate-600">No trip submissions are waiting for verification.</p>
                 @forelse ($pendingTrips as $trip)
-                    <article class="grid gap-5 border-b border-slate-100 py-6 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
+                    <article data-verification-item class="grid gap-5 border-b border-slate-100 py-6 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
                         <div>
                             <div class="flex flex-wrap items-baseline justify-between gap-3">
                                 <h3 class="text-lg font-extrabold text-slate-950">{{ $trip->name }}</h3>
@@ -48,7 +50,7 @@
                             <p class="mt-1 text-xs text-slate-500">{{ $trip->destination?->name ?? 'Destination not set' }} · {{ $trip->duration_days }} days · KES {{ number_format($trip->price_per_person) }} per person · Submitted {{ $trip->submitted_at?->format('Y-m-d H:i') }}</p>
                             <a href="{{ route('admin.trips.edit', $trip) }}" class="mt-3 inline-block rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100">Open full trip</a>
                         </div>
-                        <form method="POST" action="{{ route('admin.trips.update', $trip) }}" class="grid content-start gap-3">
+                        <form method="POST" action="{{ route('admin.trips.update', $trip) }}" data-verification-form data-no-loading class="grid content-start gap-3">
                             @csrf @method('PATCH')
                             <label class="grid gap-1 text-sm font-semibold text-slate-700">Reviewer note
                                 <input name="approval_note" maxlength="2000" class="min-h-11 rounded border border-slate-300 px-3 text-sm font-normal" placeholder="Optional note to the operator">
@@ -65,13 +67,14 @@
                 @endforelse
             </section>
 
-            <section class="border-b border-slate-200 py-6" aria-labelledby="verification-vehicles-heading">
+            <section data-verification-section class="border-b border-slate-200 py-6" aria-labelledby="verification-vehicles-heading">
                 <div class="flex flex-wrap items-baseline justify-between gap-3">
                     <h2 id="verification-vehicles-heading" class="text-xl font-extrabold text-slate-950">Vehicle submissions</h2>
-                    <span class="text-sm text-slate-500">{{ $pendingVehicles->count() }} awaiting verification</span>
+                    <span data-verification-count class="text-sm text-slate-500">{{ $pendingVehicles->count() }} awaiting verification</span>
                 </div>
+                <p data-verification-empty hidden class="py-6 text-sm text-slate-600">No vehicle submissions are waiting for verification.</p>
                 @forelse ($pendingVehicles as $vehicle)
-                    <article class="grid gap-5 border-b border-slate-100 py-6 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
+                    <article data-verification-item class="grid gap-5 border-b border-slate-100 py-6 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
                         <div>
                             <div class="flex flex-wrap items-baseline justify-between gap-3">
                                 <h3 class="text-lg font-extrabold text-slate-950">{{ $vehicle->name }}</h3>
@@ -81,7 +84,7 @@
                             <p class="mt-1 text-xs text-slate-500">{{ $vehicle->registration_number }} · {{ $vehicle->destination?->name ?? $vehicle->location }} · {{ $vehicle->seating_capacity }} seats · KES {{ number_format($vehicle->price_per_day) }} per day · Submitted {{ $vehicle->submitted_at?->format('Y-m-d H:i') }}</p>
                             <a href="{{ route('admin.vehicles.edit', $vehicle) }}" class="mt-3 inline-block rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100">Open full vehicle</a>
                         </div>
-                        <form method="POST" action="{{ route('admin.vehicles.update', $vehicle) }}" class="grid content-start gap-3">
+                        <form method="POST" action="{{ route('admin.vehicles.update', $vehicle) }}" data-verification-form data-no-loading class="grid content-start gap-3">
                             @csrf @method('PATCH')
                             <label class="grid gap-1 text-sm font-semibold text-slate-700">Reviewer note
                                 <input name="approval_note" maxlength="2000" class="min-h-11 rounded border border-slate-300 px-3 text-sm font-normal" placeholder="Optional note to the owner">
@@ -103,8 +106,10 @@
             <h2 class="text-xl font-extrabold text-slate-950">Document verification requests</h2>
         </div>
 
+        <div data-verification-section>
+            <p data-verification-empty hidden class="py-10 text-sm text-slate-600">No document verification requests match these filters.</p>
         @forelse ($requests as $verificationRequest)
-            <article class="grid gap-5 border-b border-slate-200 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
+            <article data-verification-item class="grid gap-5 border-b border-slate-200 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)]">
                 <div>
                     <div class="flex flex-wrap items-baseline justify-between gap-3">
                         <h2 class="text-lg font-extrabold text-slate-950">{{ $verificationRequest->user?->name ?? 'Unknown applicant' }}</h2>
@@ -150,7 +155,7 @@
                     @endif
                     @if ($verificationRequest->notes)<p class="mt-3 whitespace-pre-wrap text-sm text-slate-700">{{ $verificationRequest->notes }}</p>@endif
                 </div>
-                <form method="POST" action="{{ route('admin.verification.update', $verificationRequest) }}" class="grid content-start gap-3">
+                <form method="POST" action="{{ route('admin.verification.update', $verificationRequest) }}" data-verification-form data-no-loading class="grid content-start gap-3">
                     @csrf @method('PATCH')
                     <label class="grid gap-1 text-sm font-semibold text-slate-700">Decision
                         <select name="status" required class="min-h-11 rounded border border-slate-300 bg-white px-3 text-sm font-normal">
@@ -167,6 +172,7 @@
         @empty
             <p class="py-10 text-sm text-slate-600">No document verification requests match these filters.</p>
         @endforelse
+        </div>
         <div class="mt-6">{{ $requests->links() }}</div>
     </div>
 @endsection

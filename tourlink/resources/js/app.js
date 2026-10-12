@@ -2667,3 +2667,96 @@ document.querySelectorAll('[data-support-widget][data-start-url]').forEach((widg
         }
     }, 8000);
 });
+
+const verificationFeedback = document.querySelector('[data-verification-feedback]');
+
+const showVerificationFeedback = (tone, message) => {
+    if (!verificationFeedback) {
+        return;
+    }
+
+    verificationFeedback.textContent = message;
+    verificationFeedback.hidden = false;
+    verificationFeedback.classList.remove('border-emerald-700', 'bg-emerald-50', 'text-emerald-950', 'border-red-700', 'bg-red-50', 'text-red-950');
+
+    if (tone === 'error') {
+        verificationFeedback.classList.add('border-red-700', 'bg-red-50', 'text-red-950');
+    } else {
+        verificationFeedback.classList.add('border-emerald-700', 'bg-emerald-50', 'text-emerald-950');
+    }
+};
+
+const removeVerificationItem = (item) => {
+    if (!item) {
+        return;
+    }
+
+    const section = item.closest('[data-verification-section]');
+    item.remove();
+
+    if (!section) {
+        return;
+    }
+
+    const remaining = section.querySelectorAll('[data-verification-item]').length;
+    const count = section.querySelector('[data-verification-count]');
+
+    if (count) {
+        count.textContent = `${remaining} awaiting verification`;
+    }
+
+    if (remaining === 0) {
+        const empty = section.querySelector('[data-verification-empty]');
+        if (empty) {
+            empty.hidden = false;
+        }
+    }
+};
+
+document.querySelectorAll('[data-verification-form]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const submitter = event.submitter instanceof HTMLButtonElement ? event.submitter : null;
+        const item = form.closest('[data-verification-item]');
+        const buttons = [...form.querySelectorAll('button')];
+        buttons.forEach((button) => { button.disabled = true; });
+
+        try {
+            const response = await window.fetch(form.action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new FormData(form, submitter ?? undefined),
+            });
+
+            if (response.status === 422) {
+                const payload = await response.json().catch(() => ({}));
+                const firstError = Object.values(payload.errors ?? {}).flat()[0];
+                showVerificationFeedback('error', firstError ?? 'The review could not be saved.');
+                return;
+            }
+
+            if (!response.ok) {
+                showVerificationFeedback('error', 'The review could not be saved. Please try again.');
+                return;
+            }
+
+            const status = new FormData(form, submitter ?? undefined).get('status')
+                ?? submitter?.value
+                ?? '';
+
+            removeVerificationItem(item);
+            showVerificationFeedback('success', status === 'APPROVED'
+                ? 'Verified. The item has been removed from the verification list.'
+                : 'Review saved. The item has been removed from the verification list.');
+        } catch (error) {
+            showVerificationFeedback('error', 'Network error. Please try again.');
+        } finally {
+            buttons.forEach((button) => { button.disabled = false; });
+        }
+    });
+});
