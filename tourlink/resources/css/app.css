@@ -115,9 +115,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .site-footer .footer-link { width: fit-content; }
 .site-footer address { overflow-wrap: anywhere; }
 .site-footer details > div { min-width: 0; }
-.site-footer { background: #190c6e; }
+.site-footer { background: #190c6e; color: #fff; }
 .site-footer__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 18px; padding-block: 30px calc(24px + env(safe-area-inset-bottom)); }
 .site-footer__brand { grid-column: 1 / -1; min-width: 0; }
+.site-footer__brand > a { color: #fff !important; }
 .site-footer__brand > p { max-width: 560px; margin-top: 13px; color: rgba(255,255,255,.76); font-size: 13px; line-height: 1.65; }
 .site-footer__brand address { display: grid; gap: 3px; margin-top: 13px; color: rgba(255,255,255,.72); font-size: 12px; }
 .site-footer__group { display: grid; min-width: 0; align-content: start; gap: 5px; }
