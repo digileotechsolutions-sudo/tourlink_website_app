@@ -15,41 +15,56 @@
 <section class="home-native-shell">
     <div class="container-page">
         <div class="home-native-hero">
-            <div class="home-native-copy">
-                <p class="home-native-eyebrow">{{ __('Travel with confidence') }}</p>
-                <h1>{{ __('Where will your next journey take you?') }}</h1>
-                <p>{{ __('Discover handpicked trips, trusted operators, and rides that fit your pace — all in one beautiful mobile-first app experience.') }}</p>
+            <div class="home-native-content">
+                <div class="home-native-copy">
+                    <p class="home-native-eyebrow"><span aria-hidden="true"></span>{{ __('Travel with confidence') }}</p>
+                    <h1>{{ __('Where will your next journey take you?') }}</h1>
+                    <p>{{ __('Discover handpicked trips, trusted operators, and rides that fit your pace — all in one beautiful mobile-first app experience.') }}</p>
+                    <div class="home-hero-trust" aria-label="{{ __('Tourlink travel benefits') }}">
+                        <span><svg viewBox="0 0 20 20" aria-hidden="true" fill="none"><path d="m4 10 4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ __('Trusted local hosts') }}</span>
+                        <span><svg viewBox="0 0 20 20" aria-hidden="true" fill="none"><path d="M10 2.5 16 5v4.2c0 3.7-2.5 6.4-6 8.3-3.5-1.9-6-4.6-6-8.3V5l6-2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m7.3 9.8 1.8 1.8 3.7-3.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ __('Verified trips and vehicles') }}</span>
+                    </div>
+                </div>
+
+                <form class="home-native-search" method="GET" action="{{ route('trips.index') }}">
+                    <div class="home-search-row">
+                        <label>
+                            <span>{{ __('Destination') }}</span>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Kenya, Zanzibar, Maasai Mara...') }}" aria-label="{{ __('Destination') }}">
+                        </label>
+                        <button type="submit" aria-label="{{ __('Search trips') }}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+                        </button>
+                    </div>
+                    <div class="home-search-grid">
+                        <label>
+                            <span>{{ __('From') }}</span>
+                            <input type="text" name="from" value="{{ request('from') }}" placeholder="{{ __('Nairobi') }}" aria-label="{{ __('Departure location') }}">
+                        </label>
+                        <label>
+                            <span>{{ __('When') }}</span>
+                            <input type="date" name="date" value="{{ request('date') }}" aria-label="{{ __('Travel date') }}">
+                        </label>
+                        <label>
+                            <span>{{ __('Guests') }}</span>
+                            <select name="guests" aria-label="{{ __('Passengers') }}">
+                                <option value="2" @selected(request('guests') == '2')>2 Guests</option>
+                                <option value="4" @selected(request('guests') == '4')>4 Guests</option>
+                                <option value="6" @selected(request('guests') == '6')>6 Guests</option>
+                            </select>
+                        </label>
+                    </div>
+                </form>
             </div>
 
-            <form class="home-native-search" method="GET" action="{{ route('trips.index') }}">
-                <div class="home-search-row">
-                    <label>
-                        <span>{{ __('Destination') }}</span>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Kenya, Zanzibar, Maasai Mara...') }}" aria-label="{{ __('Destination') }}">
-                    </label>
-                    <button type="submit" aria-label="{{ __('Search trips') }}">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
-                    </button>
-                </div>
-                <div class="home-search-grid">
-                    <label>
-                        <span>{{ __('From') }}</span>
-                        <input type="text" name="from" value="{{ request('from') }}" placeholder="{{ __('Nairobi') }}" aria-label="{{ __('Departure location') }}">
-                    </label>
-                    <label>
-                        <span>{{ __('When') }}</span>
-                        <input type="date" name="date" value="{{ request('date') }}" aria-label="{{ __('Travel date') }}">
-                    </label>
-                    <label>
-                        <span>{{ __('Guests') }}</span>
-                        <select name="guests" aria-label="{{ __('Passengers') }}">
-                            <option value="2" @selected(request('guests') == '2')>2 Guests</option>
-                            <option value="4" @selected(request('guests') == '4')>4 Guests</option>
-                            <option value="6" @selected(request('guests') == '6')>6 Guests</option>
-                        </select>
-                    </label>
-                </div>
-            </form>
+            <figure class="home-native-visual">
+                <img src="https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&amp;fit=crop&amp;w=1100&amp;q=80" alt="{{ __('Kenyan safari landscape') }}" fetchpriority="high" decoding="async">
+                <figcaption>
+                    <span class="home-native-visual__badge"><svg viewBox="0 0 20 20" aria-hidden="true" fill="currentColor"><path d="m10 1.7 2.4 5 5.5.8-4 3.9.9 5.5-4.8-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8L10 1.7Z"/></svg>{{ __('Locally hosted') }}</span>
+                    <span class="home-native-visual__caption">{{ __('Go beyond the usual route.') }}</span>
+                    <span class="home-native-visual__subcaption">{{ __('Find a trip that feels like yours.') }}</span>
+                </figcaption>
+            </figure>
         </div>
     </div>
 </section>
