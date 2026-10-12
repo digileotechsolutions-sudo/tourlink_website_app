@@ -20,6 +20,9 @@
     # directly, because the front controller rule below skips real files.
     RewriteRule ^tourlink(/.*)?$ - [F,L]
 
+    # Route public uploads through Laravel so cPanel does not deny storage symlinks.
+    RewriteRule ^storage/.*$ index.php [L]
+
     # Same protection for any other dotfile that ends up in the document root.
     <FilesMatch "^\.">
         Require all denied
