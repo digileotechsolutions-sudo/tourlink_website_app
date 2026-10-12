@@ -1,24 +1,192 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="grain relative overflow-hidden bg-hero-glow text-white">
-    <div class="container-page relative grid items-center gap-8 py-10 sm:gap-10 sm:py-14 lg:min-h-[650px] lg:grid-cols-[1.02fr_.98fr] lg:gap-12 lg:py-24">
-        <div class="relative z-10">
-            <h1 class="hero-brush-headline">
-                <span class="hero-brush-headline__first">{{ __('Go further.') }}</span>
-                <span class="hero-brush-headline__second">{{ __('Feel more.') }}</span>
-            </h1>
-            <p class="mt-5 max-w-lg text-base leading-6 text-white/75 sm:mt-7 sm:text-lg sm:leading-7">{{ __('Discover trips, hire verified vehicles, and connect with trusted tour operators. Your next story starts here.') }}</p>
-            <div class="mt-6 flex flex-wrap gap-3 sm:mt-9"><a class="rounded-full bg-sun px-6 py-3.5 text-sm font-extrabold text-ink hover:bg-orange-300" href="{{ route('trips.index') }}">{{ __('Explore trips') }} <span aria-hidden="true">↗</span></a><a class="rounded-full border border-white/25 px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10" href="{{ route('vehicles.index') }}">{{ __('Browse vehicles') }} <span aria-hidden="true">↗</span></a></div>
-            <a class="mt-4 inline-flex text-sm font-bold text-white/70 underline decoration-white/30 underline-offset-4 hover:text-white" href="#how-it-works">{{ __('How Havenedge Tourlink works') }}</a>
-            <div class="mt-6 flex flex-wrap items-center gap-4 text-xs text-white/65 sm:mt-10"><span><strong class="text-white">{{ number_format($journeyCount) }}</strong> {{ __('journeys booked') }}</span><span class="size-1 rounded-full bg-sun"></span><span><strong class="text-white">{{ number_format($providerCount) }}</strong> {{ __('active providers') }}</span></div>
-        </div>
-        <div class="relative h-[230px] w-full sm:h-[320px] lg:h-[460px]">
-            <div class="absolute inset-x-0 top-0 mx-auto h-full max-w-[480px] overflow-hidden rounded-[26px] border-4 border-white/15 shadow-2xl lg:left-auto lg:right-0 lg:top-1/2 lg:mx-0 lg:h-[420px] lg:w-[370px] lg:max-w-none lg:-translate-y-1/2 lg:rotate-3 lg:rounded-[32px] lg:border-8"><img class="size-full object-cover" src="https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=720&q=78" srcset="https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=480&q=72 480w, https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=720&q=78 720w, https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1000&q=82 1000w" sizes="(max-width: 1023px) 100vw, 480px" alt="Elephant in a Kenyan landscape" fetchpriority="high" decoding="async"></div>
-            @if($featuredTrips->isNotEmpty())<div class="absolute bottom-3 left-3 z-10 max-w-[260px] rounded-2xl bg-white p-4 text-ink shadow-xl lg:bottom-8 lg:left-2"><p class="text-[10px] font-extrabold uppercase tracking-wider text-lagoon">{{ __('Featured journey') }}</p><p class="mt-1 font-extrabold">{{ $featuredTrips->first()->name }}</p><p class="mt-1 text-xs text-slate-500">{{ $featuredTrips->first()->destination?->name }} · {{ $featuredTrips->first()->duration_days }} days</p></div>@endif
+@php
+    $homeCategories = [
+        ['name' => __('Tours & Adventures'), 'icon' => '⛰️'],
+        ['name' => __('Road Trips'), 'icon' => '🚗'],
+        ['name' => __('Bus Travel'), 'icon' => '🚌'],
+        ['name' => __('Car Hire'), 'icon' => '🚙'],
+        ['name' => __('Private Transfers'), 'icon' => '🚕'],
+        ['name' => __('Group Travel'), 'icon' => '👥'],
+    ];
+@endphp
+
+<section class="home-native-shell">
+    <div class="container-page">
+        <div class="home-native-hero">
+            <div class="home-native-copy">
+                <p class="home-native-eyebrow">{{ __('Travel with confidence') }}</p>
+                <h1>{{ __('Where will your next journey take you?') }}</h1>
+                <p>{{ __('Discover handpicked trips, trusted operators, and rides that fit your pace — all in one beautiful mobile-first app experience.') }}</p>
+            </div>
+
+            <form class="home-native-search" method="GET" action="{{ route('trips.index') }}">
+                <div class="home-search-row">
+                    <label>
+                        <span>{{ __('Destination') }}</span>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Kenya, Zanzibar, Maasai Mara...') }}" aria-label="{{ __('Destination') }}">
+                    </label>
+                    <button type="submit" aria-label="{{ __('Search trips') }}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+                    </button>
+                </div>
+                <div class="home-search-grid">
+                    <label>
+                        <span>{{ __('From') }}</span>
+                        <input type="text" name="from" value="{{ request('from') }}" placeholder="{{ __('Nairobi') }}" aria-label="{{ __('Departure location') }}">
+                    </label>
+                    <label>
+                        <span>{{ __('When') }}</span>
+                        <input type="date" name="date" value="{{ request('date') }}" aria-label="{{ __('Travel date') }}">
+                    </label>
+                    <label>
+                        <span>{{ __('Guests') }}</span>
+                        <select name="guests" aria-label="{{ __('Passengers') }}">
+                            <option value="2" @selected(request('guests') == '2')>2 Guests</option>
+                            <option value="4" @selected(request('guests') == '4')>4 Guests</option>
+                            <option value="6" @selected(request('guests') == '6')>6 Guests</option>
+                        </select>
+                    </label>
+                </div>
+            </form>
         </div>
     </div>
 </section>
+
+<section class="container-page home-categories-wrap">
+    <div class="home-section-header">
+        <p class="eyebrow mb-2">{{ __('Discover') }}</p>
+        <h2>{{ __('Find your next kind of trip') }}</h2>
+    </div>
+
+    <div class="home-category-row" aria-label="{{ __('Travel categories') }}">
+        @foreach($homeCategories as $category)
+            <button type="button" class="home-category-card {{ $loop->first ? 'is-active' : '' }}">
+                <span class="home-category-icon" aria-hidden="true">{{ $category['icon'] }}</span>
+                <span>{{ $category['name'] }}</span>
+            </button>
+        @endforeach
+    </div>
+</section>
+
+<section class="container-page home-section-block">
+    <div class="home-section-header">
+        <div>
+            <p class="eyebrow mb-2">{{ __('Featured') }}</p>
+            <h2>{{ __('Trips worth planning') }}</h2>
+        </div>
+        <a href="{{ route('trips.index') }}" class="home-view-all">{{ __('View all') }} <span aria-hidden="true">→</span></a>
+    </div>
+
+    @if($featuredTrips->isEmpty())
+        <div class="home-empty-state">{{ __('No published trips are available just yet.') }}</div>
+    @else
+        <div class="home-trip-grid">
+            @foreach($featuredTrips as $trip)
+                <x-trip-card :trip="$trip" />
+            @endforeach
+        </div>
+    @endif
+</section>
+
+<section class="container-page home-section-block home-recommend-section">
+    <div class="home-section-header">
+        <div>
+            <p class="eyebrow mb-2">{{ __('Recommended') }}</p>
+            <h2>{{ __('Discover your next adventure') }}</h2>
+        </div>
+        <a href="{{ route('trips.index') }}" class="home-view-all">{{ __('Explore more') }} <span aria-hidden="true">→</span></a>
+    </div>
+
+    @if($destinations->isEmpty())
+        <div class="home-empty-state">{{ __('Destinations are being added. Check back soon.') }}</div>
+    @else
+        <div class="home-destination-grid">
+            @foreach($destinations as $destination)
+                <a href="{{ route('trips.index', ['destination' => $destination->slug]) }}" class="home-destination-card">
+                    <img src="{{ $destination->image_url }}" alt="{{ $destination->name }}" loading="lazy" decoding="async">
+                    <div class="home-destination-overlay"></div>
+                    <div class="home-destination-copy">
+                        <span class="home-destination-badge">{{ $destination->trips_count }} {{ __('trips') }}</span>
+                        <h3>{{ $destination->name }}</h3>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    @endif
+</section>
+
+<section class="home-cta-wrap">
+    <div class="container-page">
+        <div class="home-cta-card">
+            <div>
+                <p class="eyebrow">{{ __('Travel smarter') }}</p>
+                <h2>{{ __('Your next unforgettable journey starts here.') }}</h2>
+            </div>
+            <div class="home-cta-actions">
+                <a href="{{ route('trips.index') }}" class="home-primary-button">{{ __('Explore trips') }}</a>
+                <a href="{{ route('vehicles.index') }}" class="home-secondary-button">{{ __('Browse vehicles') }}</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if($reviews->isNotEmpty())
+<section class="home-review-wrap">
+    <div class="container-page">
+        <div class="home-section-header">
+            <div>
+                <p class="eyebrow mb-2">{{ __('Good words') }}</p>
+                <h2>{{ __('Stories they brought home') }}</h2>
+            </div>
+        </div>
+        <div class="home-review-grid">
+            @foreach($reviews as $review)
+                <article class="home-review-card">
+                    <div class="home-review-stars" aria-label="{{ $review->rating }} {{ __('out of 5 stars') }}">★★★★★</div>
+                    <p>“{{ $review->body }}”</p>
+                    <div class="home-review-meta">
+                        <strong>{{ $review->author?->name }}</strong>
+                        <span>{{ $review->trip?->name ?? $review->vehicle?->name }}</span>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+@if($latestPosts->isNotEmpty())
+<section class="container-page home-section-block">
+    <div class="home-section-header">
+        <div>
+            <p class="eyebrow mb-2">{{ __('Inspiration') }}</p>
+            <h2>{{ __('Notes from the road') }}</h2>
+        </div>
+        <a href="{{ route('blog.index') }}" class="home-view-all">{{ __('All articles') }} <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="home-post-grid">
+        @foreach($latestPosts as $post)
+            <article class="home-post-card">
+                @if($post->image_url)
+                    <img src="{{ $post->image_url }}" alt="{{ $post->title }}" loading="lazy" decoding="async">
+                @endif
+                <div class="home-post-body">
+                    <p class="home-post-date">{{ $post->created_at?->format('j M Y') }}</p>
+                    <h3><a href="{{ route('blog.show', ['blogPost' => $post->slug]) }}">{{ $post->title }}</a></h3>
+                    <p>{{ $post->excerpt }}</p>
+                </div>
+            </article>
+        @endforeach
+    </div>
+</section>
+@endif
+
+@guest
+    <x-sign-in-prompt />
+@endguest
+@endsection
 
 <section id="destinations" class="container-page pt-24 sm:pt-32">
     <div class="mb-7 flex items-end justify-between gap-5"><div><p class="eyebrow mb-2">{{ __('Start somewhere beautiful') }}</p><h2 class="display text-3xl font-bold leading-tight text-ink sm:text-[42px]">{{ __('Where will you go next?') }}</h2><p class="mt-3 max-w-xl text-sm leading-6 text-slate-500">{{ __('From big five mornings to slow coastal afternoons, find a trip that feels like yours.') }}</p></div><a class="hidden shrink-0 text-sm font-extrabold text-lagoon sm:block" href="{{ route('trips.index') }}">{{ __('View all trips') }} <span aria-hidden="true">›</span></a></div>
