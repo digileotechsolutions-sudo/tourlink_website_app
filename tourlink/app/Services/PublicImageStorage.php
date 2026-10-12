@@ -44,8 +44,12 @@ class PublicImageStorage
             ]);
         }
 
-        $path = $file->storeAs($directory, Str::ulid().'.'.$extension, 'public');
         $disk = Storage::disk('public');
+        if (! $disk->exists($directory)) {
+            $disk->makeDirectory($directory);
+        }
+
+        $path = $file->storeAs($directory, Str::ulid().'.'.$extension, 'public');
 
         if (! is_string($path) || ! $disk->exists($path)) {
             if (is_string($path)) {

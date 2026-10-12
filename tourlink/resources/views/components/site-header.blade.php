@@ -8,7 +8,7 @@
     };
 @endphp
 
-<header class="site-header">
+<header class="site-header {{ request()->routeIs('home') ? 'site-header--floating' : '' }}">
     <div class="site-header__inner container-page">
         <a class="site-header__brand" href="{{ route('home') }}" aria-label="{{ __('Havenedge Tourlink home') }}">
             <span class="site-header__brand-icon" aria-hidden="true">
