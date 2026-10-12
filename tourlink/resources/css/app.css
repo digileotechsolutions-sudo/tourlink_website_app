@@ -1400,7 +1400,7 @@ p { font-weight: 400; }
 }
 
 /* Homepage hero: clear editorial headline, focused search and a single travel image. */
-.home-native-shell { padding: clamp(30px, 5vw, 66px) 0 42px; background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%); }
+.home-native-shell { padding: clamp(30px, 5vw, 66px) 0 42px; background-color: #F8FAFC; background-image: url('/images/transport-pattern.svg'), linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%); background-size: 360px 300px, cover; background-repeat: repeat, no-repeat; }
 .home-native-hero { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(290px, .92fr); align-items: center; gap: clamp(28px, 5vw, 64px); padding: 0; }
 .home-native-content { display: grid; min-width: 0; gap: 22px; }
 .home-native-copy { max-width: 660px; }
