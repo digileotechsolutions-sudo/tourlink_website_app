@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\AccountApprovalStatus;
 use App\AccountStatus;
+use App\BookingType;
 use App\ListingStatus;
 use App\Models\Trip;
 use App\Models\User;
@@ -106,9 +107,19 @@ class AdminTripController extends Controller
         DB::transaction(function () use ($request, $trip, $data, $images, $destinationResolver): void {
             $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
             unset($data['destination_name']);
-            $trip->fill($data)->save();
-            $this->syncImages($trip, $images);
-            $this->writeAuditLog($request, $trip, 'trip.updated', array_keys($data), count($images));
+            $lockedTrip = Trip::query()->whereKey($trip->id)->lockForUpdate()->firstOrFail();
+            $reservedSeats = $lockedTrip->bookings()
+                ->where('type', BookingType::Trip)
+                ->whereNotIn('status', ['CANCELLED', 'REFUNDED', 'COMPLETED'])
+                ->sum('travelers');
+
+            if ($data['max_travelers'] < $data['available_seats'] + $reservedSeats) {
+                throw ValidationException::withMessages(['available_seats' => 'Available seats plus active bookings cannot exceed maximum travelers.']);
+            }
+
+            $lockedTrip->fill($data)->save();
+            $this->syncImages($lockedTrip, $images);
+            $this->writeAuditLog($request, $lockedTrip, 'trip.updated', array_keys($data), count($images));
         });
 
         return redirect()->route('admin.trips.edit', $trip)->with('status', 'Trip updated.');
@@ -201,6 +212,7 @@ class AdminTripController extends Controller
         }
 
         $reservedSeats = $trip?->bookings()
+            ->where('type', BookingType::Trip)
             ->whereNotIn('status', ['CANCELLED', 'REFUNDED', 'COMPLETED'])
             ->sum('travelers') ?? 0;
 

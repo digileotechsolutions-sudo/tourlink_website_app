@@ -90,12 +90,12 @@
                 </table>
             @elseif($section === 'commissions')
                 <table class="w-full min-w-[850px] text-left text-sm">
-                    <thead class="border-b border-slate-200 text-xs font-bold uppercase text-slate-500"><tr><th class="py-3 pr-4">Booking</th><th class="py-3 pr-4">Provider</th><th class="py-3 pr-4">Gross</th><th class="py-3 pr-4">Rate</th><th class="py-3 pr-4">Commission</th><th class="py-3 pr-4">Provider amount</th><th class="py-3">Payout status</th></tr></thead>
+                    <thead class="border-b border-slate-200 text-xs font-bold uppercase text-slate-500"><tr><th class="py-3 pr-4">Booking</th><th class="py-3 pr-4">Ledger event</th><th class="py-3 pr-4">Provider</th><th class="py-3 pr-4">Gross</th><th class="py-3 pr-4">Rate</th><th class="py-3 pr-4">Commission</th><th class="py-3 pr-4">Provider amount</th><th class="py-3">Status</th></tr></thead>
                     <tbody>
                         @forelse($records as $commission)
                             @php($booking = $commission->booking)
-                            <tr class="border-b border-slate-100"><td class="py-4 pr-4"><a href="{{ route('admin.bookings.show', $booking) }}" class="font-semibold text-emerald-800 hover:underline">{{ $booking?->reference }}</a></td><td class="py-4 pr-4">{{ $booking?->trip?->operator?->name ?? $booking?->vehicle?->owner?->name }}</td><td class="py-4 pr-4">KES {{ number_format($commission->gross_amount) }}</td><td class="py-4 pr-4">{{ number_format($commission->rate * 100, 1) }}%</td><td class="py-4 pr-4 font-bold">KES {{ number_format($commission->commission_amount) }}</td><td class="py-4 pr-4">KES {{ number_format($commission->provider_amount) }}</td><td class="py-4">{{ str($commission->payout_status)->title() }}</td></tr>
-                        @empty<tr><td colspan="7" class="py-10 text-center text-sm text-slate-600">No commissions found.</td></tr>@endforelse
+                            <tr class="border-b border-slate-100"><td class="py-4 pr-4"><a href="{{ route('admin.bookings.show', $booking) }}" class="font-semibold text-emerald-800 hover:underline">{{ $booking?->reference }}</a></td><td class="py-4 pr-4">{{ str($commission->event_type)->replace('_', ' ')->title() }}<p class="mt-1 text-xs text-slate-500">{{ $commission->payment?->merchant_reference ?? $commission->refund?->reference }}</p></td><td class="py-4 pr-4">{{ $booking?->trip?->operator?->name ?? $booking?->vehicle?->owner?->name }}</td><td class="py-4 pr-4">KES {{ number_format($commission->gross_amount) }}</td><td class="py-4 pr-4">{{ number_format($commission->rate * 100, 1) }}%</td><td class="py-4 pr-4 font-bold">KES {{ number_format($commission->commission_amount) }}</td><td class="py-4 pr-4">KES {{ number_format($commission->provider_amount) }}</td><td class="py-4">{{ str($commission->payout_status)->title() }}</td></tr>
+                        @empty<tr><td colspan="8" class="py-10 text-center text-sm text-slate-600">No commissions found.</td></tr>@endforelse
                     </tbody>
                 </table>
             @else

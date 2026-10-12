@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleAvailability;
 use App\Models\VerificationRequest;
+use App\Services\Booking\BookingService;
 use App\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -272,15 +273,22 @@ class VehicleOwnerController extends Controller
         return view('vehicle-owner.section', ['title' => 'Bookings', 'description' => 'Accept, reject, and manage vehicle booking requests.', 'items' => $bookings, 'type' => 'bookings']);
     }
 
-    public function updateBooking(Request $request, Booking $booking): RedirectResponse
+    public function updateBooking(Request $request, Booking $booking, BookingService $bookingService): RedirectResponse
     {
-        abort_unless($booking->vehicle && $booking->vehicle->owner_id === $request->user()->id, 404);
         $data = $request->validate(['status' => ['required', Rule::in(array_column(BookingStatus::cases(), 'value'))]]);
-        $allowed = [BookingStatus::Pending->value => [BookingStatus::Confirmed->value, BookingStatus::Cancelled->value], BookingStatus::Confirmed->value => [BookingStatus::InProgress->value, BookingStatus::Cancelled->value], BookingStatus::Paid->value => [BookingStatus::InProgress->value], BookingStatus::InProgress->value => [BookingStatus::Completed->value]];
-        if ($data['status'] !== $booking->status->value && ! in_array($data['status'], $allowed[$booking->status->value] ?? [], true)) {
-            throw ValidationException::withMessages(['status' => 'That booking status transition is not allowed.']);
+        try {
+            $bookingService->updateProviderStatus($request->user(), $booking->id, BookingStatus::from($data['status']));
+        } catch (\RuntimeException $exception) {
+            if ($exception->getMessage() === 'NOT_FOUND') {
+                abort(404);
+            }
+
+            throw ValidationException::withMessages(['status' => match ($exception->getMessage()) {
+                'PAYMENT_REQUIRES_REFUND' => 'Paid bookings require a refund review before cancellation.',
+                'PAYMENT_PROCESSING' => 'A payment is processing or awaiting verification. Resolve it before cancelling the booking.',
+                default => 'That booking status transition is not allowed.',
+            }]);
         }
-        $booking->update(['status' => $data['status']]);
 
         return back()->with('status', 'Booking status updated.');
     }

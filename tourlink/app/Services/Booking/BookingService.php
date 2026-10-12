@@ -6,7 +6,6 @@ use App\BookingStatus;
 use App\BookingType;
 use App\ListingStatus;
 use App\Models\Booking;
-use App\Models\Commission;
 use App\Models\Notification;
 use App\Models\Payment;
 use App\Models\Trip;
@@ -14,6 +13,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\PaymentMethod;
 use App\PaymentStatus;
+use App\Role;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -87,7 +87,7 @@ class BookingService
                 'currency' => $trip->currency ?: 'KES',
             ]);
 
-            $this->createPaymentAndCommission($booking, $grandTotal);
+            $this->createPendingPayment($booking, $grandTotal);
             Notification::query()->create([
                 'user_id' => $trip->operator_id,
                 'title' => 'New trip booking',
@@ -138,6 +138,7 @@ class BookingService
             }
 
             $overlap = Booking::query()
+                ->where('type', BookingType::Vehicle)
                 ->where('vehicle_id', $vehicle->id)
                 ->whereNotIn('status', [BookingStatus::Cancelled->value, BookingStatus::Refunded->value])
                 ->where('start_date', '<', $end)
@@ -172,7 +173,7 @@ class BookingService
                 'currency' => $vehicle->currency ?: 'KES',
             ]);
 
-            $this->createPaymentAndCommission($booking, $total);
+            $this->createPendingPayment($booking, $total);
             Notification::query()->create([
                 'user_id' => $vehicle->owner_id,
                 'title' => 'New vehicle request',
@@ -242,7 +243,53 @@ class BookingService
         }, attempts: 3);
     }
 
-    private function cancelLocked(Booking $booking, ?string $reason, bool $adminInitiated): Booking
+    public function updateProviderStatus(User $provider, string $bookingId, BookingStatus $status): Booking
+    {
+        return DB::transaction(function () use ($provider, $bookingId, $status): Booking {
+            $booking = Booking::query()->whereKey($bookingId)->lockForUpdate()->first();
+
+            if (! $booking) {
+                throw new RuntimeException('NOT_FOUND');
+            }
+
+            $belongsToProvider = $booking->type === BookingType::Trip
+                ? $provider->role === Role::Operator && Trip::query()->whereKey($booking->trip_id)->where('operator_id', $provider->id)->exists()
+                : $provider->role === Role::VehicleOwner && Vehicle::query()->whereKey($booking->vehicle_id)->where('owner_id', $provider->id)->exists();
+
+            if (! $belongsToProvider) {
+                throw new RuntimeException('NOT_FOUND');
+            }
+
+            $allowedTransitions = [
+                BookingStatus::Pending->value => [BookingStatus::Confirmed, BookingStatus::Cancelled],
+                BookingStatus::Confirmed->value => [BookingStatus::InProgress, BookingStatus::Cancelled],
+                BookingStatus::Paid->value => [BookingStatus::InProgress],
+                BookingStatus::InProgress->value => [BookingStatus::Completed],
+            ];
+
+            if ($status !== $booking->status && ! in_array($status, $allowedTransitions[$booking->status->value] ?? [], true)) {
+                throw new RuntimeException('INVALID_STATUS_TRANSITION');
+            }
+
+            if ($status === BookingStatus::Cancelled && $booking->status !== BookingStatus::Cancelled) {
+                if ($this->hasSuccessfulPayment($booking)) {
+                    throw new RuntimeException('PAYMENT_REQUIRES_REFUND');
+                }
+
+                if ($this->hasPaymentInFlight($booking)) {
+                    throw new RuntimeException('PAYMENT_PROCESSING');
+                }
+
+                return $this->cancelLocked($booking, null, false, true);
+            }
+
+            $booking->forceFill(['status' => $status])->save();
+
+            return $booking->refresh();
+        }, attempts: 3);
+    }
+
+    private function cancelLocked(Booking $booking, ?string $reason, bool $adminInitiated, bool $providerInitiated = false): Booking
     {
         $booking->forceFill([
             'status' => BookingStatus::Cancelled,
@@ -250,7 +297,7 @@ class BookingService
         ])->save();
 
         $providerId = null;
-        if ($booking->trip_id) {
+        if ($booking->type === BookingType::Trip && $booking->trip_id) {
             $trip = Trip::query()->whereKey($booking->trip_id)->lockForUpdate()->first();
             if ($trip) {
                 $availability = $trip->availabilities()
@@ -265,7 +312,7 @@ class BookingService
                 }
                 $providerId = $trip->operator_id;
             }
-        } elseif ($booking->vehicle_id) {
+        } elseif ($booking->type === BookingType::Vehicle && $booking->vehicle_id) {
             $providerId = Vehicle::query()->whereKey($booking->vehicle_id)->value('owner_id');
         }
 
@@ -273,7 +320,7 @@ class BookingService
             Notification::query()->create([
                 'user_id' => $providerId,
                 'title' => 'Booking cancelled',
-                'body' => $booking->reference.($adminInitiated ? ' was cancelled by Havenedge Tourlink support.' : ' was cancelled by the traveler.'),
+                'body' => $booking->reference.($adminInitiated ? ' was cancelled by Havenedge Tourlink support.' : ($providerInitiated ? ' was cancelled by the provider.' : ' was cancelled by the traveler.')),
                 'type' => 'BOOKING_CANCELLED',
             ]);
         }
@@ -321,21 +368,12 @@ class BookingService
             ->exists();
     }
 
-    private function createPaymentAndCommission(Booking $booking, int $total): void
+    private function createPendingPayment(Booking $booking, int $total): void
     {
         Payment::query()->create([
             'booking_id' => $booking->id,
             'merchant_reference' => $booking->reference,
             'amount' => $total,
-        ]);
-
-        $commission = (int) round($total * 0.1);
-        Commission::query()->create([
-            'booking_id' => $booking->id,
-            'rate' => 0.1,
-            'gross_amount' => $total,
-            'commission_amount' => $commission,
-            'provider_amount' => $total - $commission,
         ]);
     }
 

@@ -4,6 +4,7 @@ namespace App\Services\Payments;
 
 use App\BookingStatus;
 use App\Models\Booking;
+use App\Models\Commission;
 use App\Models\Notification;
 use App\Models\Payment;
 use App\Models\PaymentAudit;
@@ -377,6 +378,7 @@ class PaymentService
                     : PaymentStatus::PartiallyRefunded,
             ])->save();
             $booking = Booking::query()->whereKey($payment->booking_id)->lockForUpdate()->firstOrFail();
+            $this->recordCommissionReversal($payment, $lockedRefund, $booking);
             if ($this->summary($booking)['status'] === 'REFUNDED'
                 && ! in_array($booking->status, [BookingStatus::Cancelled, BookingStatus::Completed, BookingStatus::Refunded], true)) {
                 $booking->forceFill(['status' => BookingStatus::Refunded])->save();
@@ -429,6 +431,7 @@ class PaymentService
 
     private function afterSuccessfulPayment(Payment $payment, Booking $booking): void
     {
+        $this->recordCommissionPayment($payment, $booking);
         $summary = $this->summary($booking);
         if ($summary['balance'] === 0
             && in_array($booking->status, [BookingStatus::Pending, BookingStatus::Confirmed], true)) {
@@ -441,6 +444,66 @@ class PaymentService
             'body' => "Your payment of {$booking->currency} ".number_format($payment->amount)." for booking {$booking->reference} was successful.",
             'type' => 'PAYMENT',
         ]);
+    }
+
+    private function recordCommissionPayment(Payment $payment, Booking $booking): void
+    {
+        $rate = 0.1;
+        $commissionAmount = (int) round($payment->amount * $rate);
+
+        Commission::query()->firstOrCreate(
+            ['event_key' => 'PAYMENT:'.$payment->id],
+            [
+                'booking_id' => $booking->id,
+                'payment_id' => $payment->id,
+                'event_type' => 'PAYMENT',
+                'rate' => $rate,
+                'gross_amount' => $payment->amount,
+                'commission_amount' => $commissionAmount,
+                'provider_amount' => $payment->amount - $commissionAmount,
+                'payout_status' => 'PENDING',
+            ],
+        );
+    }
+
+    private function recordCommissionReversal(Payment $payment, Refund $refund, Booking $booking): void
+    {
+        $commission = Commission::query()->firstOrCreate(
+            ['event_key' => 'PAYMENT:'.$payment->id],
+            [
+                'booking_id' => $booking->id,
+                'payment_id' => $payment->id,
+                'event_type' => 'PAYMENT',
+                'rate' => 0.1,
+                'gross_amount' => $payment->amount,
+                'commission_amount' => (int) round($payment->amount * 0.1),
+                'provider_amount' => $payment->amount - (int) round($payment->amount * 0.1),
+                'payout_status' => 'PENDING',
+            ],
+        );
+        $reversedCommission = abs((int) Commission::query()
+            ->where('payment_id', $payment->id)
+            ->where('event_type', 'REFUND_REVERSAL')
+            ->sum('commission_amount'));
+        $completedRefunds = (int) $payment->refunds()->where('status', 'COMPLETED')->sum('amount');
+        $targetReversal = $completedRefunds >= $payment->amount
+            ? (int) $commission->commission_amount
+            : (int) round($commission->commission_amount * $completedRefunds / $payment->amount);
+        $commissionReversal = max(0, $targetReversal - $reversedCommission);
+
+        Commission::query()->firstOrCreate(
+            ['event_key' => 'REFUND:'.$refund->id],
+            [
+                'booking_id' => $booking->id,
+                'payment_id' => $payment->id,
+                'event_type' => 'REFUND_REVERSAL',
+                'rate' => $commission->rate,
+                'gross_amount' => -$refund->amount,
+                'commission_amount' => -$commissionReversal,
+                'provider_amount' => -($refund->amount - $commissionReversal),
+                'payout_status' => 'REVERSAL',
+            ],
+        );
     }
 
     /**

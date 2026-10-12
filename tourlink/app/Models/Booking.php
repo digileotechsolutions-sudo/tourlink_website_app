@@ -6,7 +6,6 @@ use App\BookingStatus;
 use App\BookingType;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Booking extends TourLinkModel
 {
@@ -65,8 +64,8 @@ class Booking extends TourLinkModel
         return $this->hasMany(Conversation::class);
     }
 
-    public function commission(): HasOne
+    public function commissions(): HasMany
     {
-        return $this->hasOne(Commission::class);
+        return $this->hasMany(Commission::class);
     }
 }

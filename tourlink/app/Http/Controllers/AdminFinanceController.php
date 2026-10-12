@@ -32,7 +32,7 @@ class AdminFinanceController extends Controller
             throw ValidationException::withMessages(['to' => 'The end date must be on or after the start date.']);
         }
         $query = Payment::query()
-            ->with(['booking.traveler:id,name,email', 'booking.trip:id,name', 'booking.vehicle:id,name', 'refunds', 'booking.commission', 'receiver:id,name'])
+            ->with(['booking.traveler:id,name,email', 'booking.trip:id,name', 'booking.vehicle:id,name', 'refunds', 'receiver:id,name'])
             ->when($filters['search'] ?? null, fn (Builder $query, string $search): Builder => $query->where(function (Builder $query) use ($search): void {
                 $query->where('merchant_reference', 'like', '%'.$search.'%')
                     ->orWhere('transaction_reference', 'like', '%'.$search.'%')
@@ -79,7 +79,7 @@ class AdminFinanceController extends Controller
     {
         $filters = $request->validate(['search' => ['nullable', 'string', 'max:120']]);
         $records = Commission::query()
-            ->with(['booking.traveler:id,name,email', 'booking.trip:id,name', 'booking.vehicle:id,name'])
+            ->with(['booking.traveler:id,name,email', 'booking.trip:id,name', 'booking.vehicle:id,name', 'payment:id,booking_id,merchant_reference', 'refund:id,payment_id,reference'])
             ->when($filters['search'] ?? null, fn (Builder $query, string $search): Builder => $query->where('payout_status', 'like', '%'.$search.'%')->orWhereHas('booking', fn (Builder $booking): Builder => $booking->where('reference', 'like', '%'.$search.'%')->orWhereHas('traveler', fn (Builder $user): Builder => $user->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%'))))
             ->latest('id')
             ->paginate(25)

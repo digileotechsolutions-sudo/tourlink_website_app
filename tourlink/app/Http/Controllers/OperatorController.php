@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\BookingStatus;
+use App\BookingType;
 use App\ListingStatus;
 use App\Models\Booking;
 use App\Models\Review;
@@ -14,8 +15,10 @@ use App\Models\VerificationRequest;
 use App\OperatorVerificationDocument;
 use App\Services\Catalog\DestinationResolver;
 use App\Services\Catalog\TripCategoryCatalog;
+use App\Services\Booking\BookingService;
 use App\VerificationLevel;
 use App\VerificationStatus;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -102,16 +105,15 @@ class OperatorController extends Controller
         $data['currency'] = 'KES';
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name']);
 
-        $trip = DB::transaction(function () use ($data, $images, $destinationResolver): Trip {
+        $trip = DB::transaction(function () use ($data, $images, $destinationResolver, $request): Trip {
             $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
             unset($data['destination_name']);
             $trip = Trip::query()->create($data);
             $this->syncImages($trip, $images);
+            $this->syncAvailability($request, $trip);
 
             return $trip;
         });
-        $this->syncAvailability($request, $trip);
-
         $message = $submissionAction === 'submit'
             ? 'You have successfully created your trip. It has been submitted for administrator approval.'
             : 'Your trip draft was saved successfully.';
@@ -144,13 +146,23 @@ class OperatorController extends Controller
         }
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? null) ?: $data['name'], $trip);
 
-        DB::transaction(function () use ($trip, $data, $images, $destinationResolver): void {
+        DB::transaction(function () use ($trip, $data, $images, $destinationResolver, $request): void {
             $data['destination_id'] = $destinationResolver->resolveOrCreate($data['destination_name'])->id;
             unset($data['destination_name']);
-            $trip->fill($data)->save();
-            $this->syncImages($trip, $images);
+            $lockedTrip = Trip::query()->whereKey($trip->id)->lockForUpdate()->firstOrFail();
+            $reservedSeats = $lockedTrip->bookings()
+                ->where('type', BookingType::Trip)
+                ->whereNotIn('status', [BookingStatus::Cancelled, BookingStatus::Refunded, BookingStatus::Completed])
+                ->sum('travelers');
+
+            if ($data['max_travelers'] < $data['available_seats'] + $reservedSeats) {
+                throw ValidationException::withMessages(['available_seats' => 'Available seats plus active bookings cannot exceed maximum travelers.']);
+            }
+
+            $lockedTrip->fill($data)->save();
+            $this->syncImages($lockedTrip, $images);
+            $this->syncAvailability($request, $lockedTrip);
         });
-        $this->syncAvailability($request, $trip);
 
         $message = $submissionAction === 'submit'
             ? 'Your trip changes were saved and submitted for administrator approval.'
@@ -189,12 +201,7 @@ class OperatorController extends Controller
             'availability.*.seats' => ['required', 'integer', 'min:0', 'max:10000'],
         ]);
 
-        DB::transaction(function () use ($trip, $data): void {
-            $trip->availabilities()->delete();
-            foreach ($data['availability'] as $entry) {
-                TripAvailability::query()->create(['trip_id' => $trip->id, 'date' => $entry['date'], 'seats' => $entry['seats']]);
-            }
-        });
+        $this->replaceAvailability($trip, $data['availability']);
 
         return back()->with('status', 'Trip availability updated.');
     }
@@ -341,23 +348,22 @@ class OperatorController extends Controller
         return view('operator.section', ['title' => 'Bookings', 'description' => 'Review traveler requests and update trip booking progress.', 'items' => $bookings, 'type' => 'bookings']);
     }
 
-    public function updateBooking(Request $request, Booking $booking): RedirectResponse
+    public function updateBooking(Request $request, Booking $booking, BookingService $bookingService): RedirectResponse
     {
-        abort_unless($booking->trip && $booking->trip->operator_id === $request->user()->id, 404);
         $data = $request->validate(['status' => ['required', Rule::in(array_column(BookingStatus::cases(), 'value'))]]);
-        $allowedTransitions = [
-            BookingStatus::Pending->value => [BookingStatus::Confirmed->value, BookingStatus::Cancelled->value],
-            BookingStatus::Confirmed->value => [BookingStatus::InProgress->value, BookingStatus::Cancelled->value],
-            BookingStatus::Paid->value => [BookingStatus::InProgress->value, BookingStatus::Refunded->value],
-            BookingStatus::InProgress->value => [BookingStatus::Completed->value, BookingStatus::Refunded->value],
-            BookingStatus::Completed->value => [],
-            BookingStatus::Cancelled->value => [],
-            BookingStatus::Refunded->value => [],
-        ];
-        if ($data['status'] !== $booking->status->value && ! in_array($data['status'], $allowedTransitions[$booking->status->value], true)) {
-            throw ValidationException::withMessages(['status' => 'That booking status transition is not allowed.']);
+        try {
+            $bookingService->updateProviderStatus($request->user(), $booking->id, BookingStatus::from($data['status']));
+        } catch (\RuntimeException $exception) {
+            if ($exception->getMessage() === 'NOT_FOUND') {
+                abort(404);
+            }
+
+            throw ValidationException::withMessages(['status' => match ($exception->getMessage()) {
+                'PAYMENT_REQUIRES_REFUND' => 'Paid bookings require a refund review before cancellation.',
+                'PAYMENT_PROCESSING' => 'A payment is processing or awaiting verification. Resolve it before cancelling the booking.',
+                default => 'That booking status transition is not allowed.',
+            }]);
         }
-        $booking->update(['status' => $data['status']]);
 
         return back()->with('status', 'Booking status updated.');
     }
@@ -474,7 +480,7 @@ class OperatorController extends Controller
             throw ValidationException::withMessages(['images_files' => 'The combined image upload must be 6 MB or less. Compress or remove images and try again.']);
         }
 
-        $reservedSeats = $trip?->bookings()->whereNotIn('status', [BookingStatus::Cancelled, BookingStatus::Refunded, BookingStatus::Completed])->sum('travelers') ?? 0;
+        $reservedSeats = $trip?->bookings()->where('type', BookingType::Trip)->whereNotIn('status', [BookingStatus::Cancelled, BookingStatus::Refunded, BookingStatus::Completed])->sum('travelers') ?? 0;
         if ($data['max_travelers'] < $data['available_seats'] + $reservedSeats) {
             throw ValidationException::withMessages(['available_seats' => 'Available seats plus active bookings cannot exceed maximum travelers.']);
         }
@@ -575,10 +581,34 @@ class OperatorController extends Controller
             'availability.*.seats' => ['nullable', 'integer', 'min:0', 'max:10000'],
         ])->validate();
         $entries = array_values(array_filter($validated['availability'] ?? [], static fn (array $entry): bool => filled($entry['date'] ?? null)));
-        $trip->availabilities()->delete();
-        foreach ($entries as $entry) {
-            $trip->availabilities()->create(['date' => $entry['date'], 'seats' => $entry['seats'] ?? 0]);
-        }
+        $this->replaceAvailability($trip, $entries);
+    }
+
+    /** @param array<int, array{date: string, seats: int}> $entries */
+    private function replaceAvailability(Trip $trip, array $entries): void
+    {
+        DB::transaction(function () use ($trip, $entries): void {
+            $lockedTrip = Trip::query()->whereKey($trip->id)->lockForUpdate()->firstOrFail();
+            $existing = $lockedTrip->availabilities()->orderBy('date')->get(['date', 'seats'])
+                ->mapWithKeys(static fn (TripAvailability $availability): array => [$availability->date->toDateString() => $availability->seats])
+                ->all();
+            $replacement = collect($entries)
+                ->mapWithKeys(static fn (array $entry): array => [CarbonImmutable::parse($entry['date'])->toDateString() => (int) ($entry['seats'] ?? 0)])
+                ->all();
+            $hasActiveBookings = $lockedTrip->bookings()
+                ->where('type', BookingType::Trip)
+                ->whereIn('status', [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::Paid, BookingStatus::InProgress])
+                ->exists();
+
+            if ($hasActiveBookings && $existing !== $replacement) {
+                throw ValidationException::withMessages(['availability' => 'Trip availability cannot be changed while active bookings reserve seats.']);
+            }
+
+            $lockedTrip->availabilities()->delete();
+            foreach ($replacement as $date => $seats) {
+                TripAvailability::query()->create(['trip_id' => $lockedTrip->id, 'date' => $date, 'seats' => $seats]);
+            }
+        }, attempts: 3);
     }
 
     private function uniqueSlug(string $value, ?Trip $trip = null): string

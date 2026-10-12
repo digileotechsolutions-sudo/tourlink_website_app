@@ -1094,7 +1094,7 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
     const stepNames = (form.dataset.stepNames ?? 'Details|Features|Multimedia|Pricing|Location|Review').split('|');
     const imageMaxBytes = Number(form.dataset.imageMaxBytes || 5 * 1024 * 1024);
     const imageTotalMaxBytes = Number(form.dataset.imageTotalMaxBytes || 6 * 1024 * 1024);
-    const supportedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/heic', 'image/heif', 'image/bmp', 'image/tiff', 'image/x-icon']);
+    const supportedImageExtensions = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic', 'bmp', 'tiff', 'tif', 'ico']);
     let current = 0;
     let busy = false;
     let dirty = false;
@@ -1293,13 +1293,13 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         imagePreview.querySelectorAll('[data-vehicle-new-image]').forEach((node) => node.remove());
         const files = [...(imageInput.files ?? [])];
         const oversized = files.filter((file) => file.size > imageMaxBytes);
+        const isSupportedImage = (file) => supportedImageExtensions.has(file.name.split('.').pop()?.toLowerCase());
         const unsupported = files.filter((file) => {
-            const extension = file.name.split('.').pop()?.toLowerCase();
-            return !supportedImageTypes.has(file.type) || !['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic', 'bmp', 'tiff', 'tif', 'ico'].includes(extension);
+            return !isSupportedImage(file);
         });
         if (oversized.length || unsupported.length) {
             const transfer = new DataTransfer();
-            files.filter((file) => file.size <= imageMaxBytes && supportedImageTypes.has(file.type) && ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic', 'bmp', 'tiff', 'tif', 'ico'].includes(file.name.split('.').pop()?.toLowerCase())).forEach((file) => transfer.items.add(file));
+            files.filter((file) => file.size <= imageMaxBytes && isSupportedImage(file)).forEach((file) => transfer.items.add(file));
             imageInput.files = transfer.files;
             const errors = [];
             if (oversized.length) errors.push(`${oversized.map((file) => file.name).join(', ')} exceeds the ${Math.round(imageMaxBytes / 1024 / 1024)} MB per-image limit`);

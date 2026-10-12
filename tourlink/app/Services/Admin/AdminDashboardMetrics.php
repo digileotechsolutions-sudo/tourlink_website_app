@@ -21,11 +21,6 @@ class AdminDashboardMetrics
 {
     public function build(): array
     {
-        $paidBookings = Payment::query()
-            ->select('booking_id')
-            ->where('status', 'SUCCESSFUL')
-            ->distinct();
-
         $payoutsByRole = Payout::query()
             ->join('users', 'users.id', '=', 'payouts.provider_id')
             ->select('users.role')
@@ -54,7 +49,7 @@ class AdminDashboardMetrics
                 'completedBookings' => Booking::query()->where('status', BookingStatus::Completed)->count(),
                 'cancelledBookings' => Booking::query()->where('status', BookingStatus::Cancelled)->count(),
                 'revenue' => Payment::query()->where('status', 'SUCCESSFUL')->sum('amount'),
-                'tourlinkCommission' => DB::table('commissions')->whereIn('booking_id', $paidBookings)->sum('commission_amount'),
+                'tourlinkCommission' => DB::table('commissions')->whereNotNull('payment_id')->sum('commission_amount'),
                 'operatorPayouts' => (int) ($payoutsByRole[Role::Operator->value] ?? 0),
                 'vehicleOwnerPayouts' => (int) ($payoutsByRole[Role::VehicleOwner->value] ?? 0),
                 'pendingVerification' => $pendingVerification,

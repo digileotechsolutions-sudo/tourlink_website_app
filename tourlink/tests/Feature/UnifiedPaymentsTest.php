@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\BookingStatus;
 use App\Models\Booking;
+use App\Models\Commission;
 use App\Models\Notification;
 use App\Models\Payment;
 use App\Models\User;
@@ -149,6 +150,13 @@ class UnifiedPaymentsTest extends TestCase
 
         $this->assertSame('COMPLETED', $refund->refresh()->status);
         $this->assertSame(PaymentStatus::PartiallyRefunded, $payment->refresh()->status);
+        $this->assertDatabaseHas('commissions', [
+            'refund_id' => $refund->id,
+            'event_type' => 'REFUND_REVERSAL',
+            'gross_amount' => -1200,
+            'commission_amount' => -120,
+            'provider_amount' => -1080,
+        ]);
     }
 
     public function test_full_refund_closes_the_booking_as_refunded(): void
@@ -169,6 +177,20 @@ class UnifiedPaymentsTest extends TestCase
 
         $this->assertSame(PaymentStatus::Refunded, $payment->refresh()->status);
         $this->assertSame(BookingStatus::Refunded, $booking->refresh()->status);
+        $this->assertDatabaseHas('commissions', [
+            'payment_id' => $payment->id,
+            'event_type' => 'PAYMENT',
+            'gross_amount' => 1000,
+            'commission_amount' => 100,
+            'provider_amount' => 900,
+        ]);
+        $this->assertDatabaseHas('commissions', [
+            'refund_id' => $refund->id,
+            'event_type' => 'REFUND_REVERSAL',
+            'gross_amount' => -1000,
+            'commission_amount' => -100,
+            'provider_amount' => -900,
+        ]);
     }
 
     public function test_receipts_are_limited_to_the_traveler_and_admin(): void
@@ -219,6 +241,8 @@ class UnifiedPaymentsTest extends TestCase
             ]);
         $this->instance(PesapalGateway::class, $gateway);
 
+        $this->assertDatabaseMissing('commissions', ['payment_id' => $payment->id]);
+
         $this->getJson('/api/pesapal/ipn?OrderTrackingId=PESAPAL-TRACK-001')
             ->assertOk()
             ->assertJsonPath('payment_status', 'successful');
@@ -228,6 +252,14 @@ class UnifiedPaymentsTest extends TestCase
 
         $this->assertSame(PaymentStatus::Successful, $payment->refresh()->status);
         $this->assertSame('PESAPAL-CONFIRM-001', $payment->transaction_reference);
+        $this->assertDatabaseHas('commissions', [
+            'payment_id' => $payment->id,
+            'event_type' => 'PAYMENT',
+            'gross_amount' => 1000,
+            'commission_amount' => 100,
+            'provider_amount' => 900,
+        ]);
+        $this->assertSame(1, Commission::query()->where('payment_id', $payment->id)->where('event_type', 'PAYMENT')->count());
         $this->assertSame(1, Notification::query()
             ->where('user_id', $booking->traveler_id)
             ->where('title', 'Payment received')
@@ -255,6 +287,7 @@ class UnifiedPaymentsTest extends TestCase
             ->assertStatus(409);
 
         $this->assertSame(PaymentStatus::Processing, $payment->refresh()->status);
+        $this->assertDatabaseMissing('commissions', ['payment_id' => $payment->id]);
     }
 
     private function processingPesapalPayment(Booking $booking): Payment
