@@ -1066,7 +1066,7 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 .site-header__mobile-app-action svg { width: 17px; height: 17px; }
 .site-header__mobile-search { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: rgba(255, 255, 255, .96); color: #314654; box-shadow: 0 8px 18px rgba(15, 23, 42, .08), inset 0 0 0 1px rgba(15, 23, 42, .04); }
 .site-header__mobile-search-label { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: #475569; }
-.site-header__mobile-search-button { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: #0f6a4a; color: #fff; }
+.site-header__mobile-search-button { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: #2563eb; color: #fff; }
 .site-header__mobile-search-button svg { width: 15px; height: 15px; }
 
 @media (max-width: 767px) {
@@ -1076,9 +1076,9 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
         width: calc(100% - 20px);
         margin: 12px auto 0;
         border-radius: 28px;
-        background: linear-gradient(180deg, #1a8b67 0%, #0d5c45 100%);
+        background: linear-gradient(180deg, #2563eb 0%, #123d9a 100%);
         border-color: rgba(255, 255, 255, .12);
-        box-shadow: 0 18px 32px rgba(13, 92, 69, .24);
+        box-shadow: 0 18px 32px rgba(37, 99, 235, .28);
     }
     .site-header__inner { min-height: auto; display: block; padding: 12px 12px 14px; }
     .site-header__brand, .site-header__nav, .site-header__actions { display: none; }
