@@ -35,17 +35,7 @@
                     </a>
 
                     <div class="site-header__mobile-app-actions">
-                        <a class="site-header__mobile-app-action" href="{{ route('trips.index') }}" aria-label="{{ __('Search trips') }}">
-                            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                                <circle cx="11" cy="11" r="6"></circle>
-                                <path d="m16 16 4 4"></path>
-                            </svg>
-                        </a>
-                        <a class="site-header__mobile-app-action" href="{{ route('login') }}" aria-label="{{ __('Notifications') }}">
-                            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path>
-                            </svg>
-                        </a>
+                        <x-language-switcher id="mobile-site-language" />
                         <a class="site-header__mobile-app-action" href="{{ auth()->check() ? route($dashboardRoute) : route('login') }}" aria-label="{{ __('Profile') }}">
                             <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="8" r="4"></circle>

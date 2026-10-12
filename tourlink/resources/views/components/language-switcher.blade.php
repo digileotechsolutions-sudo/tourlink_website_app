@@ -1,8 +1,10 @@
+@props(['id' => 'site-language'])
+
 <form class="language-switcher" method="POST" action="{{ route('locale.update') }}" aria-label="{{ __('Change language') }}">
     @csrf
     <input type="hidden" name="return_to" value="{{ '/'.ltrim(request()->path(), '/').(request()->getQueryString() ? '?'.request()->getQueryString() : '') }}">
-    <label class="sr-only" for="site-language">{{ __('Choose language') }}</label>
-    <select id="site-language" name="locale" aria-label="{{ __('Choose language') }}" onchange="this.form.requestSubmit()">
+    <label class="sr-only" for="{{ $id }}">{{ __('Choose language') }}</label>
+    <select id="{{ $id }}" name="locale" aria-label="{{ __('Choose language') }}" onchange="this.form.requestSubmit()">
         @foreach (config('localization.languages') as $locale => $language)
             <option value="{{ $locale }}" @selected(app()->getLocale() === $locale)>{{ $language['native'] }}</option>
         @endforeach

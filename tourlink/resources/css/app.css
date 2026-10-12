@@ -1120,6 +1120,10 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 .site-header--floating .site-header__mobile-brand-mark { background: #F3F9FE; border-color: rgba(25, 12, 110, .18); color: #190c6e; }
 .site-header--floating .site-header__mobile-brand-subtitle { color: #64748B; }
 .site-header--floating .site-header__mobile-app-action { background: #F8FAFC; border: 1px solid #E5E7EB; color: #111827; }
+.site-header--floating .site-header__mobile-app-actions { gap: 6px; }
+.site-header--floating .site-header__mobile-app-actions .language-switcher { min-width: 0; margin: 0; gap: 0; }
+.site-header--floating .site-header__mobile-app-actions .language-switcher select { width: 76px; min-height: 34px; padding-inline: 5px; border-color: #E5E7EB; border-radius: 10px; color: #111827; background: #fff; font-size: 10px; }
+.site-header--floating .site-header__mobile-app-actions .language-switcher button { display: none; }
 .site-header--floating .site-header__mobile-search { background: #fff; border: 1px solid #E5E7EB; box-shadow: 0 10px 25px rgba(15, 23, 42, .05); }
 .site-header--floating .site-header__mobile-search-label { color: #64748B; }
 
