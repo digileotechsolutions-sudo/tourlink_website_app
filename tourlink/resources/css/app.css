@@ -1021,25 +1021,25 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 }
 
 .site-header { position: sticky; top: 0; z-index: 80; color: #fff; background: #1F0052; box-shadow: 0 8px 24px rgb(31 0 82 / 14%); }
-.site-header--floating { position: sticky; top: 18px; width: min(1280px, calc(100% - 24px)); margin: 18px auto 0; border: 1px solid rgb(255 255 255 / 14%); border-radius: 24px; background: rgb(31 0 82 / 80%); backdrop-filter: blur(16px); box-shadow: 0 18px 45px rgb(31 0 82 / 24%); }
+.site-header--floating { position: sticky; top: 18px; width: min(1280px, calc(100% - 24px)); margin: 18px auto 0; border: 1px solid rgb(255 255 255 / 24%); border-radius: 24px; background: rgb(255 255 255 / 10%); backdrop-filter: blur(16px); box-shadow: 0 18px 45px rgb(15 23 42 / 24%); }
 .site-header::after { display: none; }
 .site-header__inner { position: relative; display: grid; min-height: 82px; grid-template-columns: minmax(205px, auto) minmax(0, 1fr) auto; align-items: center; gap: clamp(14px, 2.2vw, 32px); }
 .site-header--floating .site-header__inner { min-height: 76px; padding-inline: 4px; }
 .site-header__brand { display: inline-flex; min-width: 0; align-items: center; gap: 11px; color: #fff; }
-.site-header__brand-icon { display: grid; width: 44px; height: 44px; flex: none; place-items: center; border: 1px solid #FFD51E; border-radius: 15px; color: #1F0052; background: #FFD51E; box-shadow: 0 5px 16px rgb(255 213 30 / 18%); font-family: Arial Black, Roboto, sans-serif; font-size: 18px; font-weight: 900; letter-spacing: -.1em; line-height: 1; transition: transform .2s ease, box-shadow .2s ease; }
-.site-header__brand:hover .site-header__brand-icon { transform: rotate(-7deg); box-shadow: 0 8px 21px rgb(255 213 30 / 30%); }
+.site-header__brand-icon { display: grid; width: 44px; height: 44px; flex: none; place-items: center; border: 1px solid rgb(255 255 255 / 40%); border-radius: 15px; color: #fff; background: rgb(255 255 255 / 9%); box-shadow: 0 5px 16px rgb(255 255 255 / 10%); font-family: Arial Black, Roboto, sans-serif; font-size: 18px; font-weight: 900; letter-spacing: -.1em; line-height: 1; transition: transform .2s ease, box-shadow .2s ease; }
+.site-header__brand:hover .site-header__brand-icon { transform: rotate(-7deg); box-shadow: 0 8px 21px rgb(255 255 255 / 18%); }
 .site-header__brand-copy { display: grid; min-width: 0; gap: 3px; }
 .site-header__brand-name { overflow: hidden; font-size: clamp(15px, 1.35vw, 19px); font-weight: 850; letter-spacing: -.035em; text-overflow: ellipsis; white-space: nowrap; }
-.site-header__brand-name strong { color: #FFD51E; font-weight: 900; }
-.site-header__tagline { color: rgb(255 255 255 / 55%); font-size: 8px; font-weight: 750; letter-spacing: .17em; text-transform: uppercase; }
+.site-header__brand-name strong { color: #fff; font-weight: 900; }
+.site-header__tagline { color: rgb(255 255 255 / 78%); font-size: 8px; font-weight: 750; letter-spacing: .17em; text-transform: uppercase; }
 .site-header__nav { display: flex; min-width: 0; align-items: center; justify-content: center; gap: 3px; }
-.site-header__nav a { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; padding: 0 clamp(8px, 1vw, 14px); border: 1px solid transparent; border-radius: 12px; color: rgb(255 255 255 / 74%); font-size: 12px; font-weight: 700; white-space: nowrap; transition: color .18s ease, background .18s ease, border-color .18s ease; }
-.site-header__nav a:hover, .site-header__nav a:focus-visible { color: #fff; background: rgb(255 255 255 / 8%); }
-.site-header__nav a.is-active { border-color: rgb(255 213 30 / 16%); color: #FFE681; background: rgb(255 213 30 / 8%); }
+.site-header__nav a { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; padding: 0 clamp(8px, 1vw, 14px); border: 1px solid transparent; border-radius: 12px; color: rgb(255 255 255 / 95%); font-size: 12px; font-weight: 700; white-space: nowrap; transition: color .18s ease, background .18s ease, border-color .18s ease; }
+.site-header__nav a:hover, .site-header__nav a:focus-visible { color: #fff; background: rgb(255 255 255 / 10%); }
+.site-header__nav a.is-active { border-color: rgb(255 255 255 / 18%); color: #fff; background: rgb(255 255 255 / 12%); }
 .site-header__actions, .site-header__account-actions { display: flex; align-items: center; gap: 10px; }
-.site-header__account-link { display: inline-flex; min-height: 42px; align-items: center; gap: 8px; padding: 0 10px; border-radius: 11px; color: rgb(255 255 255 / 84%); font-size: 12px; font-weight: 750; white-space: nowrap; }
+.site-header__account-link { display: inline-flex; min-height: 42px; align-items: center; gap: 8px; padding: 0 10px; border-radius: 11px; color: rgb(255 255 255 / 96%); font-size: 12px; font-weight: 750; white-space: nowrap; }
 .site-header__account-link svg { width: 18px; height: 18px; }
-.site-header__account-link:hover, .site-header__login:hover { color: #FFE681; background: rgb(255 255 255 / 8%); }
+.site-header__account-link:hover, .site-header__login:hover { color: #fff; background: rgb(255 255 255 / 10%); }
 .site-header__login { display: inline-flex; min-height: 42px; align-items: center; padding: 0 12px; border-radius: 11px; color: #fff; font-size: 12px; font-weight: 750; white-space: nowrap; }
 .site-header__account-actions form { margin: 0; }
 .site-header__join { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; padding: 0 17px; border: 1px solid #FFD51E; border-radius: 999px; color: #251048; background: #FFD51E; box-shadow: 0 5px 14px rgb(255 213 30 / 14%); cursor: pointer; font-size: 12px; font-weight: 850; white-space: nowrap; transition: transform .18s ease, box-shadow .18s ease; }
