@@ -407,10 +407,17 @@ document.querySelectorAll('[data-trip-wizard]').forEach((form) => {
     const advanceTripStep = () => {
         const invalid = [...steps[current].querySelectorAll('input, select, textarea')].find(isInvalid);
         if (invalid) {
+            const errorPanel = steps[current].querySelector('[data-trip-step-error]');
+            if (errorPanel) {
+                errorPanel.textContent = 'Complete the highlighted required field(s) before continuing.';
+                errorPanel.classList.remove('hidden');
+            }
             invalid.focus();
             invalid.reportValidity();
             return;
         }
+        const errorPanel = steps[current].querySelector('[data-trip-step-error]');
+        errorPanel?.classList.add('hidden');
         showStep(current + 1);
         form.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
@@ -1016,10 +1023,17 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         const invalid = [...steps[current].querySelectorAll('input, select, textarea')]
             .find((field) => field.willValidate && isInvalid(field));
         if (invalid) {
+            const errorPanel = steps[current].querySelector('[data-vehicle-step-error]');
+            if (errorPanel) {
+                errorPanel.textContent = 'Complete the highlighted required field(s) before continuing.';
+                errorPanel.classList.remove('hidden');
+            }
             invalid.focus();
             invalid.reportValidity();
             return;
         }
+        const errorPanel = steps[current].querySelector('[data-vehicle-step-error]');
+        errorPanel?.classList.add('hidden');
         showStep(current + 1);
         form.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };

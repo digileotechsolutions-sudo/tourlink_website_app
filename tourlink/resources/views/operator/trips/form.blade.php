@@ -60,6 +60,7 @@
         </aside>
 
         <section data-trip-step="0" class="space-y-5 px-3 py-4 sm:px-5 lg:col-start-1 lg:row-start-3" aria-labelledby="trip-step-title-0">
+            <p data-trip-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
             <div><h2 id="trip-step-title-0" class="text-lg font-black">Basic trip details</h2><p class="mt-1 text-xs text-slate-600">Tell travelers about the trip and its departure.</p></div>
             <div class="grid gap-3 sm:grid-cols-2">
                 <label class="grid gap-1.5 text-xs font-semibold sm:col-span-2">Trip title <span class="text-red-700">*</span><input required maxlength="255" name="name" value="{{ old('name', $trip->name) }}" placeholder="e.g. 3-day Amboseli wildlife escape" class="min-h-9 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
@@ -78,6 +79,7 @@
         </section>
 
         <section data-trip-step="1" class="hidden space-y-4 px-3 py-4 sm:px-5 lg:col-start-1 lg:row-start-3" aria-labelledby="trip-step-title-1" hidden>
+            <p data-trip-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
             <div><h2 id="trip-step-title-1" class="text-lg font-black">Itinerary builder</h2><p class="mt-1 text-xs text-slate-600">Build a clear, day-by-day schedule for your guests.</p></div>
             <div class="grid gap-5 sm:grid-cols-2">
                 <label class="grid gap-1 text-xs font-semibold">Return time <input required type="time" name="return_time" value="{{ $returnTimeInput }}" class="min-h-10 rounded-full border border-slate-300 px-4 text-sm font-normal"></label>
@@ -93,6 +95,7 @@
         </section>
 
         <section data-trip-step="2" class="hidden space-y-4 px-3 py-4 sm:px-5 lg:col-start-1 lg:row-start-3" aria-labelledby="trip-step-title-2" hidden>
+            <p data-trip-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
             <div><h2 id="trip-step-title-2" class="text-lg font-black">Pricing & capacity</h2><p class="mt-1 text-xs text-slate-600">Set clear prices, group sizes, and what is included.</p></div>
             <div class="grid gap-5 sm:grid-cols-2">
                 <label class="grid gap-2 text-sm font-bold">Adult price <span class="text-red-700">*</span><span class="relative"><span class="absolute left-4 top-3 text-sm font-bold text-slate-500">KES</span><input required type="number" min="0" max="100000000" step="1" name="price_per_person" value="{{ old('price_per_person', $trip->price_per_person) }}" placeholder="0" class="min-h-12 w-full rounded-xl border border-slate-300 pl-16 pr-4 font-normal"></span></label>
@@ -108,6 +111,7 @@
         </section>
 
         <section data-trip-step="3" class="hidden space-y-4 px-3 py-4 sm:px-5 lg:col-start-1 lg:row-start-3" aria-labelledby="trip-step-title-3" hidden>
+            <p data-trip-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
             <div><h2 id="trip-step-title-3" class="text-lg font-black">Trip media</h2><p class="mt-1 text-xs text-slate-600">Add destination photos, select a cover, and arrange the gallery order.</p></div>
             <div class="grid gap-3">
                 <p class="text-xs text-slate-500">JPG, PNG, or WebP; 5 MB per image, 6 MB combined, up to 12 images. The first photo is the cover.</p>
@@ -123,6 +127,7 @@
         </section>
 
         <section data-trip-step="4" class="hidden space-y-4 px-3 py-4 sm:px-5 lg:col-start-1 lg:row-start-3" aria-labelledby="trip-step-title-4" hidden>
+            <p data-trip-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
             <div><h2 id="trip-step-title-4" class="text-lg font-black">Review & publish</h2><p class="mt-1 text-xs text-slate-600">Review how your trip will appear before sending it to our team.</p></div>
             <article class="overflow-hidden rounded-2xl border border-slate-200">
                 <div data-preview-cover class="grid min-h-48 place-items-center bg-emerald-50 text-sm font-bold text-emerald-900">Your trip cover photo will appear here</div>

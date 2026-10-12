@@ -28,6 +28,7 @@
         <div class="grid gap-5 px-3 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8 lg:py-6">
             <div class="min-w-0">
                 <section data-vehicle-step="0" class="space-y-4" aria-labelledby="vehicle-step-heading-0">
+                    <p data-vehicle-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
                     <div><h3 id="vehicle-step-heading-0" class="text-lg font-black">Vehicle details</h3><p class="mt-1 text-sm text-slate-500">Tell renters what this vehicle is and how many people it can carry.</p></div>
                     <div class="grid gap-4 sm:grid-cols-2">
                         <label class="grid gap-1.5 text-sm font-semibold">Listing name <span class="text-red-700">*</span><input required name="name" maxlength="255" value="{{ old('name', $vehicle->name) }}" placeholder="e.g. Family safari Land Cruiser" class="min-h-11 rounded-xl border border-slate-300 px-3 font-normal"></label>
@@ -46,6 +47,7 @@
                 </section>
 
                 <section data-vehicle-step="1" class="hidden space-y-4" aria-labelledby="vehicle-step-heading-1" hidden>
+                    <p data-vehicle-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
                     <div><h3 id="vehicle-step-heading-1" class="text-lg font-black">Features</h3><p class="mt-1 text-sm text-slate-500">Select the features included with this vehicle.</p></div>
                     <div class="grid gap-3 sm:grid-cols-2">
                         @foreach(['air_conditioning' => ['Air conditioning', 'Comfortable rides in warm weather.'], 'four_by_four' => ['4×4 capability', 'Suitable for rough roads and safari routes.'], 'driver_included' => ['Driver included', 'A professional driver is included in the rental.']] as $field => [$label, $description])
@@ -55,6 +57,7 @@
                 </section>
 
                 <section data-vehicle-step="2" class="hidden space-y-4" aria-labelledby="vehicle-step-heading-2" hidden>
+                    <p data-vehicle-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
                     <div><h3 id="vehicle-step-heading-2" class="text-lg font-black">Photos</h3><p class="mt-1 text-sm text-slate-500">Add at least one clear vehicle photo. The first photo is the cover; use arrows to arrange the gallery.</p></div>
                     <label data-vehicle-media-dropzone class="grid min-h-36 cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-5 text-center hover:bg-emerald-50"><input data-vehicle-media-input type="file" name="images_files[]" accept="image/jpeg,image/png,image/webp" multiple class="sr-only"><span><span class="mx-auto grid size-10 place-items-center rounded-xl bg-white text-xl font-bold text-emerald-800 shadow-sm" aria-hidden="true">＋</span><span class="mt-2 block text-sm font-bold text-emerald-950">Drag photos here or browse files</span><span class="mt-1 block text-xs text-slate-500">JPG, PNG or WebP · 5 MB each · 6 MB combined</span></span></label>
                     <div data-vehicle-media-preview class="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -66,6 +69,7 @@
                 </section>
 
                 <section data-vehicle-step="3" class="hidden space-y-4" aria-labelledby="vehicle-step-heading-3" hidden>
+                    <p data-vehicle-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
                     <div><h3 id="vehicle-step-heading-3" class="text-lg font-black">Pricing</h3><p class="mt-1 text-sm text-slate-500">All rates are listed in Kenyan shillings (KES).</p></div>
                     <div class="grid gap-4 sm:grid-cols-2">
                         <label class="grid gap-1.5 text-sm font-semibold">Daily rate (KES) <span class="text-red-700">*</span><input required type="number" name="price_per_day" min="0" max="100000000" value="{{ old('price_per_day', $vehicle->price_per_day ?? 0) }}" class="min-h-11 rounded-xl border border-slate-300 px-3 font-normal"></label>
@@ -77,6 +81,7 @@
                 </section>
 
                 <section data-vehicle-step="4" class="hidden space-y-4" aria-labelledby="vehicle-step-heading-4" hidden>
+                    <p data-vehicle-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
                     <div><h3 id="vehicle-step-heading-4" class="text-lg font-black">Location & availability</h3><p class="mt-1 text-sm text-slate-500">Set where you operate and mark open or blocked dates.</p></div>
                     <div class="grid gap-4 sm:grid-cols-2">
                         <label class="grid gap-1.5 text-sm font-semibold sm:col-span-2">Main operating location <span class="text-red-700">*</span><input required name="location" maxlength="255" value="{{ old('location', $vehicle->location) }}" placeholder="Nairobi, Kenya" class="min-h-11 rounded-xl border border-slate-300 px-3 font-normal"></label>
@@ -87,6 +92,7 @@
                 </section>
 
                 <section data-vehicle-step="5" class="hidden space-y-4" aria-labelledby="vehicle-step-heading-5" hidden>
+                    <p data-vehicle-step-error role="alert" class="hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"></p>
                     <div><h3 id="vehicle-step-heading-5" class="text-lg font-black">Review & submit</h3><p class="mt-1 text-sm text-slate-500">Check the listing preview before saving it.</p></div>
                     <div class="rounded-xl border border-slate-200 p-4 lg:hidden"><p class="text-sm font-bold">Compact preview</p><p data-vehicle-preview-mobile class="mt-1 text-sm text-slate-600">Your vehicle listing preview appears here.</p></div>
                     <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">Drafts are private. Submitting sends your vehicle to an administrator for approval before it can be published.</div>
