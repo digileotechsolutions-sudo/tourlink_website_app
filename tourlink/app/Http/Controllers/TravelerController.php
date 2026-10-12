@@ -45,7 +45,7 @@ class TravelerController extends Controller
 
     public function updateProfile(Request $request): RedirectResponse
     {
-        $data = $request->validate(['name' => ['required', 'string', 'max:120'], 'phone' => ['required', 'string', 'max:30'], 'bio' => ['nullable', 'string', 'max:5000'], 'preferred_currency' => ['required', 'string', 'size:3'], 'avatar' => ['nullable', 'image', 'max:5120']]);
+        $data = $request->validate(['name' => ['required', 'string', 'max:120'], 'phone' => ['required', 'string', 'max:30'], 'bio' => ['nullable', 'string', 'max:5000'], 'preferred_currency' => ['required', 'string', 'size:3'], 'avatar' => ['nullable', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:5120']]);
         $request->user()->update(['name' => $data['name'], 'phone' => $data['phone']]);
         unset($data['name'], $data['phone'], $data['avatar']);
         if ($request->hasFile('avatar')) {

@@ -178,7 +178,7 @@ class AdminVehicleController extends Controller
             'images.*.url' => ['required', 'url:http,https', Rule::in($existingImageUrls), 'max:2048'],
             'images.*.alt' => ['nullable', 'string', 'max:255'],
             'images_files' => ['nullable', 'array', 'max:12'],
-            'images_files.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'extensions:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'dimensions:min_width=320,min_height=240', 'max:'.config('services.tourlink.vehicle_image_max_kb', 5120)],
+            'images_files.*' => ['required', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'extensions:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'dimensions:min_width=320,min_height=240', 'max:'.config('services.tourlink.vehicle_image_max_kb', 5120)],
         ]);
 
         if (count($data['images'] ?? []) + count($request->file('images_files', [])) > 12) {

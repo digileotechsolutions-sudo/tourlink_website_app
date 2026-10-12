@@ -51,8 +51,8 @@
                     @php($hasDocument = in_array($key, $identityDocuments, true))
                     <label class="grid content-start gap-2 rounded border border-amber-200 bg-white p-3 text-sm font-bold text-slate-800" for="owner-document-{{ $key }}">
                         <span>{{ $label }}@if ($required)<span class="text-red-700" aria-hidden="true"> *</span>@endif</span>
-                        <span class="text-xs font-normal leading-5 text-slate-600">PDF, JPG, or PNG. Maximum 10 MB.@if ($hasDocument) Leave empty to keep the current file.@endif</span>
-                        <input id="owner-document-{{ $key }}" type="file" name="documents[{{ $key }}]" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="min-h-11 w-full text-xs file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @if ($required && ! $hasDocument) required @endif>
+                        <span class="text-xs font-normal leading-5 text-slate-600">PDF, JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, ICO. Maximum 10 MB.@if ($hasDocument) Leave empty to keep the current file.@endif</span>
+                        <input id="owner-document-{{ $key }}" type="file" name="documents[{{ $key }}]" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.bmp,.tiff,.tif,.ico,application/pdf,image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon" class="min-h-11 w-full text-xs file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @if ($required && ! $hasDocument) required @endif>
                     </label>
                 @endforeach
             </div>
@@ -110,8 +110,8 @@
                             @php($hasDocument = in_array($document['key'], $uploadedDocuments, true))
                             <label class="grid content-start gap-2 rounded border border-slate-200 bg-slate-50 p-3 text-sm font-bold text-slate-800" for="vehicle-{{ $vehicle->id }}-{{ $document['key'] }}">
                                 <span>{{ $document['label'] }}@if ($document['required'])<span class="text-red-700" aria-hidden="true"> *</span>@endif</span>
-                                <span class="text-xs font-normal leading-5 text-slate-600">{{ $document['image'] ? 'JPG or PNG image, maximum 5 MB.' : 'PDF, JPG, or PNG, maximum 10 MB.' }}@if ($hasDocument) Leave empty to keep the current file.@endif</span>
-                                <input id="vehicle-{{ $vehicle->id }}-{{ $document['key'] }}" type="file" name="documents[{{ $document['key'] }}]" accept="{{ $document['image'] ? 'image/jpeg,image/png' : '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png' }}" class="min-h-11 w-full text-xs file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @if ($document['required'] && ! $hasDocument) required @endif>
+                                <span class="text-xs font-normal leading-5 text-slate-600">{{ $document['image'] ? 'JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, ICO image, maximum 5 MB.' : 'PDF, JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, ICO, maximum 10 MB.' }}@if ($hasDocument) Leave empty to keep the current file.@endif</span>
+                                <input id="vehicle-{{ $vehicle->id }}-{{ $document['key'] }}" type="file" name="documents[{{ $document['key'] }}]" accept="{{ $document['image'] ? 'image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon' : '.pdf,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.bmp,.tiff,.tif,.ico,application/pdf,image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon' }}" class="min-h-11 w-full text-xs file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @if ($document['required'] && ! $hasDocument) required @endif>
                             </label>
                         @endforeach
                     </div>
