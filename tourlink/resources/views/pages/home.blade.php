@@ -3,12 +3,12 @@
 @section('content')
 @php
     $homeCategories = [
-        ['name' => __('Tours & Adventures'), 'icon' => '⛰️'],
-        ['name' => __('Road Trips'), 'icon' => '🚗'],
-        ['name' => __('Bus Travel'), 'icon' => '🚌'],
-        ['name' => __('Car Hire'), 'icon' => '🚙'],
-        ['name' => __('Private Transfers'), 'icon' => '🚕'],
-        ['name' => __('Group Travel'), 'icon' => '👥'],
+        ['name' => __('Tours & Adventures'), 'icon' => 'mountain'],
+        ['name' => __('Road Trips'), 'icon' => 'route'],
+        ['name' => __('Bus Travel'), 'icon' => 'bus'],
+        ['name' => __('Car Hire'), 'icon' => 'car'],
+        ['name' => __('Private Transfers'), 'icon' => 'transfer'],
+        ['name' => __('Group Travel'), 'icon' => 'group'],
     ];
 @endphp
 
@@ -55,17 +55,39 @@
 </section>
 
 <section class="container-page home-categories-wrap">
-    <div class="home-section-header">
+    <div class="home-section-header home-category-heading">
         <div>
-            <p class="eyebrow mb-2">{{ __('Discover') }}</p>
+            <p class="eyebrow mb-2">{{ __('Discover') }} <span class="home-category-heading-mark" aria-hidden="true"></span></p>
             <h2>{{ __('Find your next kind of trip') }}</h2>
+            <p class="home-category-heading-note">{{ __('Choose a travel style to get started') }}</p>
         </div>
     </div>
 
     <div class="home-category-row" aria-label="{{ __('Travel categories') }}">
         @foreach($homeCategories as $category)
             <button type="button" class="home-category-card {{ $loop->first ? 'is-active' : '' }}">
-                <span class="home-category-icon" aria-hidden="true">{{ $category['icon'] }}</span>
+                <span class="home-category-icon" aria-hidden="true">
+                    @switch($category['icon'])
+                        @case('mountain')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 19 6.5-11 4 6 2.5-3 5 8H3Z"></path><path d="m8 10 1.5 2 1.5-2"></path></svg>
+                            @break
+                        @case('route')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><path d="M8.5 18H11a3 3 0 0 0 3-3v-2a3 3 0 0 1 3-3h1"></path></svg>
+                            @break
+                        @case('bus')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17V6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5V17"></path><path d="M5 11h14M7 17v2m10-2v2M8 14h.01M16 14h.01"></path><path d="M7 19h10"></path></svg>
+                            @break
+                        @case('car')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 11 1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11l2 2v5h-2v-2H5v2H3v-5l2-2Z"></path><path d="M5 11h14M7 13h.01M17 13h.01"></path></svg>
+                            @break
+                        @case('transfer')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14m0 0-3-3m3 3-3 3M20 16H6m0 0 3-3m-3 3 3 3"></path></svg>
+                            @break
+                        @case('group')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 5.5a3 3 0 0 1 0 5.8M17 14a5 5 0 0 1 3.5 5"></path></svg>
+                            @break
+                    @endswitch
+                </span>
                 <span>{{ $category['name'] }}</span>
             </button>
         @endforeach
