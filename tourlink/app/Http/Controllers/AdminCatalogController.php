@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Destination;
 use App\Models\TripCategory;
+use App\Services\PublicImageStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -110,18 +111,26 @@ class AdminCatalogController extends Controller
             'activities' => $this->lines($request->input('activities')),
         ]);
 
-        return $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('destinations', 'slug')->ignore($destination?->id)],
             'country' => ['required', 'string', 'max:120'],
             'description' => ['required', 'string', 'max:10000'],
-            'image_url' => ['required', 'url:http,https', 'max:2048'],
+            'image' => [$destination ? 'nullable' : 'required', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:5120'],
             'location' => ['nullable', 'string', 'max:255'],
             'attractions' => ['nullable', 'array', 'max:40'],
             'attractions.*' => ['required', 'string', 'max:255'],
             'activities' => ['nullable', 'array', 'max:40'],
             'activities.*' => ['required', 'string', 'max:255'],
         ]);
+
+        if ($request->hasFile('image')) {
+            $data['image_url'] = app(PublicImageStorage::class)->store($request->file('image'), 'destination-images', 'image');
+        }
+
+        unset($data['image']);
+
+        return $data;
     }
 
     private function categoryData(Request $request, ?TripCategory $category = null): array

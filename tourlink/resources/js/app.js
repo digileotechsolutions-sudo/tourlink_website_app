@@ -102,6 +102,44 @@ if (document.body.classList.contains('admin-app')) {
     });
 }
 
+document.querySelectorAll('[data-image-dropzone]').forEach((dropzone) => {
+    const input = dropzone.querySelector('[data-image-drop-input]');
+    const filename = dropzone.querySelector('[data-image-drop-filename]');
+    if (!input || !filename) {
+        return;
+    }
+
+    const emptyLabel = filename.textContent.trim();
+    const updateFilename = () => {
+        filename.textContent = input.files?.[0]?.name || emptyLabel;
+        dropzone.classList.toggle('has-file', Boolean(input.files?.length));
+    };
+
+    input.addEventListener('change', updateFilename);
+    dropzone.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropzone.classList.add('is-dragging');
+    });
+    dropzone.addEventListener('dragleave', (event) => {
+        if (!(event.relatedTarget instanceof Node) || !dropzone.contains(event.relatedTarget)) {
+            dropzone.classList.remove('is-dragging');
+        }
+    });
+    dropzone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('is-dragging');
+        const droppedFile = event.dataTransfer?.files?.[0];
+        if (!droppedFile || typeof DataTransfer === 'undefined') {
+            return;
+        }
+
+        const transfer = new DataTransfer();
+        transfer.items.add(droppedFile);
+        input.files = transfer.files;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+});
+
 const portalSidebar = document.querySelector('[data-portal-sidebar]');
 const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
 const portalDrawer = document.querySelector('[data-portal-drawer]');

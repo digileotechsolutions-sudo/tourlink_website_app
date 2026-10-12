@@ -24,14 +24,20 @@
         @endif
 
         <section class="mt-8 grid gap-8 lg:grid-cols-[2fr_1fr]" aria-label="Create catalog entries">
-            <form method="POST" action="{{ route('admin.catalog.destinations.store') }}" class="grid gap-4 border-b border-slate-200 pb-8 sm:grid-cols-2">
+            <form method="POST" enctype="multipart/form-data" action="{{ route('admin.catalog.destinations.store') }}" class="grid gap-4 border-b border-slate-200 pb-8 sm:grid-cols-2">
                 @csrf
                 <h2 class="col-span-full text-xl font-extrabold text-slate-950">Add destination</h2>
                 <label class="grid gap-1 text-sm font-semibold text-slate-700">Name<input name="name" value="{{ old('name') }}" required maxlength="255" class="min-h-11 rounded border border-slate-300 px-3 font-normal"></label>
                 <label class="grid gap-1 text-sm font-semibold text-slate-700">Slug <span class="font-normal text-slate-500">Generated when blank</span><input name="slug" value="{{ old('slug') }}" maxlength="255" class="min-h-11 rounded border border-slate-300 px-3 font-normal"></label>
                 <label class="grid gap-1 text-sm font-semibold text-slate-700">Country<input name="country" value="{{ old('country', 'Kenya') }}" required maxlength="120" class="min-h-11 rounded border border-slate-300 px-3 font-normal"></label>
                 <label class="grid gap-1 text-sm font-semibold text-slate-700">Location<input name="location" value="{{ old('location') }}" maxlength="255" class="min-h-11 rounded border border-slate-300 px-3 font-normal"></label>
-                <label class="grid gap-1 text-sm font-semibold text-slate-700 sm:col-span-2">Image URL<input type="url" name="image_url" value="{{ old('image_url') }}" required placeholder="https://" class="min-h-11 rounded border border-slate-300 px-3 font-normal"></label>
+                <label class="catalog-image-drop sm:col-span-2" data-image-dropzone>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L8 8m4-4 4 4"></path><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path></svg>
+                    <span class="catalog-image-drop__title">Drop a destination image or choose a file</span>
+                    <span class="catalog-image-drop__hint">JPG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF or ICO · Max 5 MB</span>
+                    <span class="catalog-image-drop__filename" data-image-drop-filename aria-live="polite">No image selected</span>
+                    <input class="catalog-image-drop__input" data-image-drop-input type="file" name="image" required accept=".jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.bmp,.tiff,.tif,.ico,image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon" aria-label="Upload destination image">
+                </label>
                 <label class="grid gap-1 text-sm font-semibold text-slate-700 sm:col-span-2">Description<textarea name="description" required rows="3" class="rounded border border-slate-300 px-3 py-2 font-normal">{{ old('description') }}</textarea></label>
                 <label class="grid gap-1 text-sm font-semibold text-slate-700">Attractions <span class="font-normal text-slate-500">One per line</span><textarea name="attractions" rows="4" class="rounded border border-slate-300 px-3 py-2 font-normal">{{ old('attractions') }}</textarea></label>
                 <label class="grid gap-1 text-sm font-semibold text-slate-700">Activities <span class="font-normal text-slate-500">One per line</span><textarea name="activities" rows="4" class="rounded border border-slate-300 px-3 py-2 font-normal">{{ old('activities') }}</textarea></label>
@@ -61,13 +67,20 @@
                         </div>
                         <div class="flex items-center gap-4">
                             <details><summary class="cursor-pointer text-sm font-bold text-emerald-800 hover:underline">Edit</summary>
-                                <form method="POST" action="{{ route('admin.catalog.destinations.update', $destination) }}" class="mt-4 grid w-[min(700px,calc(100vw-3rem))] gap-3 border-t border-slate-200 pt-4 sm:grid-cols-2">
+                                <form method="POST" enctype="multipart/form-data" action="{{ route('admin.catalog.destinations.update', $destination) }}" class="mt-4 grid w-[min(700px,calc(100vw-3rem))] gap-3 border-t border-slate-200 pt-4 sm:grid-cols-2">
                                     @csrf @method('PUT')
                                     <label class="grid gap-1 text-xs font-semibold">Name<input name="name" value="{{ $destination->name }}" required maxlength="255" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label>
                                     <label class="grid gap-1 text-xs font-semibold">Slug<input name="slug" value="{{ $destination->slug }}" maxlength="255" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label>
                                     <label class="grid gap-1 text-xs font-semibold">Country<input name="country" value="{{ $destination->country }}" required maxlength="120" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label>
                                     <label class="grid gap-1 text-xs font-semibold">Location<input name="location" value="{{ $destination->location }}" maxlength="255" class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label>
-                                    <label class="grid gap-1 text-xs font-semibold sm:col-span-2">Image URL<input type="url" name="image_url" value="{{ $destination->image_url }}" required class="min-h-10 rounded border border-slate-300 px-3 text-sm font-normal"></label>
+                                    @if($destination->image_url)<div class="grid gap-2 text-xs font-semibold sm:col-span-2"><span>Current image</span><img src="{{ $destination->image_url }}" alt="Current cover for {{ $destination->name }}" class="h-36 w-full max-w-sm rounded-lg border border-slate-200 object-cover"></div>@endif
+                                    <label class="catalog-image-drop sm:col-span-2" data-image-dropzone>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L8 8m4-4 4 4"></path><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path></svg>
+                                        <span class="catalog-image-drop__title">Drop a replacement image or choose a file</span>
+                                        <span class="catalog-image-drop__hint">JPG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF or ICO · Max 5 MB</span>
+                                        <span class="catalog-image-drop__filename" data-image-drop-filename aria-live="polite">No replacement selected</span>
+                                        <input class="catalog-image-drop__input" data-image-drop-input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.bmp,.tiff,.tif,.ico,image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon" aria-label="Upload replacement destination image">
+                                    </label>
                                     <label class="grid gap-1 text-xs font-semibold sm:col-span-2">Description<textarea name="description" required rows="3" class="rounded border border-slate-300 px-3 py-2 text-sm font-normal">{{ $destination->description }}</textarea></label>
                                     <label class="grid gap-1 text-xs font-semibold">Attractions <span class="font-normal text-slate-500">One per line</span><textarea name="attractions" rows="4" class="rounded border border-slate-300 px-3 py-2 text-sm font-normal">{{ implode("\n", $destination->attractions ?? []) }}</textarea></label>
                                     <label class="grid gap-1 text-xs font-semibold">Activities <span class="font-normal text-slate-500">One per line</span><textarea name="activities" rows="4" class="rounded border border-slate-300 px-3 py-2 text-sm font-normal">{{ implode("\n", $destination->activities ?? []) }}</textarea></label>

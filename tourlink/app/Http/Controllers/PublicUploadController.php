@@ -9,7 +9,7 @@ class PublicUploadController extends Controller
 {
     public function show(string $path): BinaryFileResponse
     {
-        abort_unless(preg_match('~^(?:trip-images|vehicle-images|blog-images|operator-logos|traveler-avatars)/[A-Za-z0-9_-][A-Za-z0-9._-]*$~D', $path) === 1, 404);
+        abort_unless(preg_match('~^(?:trip-images|vehicle-images|blog-images|destination-images|operator-logos|traveler-avatars)/[A-Za-z0-9_-][A-Za-z0-9._-]*$~D', $path) === 1, 404);
 
         $mediaPath = public_path('media/'.$path);
         if (! is_file($mediaPath)) {

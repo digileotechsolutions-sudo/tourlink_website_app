@@ -9,7 +9,7 @@ use Illuminate\Validation\ValidationException;
 class PublicImageStorage
 {
     /** @var list<string> */
-    private const DIRECTORIES = ['trip-images', 'vehicle-images', 'blog-images', 'operator-logos', 'traveler-avatars'];
+    private const DIRECTORIES = ['trip-images', 'vehicle-images', 'blog-images', 'destination-images', 'operator-logos', 'traveler-avatars'];
 
     /**
      * @var array<string, string>

@@ -48,9 +48,9 @@
                         <label>
                             <span>{{ __('Guests') }}</span>
                             <select name="guests" aria-label="{{ __('Passengers') }}">
-                                <option value="2" @selected(request('guests') == '2')>2 Guests</option>
-                                <option value="4" @selected(request('guests') == '4')>4 Guests</option>
-                                <option value="6" @selected(request('guests') == '6')>6 Guests</option>
+                                <option value="2" @selected(request('guests') == '2')>{{ __('2 Guests') }}</option>
+                                <option value="4" @selected(request('guests') == '4')>{{ __('4 Guests') }}</option>
+                                <option value="6" @selected(request('guests') == '6')>{{ __('6 Guests') }}</option>
                             </select>
                         </label>
                     </div>
