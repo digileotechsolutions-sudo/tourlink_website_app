@@ -2,13 +2,13 @@
 @section('title', __('Vehicle owner overview').' | Havenedge Tourlink')
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6 p-4 sm:space-y-8 sm:p-8">
-    <header class="flex flex-wrap items-end justify-between gap-4">
-        <div>
+    <header class="grid justify-items-center gap-4 text-center">
+        <div class="w-full">
             <p class="text-xs font-black uppercase tracking-widest text-ink">{{ __('Vehicle owner overview') }}</p>
             <h1 class="mt-2 text-3xl font-black">{{ __('Manage your fleet') }}</h1>
             <p class="mt-2 text-slate-600">{{ __('List vehicles, respond to travelers, and track your earnings.') }}</p>
         </div>
-        <a class="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-ink px-5 text-sm font-bold text-white shadow-soft sm:w-auto" href="{{ route('vehicle-owner.vehicles.create') }}">{{ __('Add vehicle') }}</a>
+        <a class="inline-flex min-h-12 w-full max-w-xs items-center justify-center rounded-xl bg-ink px-5 text-sm font-bold text-white shadow-soft" href="{{ route('vehicle-owner.vehicles.create') }}">{{ __('Add vehicle') }}</a>
     </header>
 
     <section class="grid gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-soft sm:p-5" aria-labelledby="verification-reminder-heading">
