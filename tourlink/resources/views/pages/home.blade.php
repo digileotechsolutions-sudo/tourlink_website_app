@@ -133,6 +133,26 @@
     @endif
 </section>
 
+<section class="container-page home-section-block home-vehicles-section">
+    <div class="home-section-header">
+        <div>
+            <p class="eyebrow mb-2">{{ __('The right ride changes everything') }}</p>
+            <h2>{{ __('Move your way') }}</h2>
+            <p class="home-vehicle-description">{{ __('Compare verified vehicles for game drives, road trips and everything in between.') }}</p>
+        </div>
+        <a href="{{ route('vehicles.index') }}" class="home-view-all">{{ __('Browse vehicles') }} <span aria-hidden="true">→</span></a>
+    </div>
+    @if($vehicles->isEmpty())
+        <div class="home-empty-state">{{ __('No verified vehicles are available just yet.') }}</div>
+    @else
+        <div class="home-vehicle-grid">
+            @foreach($vehicles as $vehicle)
+                <x-vehicle-card :vehicle="$vehicle" />
+            @endforeach
+        </div>
+    @endif
+</section>
+
 <section id="destinations" class="container-page home-section-block home-recommend-section">
     <div class="home-section-header">
         <div>
@@ -230,26 +250,6 @@
 @guest
     <x-sign-in-prompt />
 @endguest
-
-<section class="container-page home-section-block home-vehicles-section">
-    <div class="home-section-header">
-        <div>
-            <p class="eyebrow mb-2">{{ __('The right ride changes everything') }}</p>
-            <h2>{{ __('Move your way') }}</h2>
-            <p class="home-vehicle-description">{{ __('Compare verified vehicles for game drives, road trips and everything in between.') }}</p>
-        </div>
-        <a href="{{ route('vehicles.index') }}" class="home-view-all">{{ __('Browse vehicles') }} <span aria-hidden="true">→</span></a>
-    </div>
-    @if($vehicles->isEmpty())
-        <div class="home-empty-state">{{ __('No verified vehicles are available just yet.') }}</div>
-    @else
-        <div class="home-vehicle-grid">
-            @foreach($vehicles as $vehicle)
-                <x-vehicle-card :vehicle="$vehicle" />
-            @endforeach
-        </div>
-    @endif
-</section>
 
 <section id="how-it-works" class="container-page grid items-center gap-12 py-20 sm:py-24 lg:grid-cols-[.9fr_1.1fr]">
     <div><p class="eyebrow mb-3">{{ __('Travel, with more trust') }}</p><h2 class="display text-4xl font-bold leading-tight sm:text-5xl">{{ __('Every good journey starts with a little confidence.') }}</h2><p class="mt-5 max-w-md text-sm leading-7 text-slate-500">{{ __('Find trusted local providers, compare clear details and keep your journey in one place.') }}</p><div class="mt-8 grid gap-5 sm:grid-cols-2"><div class="flex gap-3"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-lagoon/10 text-lagoon" aria-hidden="true">✓</span><div><h3 class="text-sm font-extrabold">{{ __('Verified people') }}</h3><p class="mt-1 text-xs leading-5 text-slate-500">{{ __('Visible badges and honest reviews.') }}</p></div></div><div class="flex gap-3"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-sun/20 text-ink" aria-hidden="true">♡</span><div><h3 class="text-sm font-extrabold">{{ __('Human support') }}</h3><p class="mt-1 text-xs leading-5 text-slate-500">{{ __('Message providers about the details.') }}</p></div></div></div></div>
