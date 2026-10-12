@@ -58,7 +58,7 @@
             </div>
 
             <figure class="home-native-visual">
-                <img src="https://images.unsplash.com/photo-1535338454770-8be927b5a00b?auto=format&amp;fit=crop&amp;w=1100&amp;q=80" alt="{{ __('Kenyan safari landscape') }}" fetchpriority="high" decoding="async">
+                <img src="{{ asset('images/safari-roadtrip-people.jpg') }}" alt="Passengers in an open safari vehicle watching a lion on the savannah" fetchpriority="high" decoding="async">
                 <figcaption>
                     <span class="home-native-visual__badge"><svg viewBox="0 0 20 20" aria-hidden="true" fill="currentColor"><path d="m10 1.7 2.4 5 5.5.8-4 3.9.9 5.5-4.8-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8L10 1.7Z"/></svg>{{ __('Locally hosted') }}</span>
                     <span class="home-native-visual__caption">{{ __('Go beyond the usual route.') }}</span>
