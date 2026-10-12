@@ -58,8 +58,8 @@
                     </span>
                 </a>
             </div>
-        @else
-            <a class="site-header__brand" href="{{ route('home') }}" aria-label="{{ __('Havenedge Tourlink home') }}">
+        @endif
+        <a class="site-header__brand" href="{{ route('home') }}" aria-label="{{ __('Havenedge Tourlink home') }}">
                 <span class="site-header__brand-icon" aria-hidden="true">
                     <span>HT</span>
                 </span>
@@ -137,6 +137,5 @@
                     </div>
                 </div>
             </details>
-        @endif
     </div>
 </header>
