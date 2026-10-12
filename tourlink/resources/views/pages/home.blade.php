@@ -186,7 +186,6 @@
 @guest
     <x-sign-in-prompt />
 @endguest
-@endsection
 
 <section id="destinations" class="container-page pt-24 sm:pt-32">
     <div class="mb-7 flex items-end justify-between gap-5"><div><p class="eyebrow mb-2">{{ __('Start somewhere beautiful') }}</p><h2 class="display text-3xl font-bold leading-tight text-ink sm:text-[42px]">{{ __('Where will you go next?') }}</h2><p class="mt-3 max-w-xl text-sm leading-6 text-slate-500">{{ __('From big five mornings to slow coastal afternoons, find a trip that feels like yours.') }}</p></div><a class="hidden shrink-0 text-sm font-extrabold text-lagoon sm:block" href="{{ route('trips.index') }}">{{ __('View all trips') }} <span aria-hidden="true">›</span></a></div>
