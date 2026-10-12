@@ -137,7 +137,7 @@
             @if($vehicles->isNotEmpty())<label class="grid max-w-xl gap-2 text-sm font-bold">Associated vehicle <span class="font-normal text-slate-500">Optional</span><select name="required_vehicle_id" class="min-h-12 rounded-xl border border-slate-300 bg-white px-4 font-normal"><option value="">No specific vehicle</option>@foreach($vehicles as $vehicle)<option value="{{ $vehicle->id }}" @selected(old('required_vehicle_id', $trip->required_vehicle_id) === $vehicle->id)>{{ $vehicle->name }}</option>@endforeach</select></label>@endif
         </section>
 
-        <div class="sticky bottom-20 z-10 flex gap-2 border-t border-slate-100 bg-white px-3 py-3 sm:bottom-4 sm:px-5 lg:col-start-1 lg:row-start-4">
+        <div data-trip-actions class="sticky bottom-20 z-10 flex gap-2 border-t border-slate-100 bg-white px-3 py-3 sm:bottom-4 sm:px-5 lg:col-start-1 lg:row-start-4">
             <button type="button" data-trip-back class="min-h-11 flex-1 rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 disabled:opacity-40">Back</button>
             <button type="button" data-trip-next class="min-h-11 flex-1 rounded-full bg-neutral-950 px-5 py-2 text-sm font-bold text-white hover:bg-neutral-800">Continue <span aria-hidden="true">→</span></button>
             <button type="submit" formnovalidate name="submission_action" value="draft" data-trip-draft class="hidden min-h-11 rounded-full border border-emerald-800 px-4 text-sm font-bold text-emerald-900">Save draft</button>

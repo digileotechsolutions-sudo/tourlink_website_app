@@ -1395,6 +1395,19 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
     updatePreview();
 });
 
+document.querySelectorAll('[data-trip-wizard], [data-vehicle-wizard]').forEach((form) => {
+    if (!window.visualViewport) {
+        return;
+    }
+    const updateKeyboardInset = () => {
+        const keyboardInset = Math.max(0, window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop);
+        form.style.setProperty('--virtual-keyboard-inset', `${keyboardInset}px`);
+    };
+    window.visualViewport.addEventListener('resize', updateKeyboardInset);
+    window.visualViewport.addEventListener('scroll', updateKeyboardInset);
+    updateKeyboardInset();
+});
+
 document.querySelectorAll('[data-admin-image-upload]').forEach((uploader) => {
     const input = uploader.querySelector('[data-admin-image-input]');
     const dropzone = uploader.querySelector('[data-admin-dropzone]');

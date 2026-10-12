@@ -131,6 +131,8 @@ html:has(.mobile-app-menu[open]), body:has(.mobile-app-menu[open]), html:has(.si
     .trip-builder [data-trip-repeater] > *, .vehicle-wizard [data-vehicle-availability] > *,
     .vehicle-wizard [data-vehicle-charges] > *, .vehicle-wizard [data-vehicle-service-areas] > * { min-width: 0; }
     .trip-builder [data-trip-step-link], .vehicle-wizard [data-vehicle-step-link] { overflow-wrap: anywhere; }
+    .trip-builder [data-trip-actions] { bottom: calc(env(safe-area-inset-bottom) + var(--virtual-keyboard-inset, 0px)); }
+    .vehicle-wizard [data-vehicle-actions] { bottom: calc(60px + env(safe-area-inset-bottom) + var(--virtual-keyboard-inset, 0px)); }
 }
 
 .login-page { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 32px 20px; background: #fff; }
