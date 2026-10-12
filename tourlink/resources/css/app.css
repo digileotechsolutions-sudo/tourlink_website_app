@@ -1151,6 +1151,13 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 .home-primary-button, .home-secondary-button { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 20px; border-radius: 999px; font-size: 14px; font-weight: 800; }
 .home-primary-button { background: #16A34A; color: #fff; box-shadow: 0 12px 22px rgba(22, 163, 74, .25); }
 .home-secondary-button { border: 1px solid #E5E7EB; background: #fff; color: #111827; }
+@media (max-width: 767px) {
+    .home-cta-card { flex-direction: column; align-items: stretch; gap: 18px; padding: 22px 20px; border-radius: 22px; }
+    .home-cta-card > div:first-child { min-width: 0; }
+    .home-cta-card h2 { max-width: 18ch; font-size: 28px; line-height: 1.14; }
+    .home-cta-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .home-primary-button, .home-secondary-button { width: 100%; min-height: 48px; border-radius: 14px; }
+}
 .home-review-card { padding: 22px; border: 1px solid #E5E7EB; border-radius: 22px; background: #fff; box-shadow: 0 12px 22px rgba(15, 23, 42, .04); }
 .home-review-stars { color: #16A34A; letter-spacing: .1em; font-size: 14px; }
 .home-review-card p { margin: 16px 0 0; color: #475569; line-height: 1.7; font-size: 14px; }
@@ -1165,6 +1172,21 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 .home-post-body h3 { margin: 12px 0 0; font-size: 1.1rem; line-height: 1.4; color: #111827; }
 .home-post-body h3 a { color: inherit; }
 .home-post-body p { margin: 10px 0 0; color: #64748B; line-height: 1.7; font-size: 14px; }
+
+@media (max-width: 1023px) {
+    .home-post-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+}
+
+@media (max-width: 767px) {
+    .home-inspiration-section { min-width: 0; overflow: hidden; }
+    .home-post-grid { grid-template-columns: none; grid-auto-columns: 88%; grid-auto-flow: column; gap: 14px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .home-post-grid::-webkit-scrollbar { display: none; }
+    .home-post-card { min-width: 0; scroll-snap-align: start; border-radius: 20px; }
+    .home-post-card img { height: 176px; }
+    .home-post-body { padding: 16px; }
+    .home-post-body h3 { margin-top: 9px; font-size: 1rem; line-height: 1.35; }
+    .home-post-body p:not(.home-post-date) { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 4; }
+}
 
 @media (max-width: 1023px) {
     .home-trip-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }

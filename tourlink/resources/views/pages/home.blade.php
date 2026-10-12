@@ -182,7 +182,7 @@
 @endif
 
 @if($latestPosts->isNotEmpty())
-<section class="container-page home-section-block">
+<section class="container-page home-section-block home-inspiration-section">
     <div class="home-section-header">
         <div>
             <p class="eyebrow mb-2">{{ __('Inspiration') }}</p>
