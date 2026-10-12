@@ -43,4 +43,13 @@ class PublicUploadImageTest extends TestCase
 
         $this->get('/storage/verification-documents/owner-id.jpg')->assertNotFound();
     }
+
+    public function test_missing_public_uploads_fallback_to_a_placeholder_image(): void
+    {
+        Storage::fake('public');
+
+        $this->get('/storage/trip-images/missing-trip-cover.jpg')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/png');
+    }
 }

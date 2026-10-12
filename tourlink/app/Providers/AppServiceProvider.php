@@ -23,6 +23,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (! file_exists(public_path('storage'))) {
+            $storagePath = storage_path('app/public');
+
+            try {
+                if (is_dir($storagePath) && ! file_exists(public_path('storage'))) {
+                    app('files')->link($storagePath, public_path('storage'));
+                }
+            } catch (\Throwable $exception) {
+                logger()->warning('Public storage symlink could not be created.', ['exception' => $exception->getMessage()]);
+            }
+        }
+
         RateLimiter::for('auth-login', function (Request $request): Limit {
             return Limit::perMinute(5)->by(Str::lower($request->string('email')->toString()).'|'.$request->ip());
         });

@@ -44,7 +44,18 @@ Route::get('/storage/{path}', function (string $path) {
     abort_unless(preg_match('~^(?:trip-images|vehicle-images|blog-images|operator-logos|traveler-avatars)/[A-Za-z0-9_-][A-Za-z0-9._-]*$~D', $path) === 1, 404);
 
     $disk = Storage::disk('public');
-    abort_unless($disk->exists($path), 404);
+    $fallbackPath = public_path('form-image1.png');
+
+    if (! $disk->exists($path)) {
+        abort_unless(file_exists($fallbackPath), 404);
+
+        return response()->file($fallbackPath, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=604800',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
     $contentType = $disk->mimeType($path);
 
     if (! is_string($contentType) || ! str_starts_with($contentType, 'image/')) {
