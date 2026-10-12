@@ -16,6 +16,7 @@ use App\Models\Vehicle;
 use App\Role;
 use App\VerificationStatus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AdminDashboardMetrics
 {
@@ -49,7 +50,9 @@ class AdminDashboardMetrics
                 'completedBookings' => Booking::query()->where('status', BookingStatus::Completed)->count(),
                 'cancelledBookings' => Booking::query()->where('status', BookingStatus::Cancelled)->count(),
                 'revenue' => Payment::query()->where('status', 'SUCCESSFUL')->sum('amount'),
-                'tourlinkCommission' => DB::table('commissions')->whereNotNull('payment_id')->sum('commission_amount'),
+                'tourlinkCommission' => Schema::hasColumn('commissions', 'payment_id')
+                    ? DB::table('commissions')->whereNotNull('payment_id')->sum('commission_amount')
+                    : 0,
                 'operatorPayouts' => (int) ($payoutsByRole[Role::Operator->value] ?? 0),
                 'vehicleOwnerPayouts' => (int) ($payoutsByRole[Role::VehicleOwner->value] ?? 0),
                 'pendingVerification' => $pendingVerification,

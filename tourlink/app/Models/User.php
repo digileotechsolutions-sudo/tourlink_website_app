@@ -34,6 +34,7 @@ class User extends Authenticatable
         return 'password';
     }
 
+    /** @param string $token */
     public function sendPasswordResetNotification($token)
     {
         app(OtpDeliveryService::class)->sendPasswordResetLink($this, $token);
