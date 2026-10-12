@@ -1099,6 +1099,32 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
     let busy = false;
     let dirty = false;
     let previewUrls = [];
+    let imageSelectionVersion = 0;
+
+    const imageDimensions = async (file) => {
+        if (typeof createImageBitmap === 'function') {
+            try {
+                const bitmap = await createImageBitmap(file);
+                const dimensions = { width: bitmap.width, height: bitmap.height };
+                bitmap.close();
+
+                return dimensions;
+            } catch {}
+        }
+
+        return new Promise((resolve) => {
+            const url = URL.createObjectURL(file);
+            const image = new Image();
+            const finish = (dimensions) => {
+                URL.revokeObjectURL(url);
+                resolve(dimensions);
+            };
+
+            image.onload = () => finish({ width: image.naturalWidth, height: image.naturalHeight });
+            image.onerror = () => finish(null);
+            image.src = url;
+        });
+    };
 
     const isInvalid = (field) => {
         if (field.type === 'radio') {
@@ -1174,12 +1200,16 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         const imageTarget = form.querySelector('[data-vehicle-preview-image]');
         const firstFile = imageInput?.files?.[0];
         const existingImage = imagePreview?.querySelector('[data-vehicle-existing-image] img');
-        if (imageTarget && (firstFile || existingImage)) {
-            const image = document.createElement('img');
-            image.src = firstFile ? (previewUrls[0] ?? URL.createObjectURL(firstFile)) : existingImage.src;
-            image.alt = 'Vehicle cover preview';
-            image.className = 'h-52 w-full object-cover';
-            imageTarget.replaceChildren(image);
+        if (imageTarget) {
+            if (firstFile || existingImage) {
+                const image = document.createElement('img');
+                image.src = firstFile ? (previewUrls[0] ?? URL.createObjectURL(firstFile)) : existingImage.src;
+                image.alt = 'Vehicle cover preview';
+                image.className = 'h-52 w-full object-cover';
+                imageTarget.replaceChildren(image);
+            } else {
+                imageTarget.textContent = 'Vehicle photo preview';
+            }
         }
     };
 
@@ -1287,6 +1317,7 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
     });
     form.addEventListener('change', async (event) => {
         if (event.target !== imageInput) return;
+        const selectionVersion = ++imageSelectionVersion;
         dirty = true;
         previewUrls.forEach(URL.revokeObjectURL);
         previewUrls = [];
@@ -1294,41 +1325,21 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
         const files = [...(imageInput.files ?? [])];
         const oversized = files.filter((file) => file.size > imageMaxBytes);
         const isSupportedImage = (file) => supportedImageExtensions.has(file.name.split('.').pop()?.toLowerCase());
-        const unsupported = files.filter((file) => {
-            return !isSupportedImage(file);
-        });
+        const unsupported = files.filter((file) => !isSupportedImage(file));
+        const errors = [];
         if (oversized.length || unsupported.length) {
             const transfer = new DataTransfer();
             files.filter((file) => file.size <= imageMaxBytes && isSupportedImage(file)).forEach((file) => transfer.items.add(file));
             imageInput.files = transfer.files;
-            const errors = [];
             if (oversized.length) errors.push(`${oversized.map((file) => file.name).join(', ')} exceeds the ${Math.round(imageMaxBytes / 1024 / 1024)} MB per-image limit`);
             if (unsupported.length) errors.push(`${unsupported.map((file) => file.name).join(', ')} is not a supported image format`);
             imageStatus.textContent = `${errors.join('; ')}. Choose valid JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, or ICO photos.`;
             imageStatus.classList.add('font-bold', 'text-red-700');
         }
-        const dimensionFailures = [];
-        const dimensionValidFiles = [];
-        for (const file of [...(imageInput.files ?? [])]) {
-            try {
-                const bitmap = await createImageBitmap(file);
-                const isLargeEnough = bitmap.width >= 320 && bitmap.height >= 240;
-                bitmap.close();
-                if (isLargeEnough) dimensionValidFiles.push(file);
-                else dimensionFailures.push(file.name);
-            } catch {
-                dimensionFailures.push(file.name);
-            }
-        }
-        if (dimensionFailures.length > 0) {
-            const transfer = new DataTransfer();
-            dimensionValidFiles.forEach((file) => transfer.items.add(file));
-            imageInput.files = transfer.files;
-            imageStatus.textContent = `${dimensionFailures.join(', ')} could not be read as a clear image of at least 320 × 240 pixels. Choose another photo.`;
-            imageStatus.classList.add('font-bold', 'text-red-700');
-        }
         if ([...(imageInput.files ?? [])].reduce((total, file) => total + file.size, 0) > imageTotalMaxBytes) {
             imageInput.value = '';
+            previewUrls.forEach(URL.revokeObjectURL);
+            previewUrls = [];
             imageStatus.textContent = `Combined vehicle photos exceed the ${Math.round(imageTotalMaxBytes / 1024 / 1024)} MB limit. Compress or remove photos.`;
             imageStatus.classList.add('font-bold', 'text-red-700');
             return;
@@ -1340,7 +1351,8 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
             imageStatus.classList.add('font-bold', 'text-red-700');
             return;
         }
-        [...imageInput.files].forEach((file, index) => {
+        const selectedFiles = [...imageInput.files];
+        selectedFiles.forEach((file, index) => {
             const url = URL.createObjectURL(file);
             previewUrls.push(url);
             const card = document.createElement('article');
@@ -1352,6 +1364,13 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
             image.src = url;
             image.alt = `Selected vehicle photo ${index + 1}`;
             image.className = 'h-32 w-full object-cover';
+            image.addEventListener('error', () => {
+                image.remove();
+                const fallback = document.createElement('div');
+                fallback.className = 'grid h-32 place-items-center bg-slate-100 px-3 text-center text-xs font-semibold text-slate-600';
+                fallback.textContent = 'Preview unavailable; the image will be checked during upload.';
+                card.prepend(fallback);
+            }, { once: true });
             const actions = document.createElement('div');
             actions.className = 'flex items-center justify-between gap-1 p-2';
             const name = document.createElement('span');
@@ -1381,7 +1400,53 @@ document.querySelectorAll('[data-vehicle-wizard]').forEach((form) => {
             imagePreview.append(card);
         });
         reindexVehicleImages();
-        if (!oversized.length && !unsupported.length && !dimensionFailures.length) {
+        updatePreview();
+        const dimensionFailures = [];
+        let undecodableCount = 0;
+        for (const [index, file] of selectedFiles.entries()) {
+            const dimensions = await imageDimensions(file);
+            if (selectionVersion !== imageSelectionVersion) return;
+            if (!dimensions) {
+                undecodableCount++;
+            } else if (dimensions.width < 320 || dimensions.height < 240) {
+                dimensionFailures.push(index);
+            }
+        }
+        if (dimensionFailures.length) {
+            const failedIndices = new Set(dimensionFailures);
+            const transfer = new DataTransfer();
+            const nextPreviewUrls = [];
+            const nextIndexByPrevious = new Map();
+
+            selectedFiles.forEach((file, index) => {
+                if (failedIndices.has(index)) {
+                    URL.revokeObjectURL(previewUrls[index]);
+                    imagePreview.querySelector(`[data-vehicle-new-image][data-vehicle-file-index="${index}"]`)?.remove();
+                    return;
+                }
+
+                nextIndexByPrevious.set(index, nextPreviewUrls.length);
+                nextPreviewUrls.push(previewUrls[index]);
+                transfer.items.add(file);
+            });
+
+            imageInput.files = transfer.files;
+            previewUrls = nextPreviewUrls;
+            imagePreview.querySelectorAll('[data-vehicle-new-image]').forEach((card) => {
+                const nextIndex = nextIndexByPrevious.get(Number(card.dataset.vehicleFileIndex));
+                if (nextIndex !== undefined) card.dataset.vehicleFileIndex = String(nextIndex);
+            });
+            reindexVehicleImages();
+            errors.push(`${dimensionFailures.map((index) => selectedFiles[index].name).join(', ')} must be at least 320 × 240 pixels`);
+        }
+
+        if (errors.length) {
+            imageStatus.textContent = `${errors.join('; ')}. Choose JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, or ICO photos.`;
+            imageStatus.classList.add('font-bold', 'text-red-700');
+        } else if (undecodableCount) {
+            imageStatus.textContent = `${imageInput.files.length} photo(s) selected. ${undecodableCount} preview(s) could not be decoded in this browser and will be checked during upload.`;
+            imageStatus.classList.remove('font-bold', 'text-red-700');
+        } else {
             imageStatus.textContent = imageInput.files.length ? `${imageInput.files.length} photo(s) ready to upload.` : '';
             imageStatus.classList.remove('font-bold', 'text-red-700');
         }
