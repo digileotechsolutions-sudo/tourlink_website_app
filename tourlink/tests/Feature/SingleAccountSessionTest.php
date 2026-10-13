@@ -113,6 +113,30 @@ class SingleAccountSessionTest extends TestCase
         ]);
     }
 
+    public function test_stale_authenticated_browser_can_submit_a_new_login(): void
+    {
+        $user = User::factory()->create(['password' => Hash::make('password')]);
+
+        $this->post(route('login'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect(route('dashboard'));
+
+        AccountSession::query()
+            ->where('user_id', $user->id)
+            ->update(['session_fingerprint' => hash('sha256', 'web:replacement-session')]);
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertSame(
+            hash('sha256', 'web:'.session()->getId()),
+            AccountSession::query()->where('user_id', $user->id)->value('session_fingerprint'),
+        );
+    }
+
     public function test_expired_session_can_be_replaced_by_a_new_login(): void
     {
         $user = User::factory()->create(['password' => Hash::make('password')]);

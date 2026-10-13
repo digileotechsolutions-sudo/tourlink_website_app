@@ -51,6 +51,10 @@ class EnforceSingleAccountSession
             }
         }
 
+        if (! ($token instanceof PersonalAccessToken) && $request->is('login')) {
+            return $next($request);
+        }
+
         if ($isApiRequest || $request->expectsJson()) {
             return response()->json([
                 'message' => 'This authenticated session is no longer active. Please sign in again.',
