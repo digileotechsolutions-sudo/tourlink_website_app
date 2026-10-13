@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('account_sessions')) {
+            return;
+        }
+
         Schema::create('account_sessions', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->string('user_id', 36)->unique();
@@ -21,7 +25,6 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('personal_access_token_id')->references('id')->on('personal_access_tokens')->cascadeOnDelete();
         });
     }
 
