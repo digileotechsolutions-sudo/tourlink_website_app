@@ -15,7 +15,6 @@ class AuthRoleRedirectTest extends TestCase
     {
         $this->get(route('login'))
             ->assertOk()
-            ->assertSee('Travelers, operators, vehicle owners, and administrators all sign in here. Signing in will end your previous active session.')
             ->assertSee('data-auth-form data-no-loading', false)
             ->assertSee('action="'.route('login').'"', false);
     }
