@@ -121,7 +121,21 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
-        if (! $sessions->registerWebLogin($user, $request, $previousSessionId)) {
+        try {
+            $sessionRegistered = $sessions->registerWebLogin($user, $request, $previousSessionId);
+        } catch (QueryException $exception) {
+            Log::error('Unable to register the authenticated account session.', [
+                'user_id' => $user->id,
+                'exception' => $exception::class,
+            ]);
+            $sessions->discardUnregisteredWebLogin($request);
+
+            return back()->withErrors([
+                'email' => 'Sign-in is temporarily unavailable because session security could not be initialized. Please contact support.',
+            ])->onlyInput('email');
+        }
+
+        if (! $sessionRegistered) {
             $sessions->discardUnregisteredWebLogin($request);
 
             return back()->withErrors(['email' => AccountSessionService::LOGIN_CONFLICT_MESSAGE])->onlyInput('email');

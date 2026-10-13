@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AccountSession;
 use App\Models\User;
 use App\Services\Auth\AccountSessionService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -34,6 +35,27 @@ class SingleAccountSessionTest extends TestCase
         $this->assertSame('web', $session->session_type);
         $this->assertSame(hash('sha256', 'web:'.session()->getId()), $session->session_fingerprint);
         $this->assertGreaterThan(now()->timestamp, $session->expires_at->timestamp);
+    }
+
+    public function test_session_storage_failure_returns_a_login_error_instead_of_leaving_login_pending(): void
+    {
+        $user = User::factory()->create(['password' => Hash::make('password')]);
+        $sessions = \Mockery::mock(AccountSessionService::class)->makePartial();
+        $sessions->shouldReceive('registerWebLogin')
+            ->once()
+            ->andThrow(new QueryException('mysql', 'insert into account_sessions', [], new \PDOException('table missing')));
+        $sessions->shouldReceive('discardUnregisteredWebLogin')->once();
+        $this->app->instance(AccountSessionService::class, $sessions);
+
+        $this->from(route('login'))
+            ->post(route('login'), [
+                'email' => $user->email,
+                'password' => 'password',
+            ])
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors([
+                'email' => 'Sign-in is temporarily unavailable because session security could not be initialized. Please contact support.',
+            ]);
     }
 
     public function test_second_device_login_is_rejected_without_replacing_the_active_session(): void
