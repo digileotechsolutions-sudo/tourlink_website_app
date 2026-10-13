@@ -52,13 +52,9 @@ class EnforceSingleAccountSession
         }
 
         if ($isApiRequest || $request->expectsJson()) {
-            $conflict = $token instanceof PersonalAccessToken && $this->sessions->hasActiveSession($user);
-
             return response()->json([
-                'message' => $conflict
-                    ? AccountSessionService::LOGIN_CONFLICT_MESSAGE
-                    : 'This authenticated session is no longer active. Please sign in again.',
-            ], $conflict ? Response::HTTP_CONFLICT : Response::HTTP_UNAUTHORIZED);
+                'message' => 'This authenticated session is no longer active. Please sign in again.',
+            ], Response::HTTP_UNAUTHORIZED);
         }
 
         return redirect()->route('login')

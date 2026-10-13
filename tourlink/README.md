@@ -45,7 +45,7 @@ After changing deployed mail configuration, refresh cached configuration with `p
 
 ## Single active account session
 
-Each account is limited to one active web session or Sanctum personal-access-token session across all roles. Additional sign-ins are rejected without displacing the current session. Logout revokes the current session, and sessions expire after the configured `SESSION_LIFETIME` idle period. Administrators can review and terminate active sessions from **Manage users → Manage active sessions**. Deploy with `php artisan migrate --force`; a follow-up migration ensures the registry table is created even if an earlier deployment recorded the original migration without leaving the table in place. Mobile/API clients should revoke their token with `POST /api/logout`.
+Each account is limited to one active web session or Sanctum personal-access-token session across all roles. A successful new sign-in replaces the previous session; displaced web sessions are rejected on their next protected request, and displaced Sanctum tokens are revoked. Logout revokes the current session, and sessions expire after the configured `SESSION_LIFETIME` idle period. Administrators can review and terminate active sessions from **Manage users → Manage active sessions**. Deploy with `php artisan migrate --force`; a follow-up migration ensures the registry table is created even if an earlier deployment recorded the original migration without leaving the table in place. Mobile/API clients should revoke their token with `POST /api/logout`.
 
 ## Learning Laravel
 

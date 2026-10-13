@@ -8,7 +8,7 @@
             <div>
                 <p class="text-xs font-bold uppercase tracking-wider text-emerald-800">Administration</p>
                 <h1 class="mt-2 text-3xl font-black text-slate-950">Active account sessions</h1>
-                <p class="mt-2 text-sm text-slate-600">Each account can have one active browser or API session. Terminating a session immediately blocks its next authenticated request.</p>
+                <p class="mt-2 text-sm text-slate-600">Each account can have one active browser or API session. A new successful sign-in replaces the previous session; terminating a session blocks its next authenticated request.</p>
             </div>
             <a href="{{ route('admin.users.index') }}" class="inline-flex min-h-11 items-center rounded border border-slate-300 px-4 text-sm font-bold text-slate-800 hover:bg-slate-50">Manage users</a>
         </header>

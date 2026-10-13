@@ -12,8 +12,6 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class AccountSessionService
 {
-    public const LOGIN_CONFLICT_MESSAGE = 'This account is already logged in on another device. Please log out from your active session before logging in here.';
-
     public function registerWebLogin(User $user, Request $request, string $previousSessionId): bool
     {
         $fingerprint = $this->fingerprint('web', $request->session()->getId());
@@ -127,14 +125,6 @@ class AccountSessionService
         }, 3);
     }
 
-    public function hasActiveSession(User $user): bool
-    {
-        return AccountSession::query()
-            ->where('user_id', $user->getKey())
-            ->where('expires_at', '>', now())
-            ->exists();
-    }
-
     private function claim(
         User $user,
         string $fingerprint,
@@ -144,7 +134,7 @@ class AccountSessionService
         ?string $previousFingerprint = null,
     ): bool {
         return DB::transaction(function () use ($user, $fingerprint, $type, $request, $tokenId, $previousFingerprint): bool {
-            User::query()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
+            $lockedUser = User::query()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
             $session = AccountSession::query()->where('user_id', $user->getKey())->lockForUpdate()->first();
             $now = now();
 
@@ -152,8 +142,15 @@ class AccountSessionService
                 $isSameClient = hash_equals($session->session_fingerprint, $fingerprint)
                     || ($previousFingerprint !== null && hash_equals($session->session_fingerprint, $previousFingerprint));
 
-                if (! $isSameClient) {
-                    return false;
+                if (! $isSameClient && $session->session_type === 'web') {
+                    $rememberToken = Str::random(60);
+                    $lockedUser->forceFill(['remember_token' => $rememberToken])->save();
+                    $user->setRememberToken($rememberToken);
+                }
+
+                if ($session->personal_access_token_id !== null
+                    && $session->personal_access_token_id !== $tokenId) {
+                    PersonalAccessToken::query()->whereKey($session->personal_access_token_id)->delete();
                 }
 
                 $session->forceFill($this->sessionAttributes($fingerprint, $type, $request, $tokenId, $now))->save();

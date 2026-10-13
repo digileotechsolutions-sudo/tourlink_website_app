@@ -24,7 +24,7 @@
                 </ul>
             </div>
         @endif
-        <p class="auth-login-account-hint">{{ __('Travelers, operators, vehicle owners, and administrators all sign in here.') }}</p>
+        <p class="auth-login-account-hint">{{ __('Travelers, operators, vehicle owners, and administrators all sign in here. Signing in will end your previous active session.') }}</p>
         <form method="POST" action="{{ route('login') }}" data-auth-form data-no-loading>
             @csrf
             @if ($continueToSupport)<input type="hidden" name="continue" value="support">@endif

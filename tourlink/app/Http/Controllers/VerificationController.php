@@ -86,11 +86,7 @@ class VerificationController extends Controller
         if ($verification->isFullyVerified($user) && $user->approval_status === AccountApprovalStatus::Approved && $user->account_status === AccountStatus::Active) {
             Auth::login($user);
             $request->session()->regenerate();
-            if (! $sessions->registerWebLogin($user, $request, $previousSessionId)) {
-                $sessions->discardUnregisteredWebLogin($request);
-
-                return redirect()->route('login')->withErrors(['email' => AccountSessionService::LOGIN_CONFLICT_MESSAGE]);
-            }
+            $sessions->registerWebLogin($user, $request, $previousSessionId);
 
             $dashboard = match ($user->role) {
                 Role::Admin => Route::has('admin.dashboard') ? route('admin.dashboard') : route('home'),

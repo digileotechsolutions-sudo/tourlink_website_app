@@ -58,9 +58,12 @@ class SingleAccountSessionTest extends TestCase
             ]);
     }
 
-    public function test_second_device_login_is_rejected_without_replacing_the_active_session(): void
+    public function test_new_web_login_replaces_the_previous_active_session(): void
     {
-        $user = User::factory()->create(['password' => Hash::make('password')]);
+        $user = User::factory()->create([
+            'password' => Hash::make('password'),
+            'remember_token' => 'old-remember-token',
+        ]);
         $activeFingerprint = hash('sha256', 'web:existing-device-session');
         AccountSession::query()->create([
             'user_id' => $user->id,
@@ -70,18 +73,25 @@ class SingleAccountSessionTest extends TestCase
             'expires_at' => now()->addMinutes(15),
         ]);
 
-        $this->from(route('login'))
-            ->post(route('login'), [
-                'email' => $user->email,
-                'password' => 'password',
-            ])
-            ->assertRedirect(route('login'))
-            ->assertSessionHasErrors(['email' => AccountSessionService::LOGIN_CONFLICT_MESSAGE]);
+        $this->post(route('login'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect(route('dashboard'));
 
-        $this->assertSame($activeFingerprint, AccountSession::query()->where('user_id', $user->id)->value('session_fingerprint'));
+        $newFingerprint = AccountSession::query()->where('user_id', $user->id)->value('session_fingerprint');
+        $this->assertNotSame($activeFingerprint, $newFingerprint);
+        $this->assertDatabaseHas('account_sessions', [
+            'user_id' => $user->id,
+            'session_fingerprint' => $newFingerprint,
+            'session_type' => 'web',
+        ]);
+        $this->assertDatabaseMissing('users', [
+            'id' => $user->id,
+            'remember_token' => 'old-remember-token',
+        ]);
     }
 
-    public function test_login_can_replace_an_expired_session(): void
+    public function test_expired_session_can_be_replaced_by_a_new_login(): void
     {
         $user = User::factory()->create(['password' => Hash::make('password')]);
         AccountSession::query()->create([
@@ -118,7 +128,7 @@ class SingleAccountSessionTest extends TestCase
         $this->assertDatabaseHas('account_sessions', ['user_id' => $user->id]);
     }
 
-    public function test_sanctum_token_is_registered_and_a_second_token_is_denied(): void
+    public function test_new_sanctum_token_replaces_and_revokes_the_previous_api_session(): void
     {
         $user = User::factory()->create();
         $firstToken = $user->createToken('mobile-one');
@@ -137,11 +147,20 @@ class SingleAccountSessionTest extends TestCase
 
         $this->withHeader('Authorization', 'Bearer '.$secondToken->plainTextToken)
             ->getJson('/api/user')
-            ->assertStatus(409)
-            ->assertJsonPath('message', AccountSessionService::LOGIN_CONFLICT_MESSAGE);
+            ->assertOk()
+            ->assertJsonPath('id', $user->id);
 
-        $this->assertDatabaseHas('personal_access_tokens', ['id' => $firstToken->accessToken->id]);
-        $this->assertDatabaseMissing('personal_access_tokens', ['id' => $secondToken->accessToken->id]);
+        $this->assertDatabaseMissing('personal_access_tokens', ['id' => $firstToken->accessToken->id]);
+        $this->assertDatabaseHas('personal_access_tokens', ['id' => $secondToken->accessToken->id]);
+        $this->assertDatabaseHas('account_sessions', [
+            'user_id' => $user->id,
+            'personal_access_token_id' => $secondToken->accessToken->id,
+            'session_type' => 'token',
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$firstToken->plainTextToken)
+            ->getJson('/api/user')
+            ->assertUnauthorized();
     }
 
     public function test_api_logout_revokes_its_token_and_active_session(): void
