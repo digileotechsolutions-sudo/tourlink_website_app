@@ -39,7 +39,7 @@
         </div>
         @if ($identityDocuments !== [])
             <ul class="grid gap-2 sm:grid-cols-2">
-                <?php foreach ($identityVerificationRequest->documents as $document): ?>
+                <?php foreach (($identityVerificationRequest->documents ?? []) as $document): ?>
                     <li class="rounded border border-amber-200 bg-white px-3 py-2 text-sm"><strong>{{ $document['label'] }}</strong><span class="mt-1 block truncate text-xs text-slate-600">{{ $document['original_name'] }}</span></li>
                 <?php endforeach; ?>
             </ul>
@@ -102,7 +102,7 @@
 
                 @if ($uploadedDocuments !== [])
                     <ul class="grid gap-2 sm:grid-cols-2">
-                        <?php foreach ($verificationRequest->documents as $document): ?>
+                        <?php foreach (($verificationRequest->documents ?? []) as $document): ?>
                             <li class="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm"><strong>{{ $document['label'] }}</strong><span class="mt-1 block truncate text-xs text-slate-600">{{ $document['original_name'] }}</span></li>
                         <?php endforeach; ?>
                     </ul>
