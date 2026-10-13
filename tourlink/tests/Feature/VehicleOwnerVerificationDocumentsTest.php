@@ -25,6 +25,17 @@ class VehicleOwnerVerificationDocumentsTest extends TestCase
         Storage::fake('local');
     }
 
+    public function test_vehicle_owner_profile_renders_when_owner_has_no_vehicles(): void
+    {
+        $owner = User::factory()->create(['role' => 'VEHICLE_OWNER']);
+
+        $this->actingAs($owner)
+            ->get(route('vehicle-owner.profile'))
+            ->assertOk()
+            ->assertSee('Owner information')
+            ->assertSee('Add a vehicle before submitting its registration details and documents.');
+    }
+
     public function test_owner_identity_packet_requires_id_or_passport(): void
     {
         $owner = User::factory()->create(['role' => 'VEHICLE_OWNER']);

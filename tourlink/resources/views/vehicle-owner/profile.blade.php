@@ -67,7 +67,13 @@
             <p class="mt-2 text-sm leading-6 text-slate-600">Vehicle details come from your listing. Submit a separate document packet for each vehicle.</p>
         </div>
 
-        @forelse ($vehicles as $vehicle)
+        @if ($vehicles->isEmpty())
+            <div class="rounded border border-dashed border-slate-300 bg-white p-6">
+                <p class="text-sm text-slate-700">Add a vehicle before submitting its registration details and documents.</p>
+                <a class="mt-4 inline-flex min-h-11 items-center rounded bg-emerald-800 px-5 py-3 text-sm font-bold text-white" href="{{ route('vehicle-owner.vehicles.create') }}">Add your first vehicle</a>
+            </div>
+        @else
+            @foreach ($vehicles as $vehicle)
             @php
                 $verificationRequest = $vehicleVerificationRequests->get($vehicle->id);
                 $uploadedDocuments = collect($verificationRequest?->documents ?? [])->pluck('key')->all();
@@ -119,12 +125,8 @@
                     <button type="submit" class="min-h-11 w-full rounded bg-amber-800 px-5 py-3 text-sm font-bold text-white hover:bg-amber-900 sm:w-fit">Submit {{ $vehicle->registration_number }} for verification</button>
                 </form>
             </article>
-        @empty
-            <div class="rounded border border-dashed border-slate-300 bg-white p-6">
-                <p class="text-sm text-slate-700">Add a vehicle before submitting its registration details and documents.</p>
-                <a class="mt-4 inline-flex min-h-11 items-center rounded bg-emerald-800 px-5 py-3 text-sm font-bold text-white" href="{{ route('vehicle-owner.vehicles.create') }}">Add your first vehicle</a>
-            </div>
-        @endforelse
+            @endforeach
+        @endif
     </section>
 </div>
 @endsection
