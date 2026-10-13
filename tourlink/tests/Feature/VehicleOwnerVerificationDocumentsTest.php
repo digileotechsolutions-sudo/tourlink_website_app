@@ -36,6 +36,18 @@ class VehicleOwnerVerificationDocumentsTest extends TestCase
             ->assertSee('Add a vehicle before submitting its registration details and documents.');
     }
 
+    public function test_vehicle_owner_profile_renders_vehicle_without_verification_documents(): void
+    {
+        $owner = User::factory()->create(['role' => 'VEHICLE_OWNER']);
+        $vehicle = Vehicle::factory()->create(['owner_id' => $owner->id]);
+
+        $this->actingAs($owner)
+            ->get(route('vehicle-owner.profile'))
+            ->assertOk()
+            ->assertSee($vehicle->registration_number)
+            ->assertSee('Submit '.$vehicle->registration_number.' for verification');
+    }
+
     public function test_owner_identity_packet_requires_id_or_passport(): void
     {
         $owner = User::factory()->create(['role' => 'VEHICLE_OWNER']);

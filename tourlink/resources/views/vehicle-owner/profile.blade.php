@@ -67,7 +67,10 @@
             <p class="mt-2 text-sm leading-6 text-slate-600">Vehicle details come from your listing. Submit a separate document packet for each vehicle.</p>
         </div>
 
-        <?php $vehicleVerificationRequest = null; ?>
+        <?php
+        $vehicleVerificationRequest = null;
+        $uploadedDocuments = [];
+        ?>
         <?php if ($vehicles->isEmpty()) { ?>
             <div class="rounded border border-dashed border-slate-300 bg-white p-6">
                 <p class="text-sm text-slate-700">Add a vehicle before submitting its registration details and documents.</p>
@@ -75,7 +78,7 @@
             </div>
         <?php } else { ?>
             <?php foreach ($vehicles as $vehicle) { ?>
-            @php
+            <?php
                 $vehicleVerificationRequest = $vehicleVerificationRequests->get($vehicle->id);
                 $uploadedDocuments = collect($vehicleVerificationRequest?->documents ?? [])->pluck('key')->all();
                 $vehicleDocuments = [
@@ -89,7 +92,7 @@
                     ['key' => 'interior_photo', 'label' => 'Interior photo', 'required' => true, 'image' => true],
                     ['key' => 'number_plate_photo', 'label' => 'Number-plate photo', 'required' => true, 'image' => true],
                 ];
-            @endphp
+            ?>
             <article class="grid gap-4 rounded border border-slate-200 bg-white p-5 sm:p-6">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
