@@ -23,8 +23,6 @@ return new class extends Migration
             $table->timestamp('last_activity_at');
             $table->timestamp('expires_at')->index();
             $table->timestamps();
-
-            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }
 
