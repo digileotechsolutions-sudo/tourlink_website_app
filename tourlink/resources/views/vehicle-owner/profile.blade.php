@@ -13,9 +13,9 @@
     @if ($errors->any())
         <div class="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-950" role="alert">
             <p class="font-bold">We couldn't submit the verification documents.</p>
-            <?php foreach ($errors->all() as $error) { ?>
+            @foreach ($errors->all() as $error)
                 <p class="mt-1">{{ $error }}</p>
-            <?php } ?>
+            @endforeach
         </div>
     @endif
 
@@ -39,22 +39,22 @@
         </div>
         @if ($identityDocuments !== [])
             <ul class="grid gap-2 sm:grid-cols-2">
-                <?php foreach ($identityVerificationRequest->documents as $document) { ?>
+                @foreach ($identityVerificationRequest->documents as $document)
                     <li class="rounded border border-amber-200 bg-white px-3 py-2 text-sm"><strong>{{ $document['label'] }}</strong><span class="mt-1 block truncate text-xs text-slate-600">{{ $document['original_name'] }}</span></li>
-                <?php } ?>
+                @endforeach
             </ul>
         @endif
         <form method="POST" action="{{ route('vehicle-owner.verification.identity.store') }}" enctype="multipart/form-data" class="grid gap-4">
             @csrf
             <div class="grid gap-4 sm:grid-cols-2">
-                <?php foreach ([['owner_id', 'National ID or passport', true], ['driving_license', 'Driving licence, if you or your assigned driver will drive', false]] as [$key, $label, $required]) { ?>
+                @foreach ([['owner_id', 'National ID or passport', true], ['driving_license', 'Driving licence, if you or your assigned driver will drive', false]] as [$key, $label, $required])
                     @php($hasDocument = in_array($key, $identityDocuments, true))
                     <label class="grid content-start gap-2 rounded border border-amber-200 bg-white p-3 text-sm font-bold text-slate-800" for="owner-document-{{ $key }}">
                         <span>{{ $label }}@if ($required)<span class="text-red-700" aria-hidden="true"> *</span>@endif</span>
                         <span class="text-xs font-normal leading-5 text-slate-600">PDF, JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, ICO. Maximum 10 MB.@if ($hasDocument) Leave empty to keep the current file.@endif</span>
                         <input id="owner-document-{{ $key }}" type="file" name="documents[{{ $key }}]" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.bmp,.tiff,.tif,.ico,application/pdf,image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon" class="min-h-11 w-full text-xs file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @if ($required && ! $hasDocument) required @endif>
                     </label>
-                <?php } ?>
+                @endforeach
             </div>
             <button type="submit" class="min-h-11 w-full rounded bg-amber-800 px-5 py-3 text-sm font-bold text-white hover:bg-amber-900 sm:w-fit">Submit owner identity</button>
         </form>
@@ -73,7 +73,7 @@
                 <a class="mt-4 inline-flex min-h-11 items-center rounded bg-emerald-800 px-5 py-3 text-sm font-bold text-white" href="{{ route('vehicle-owner.vehicles.create') }}">Add your first vehicle</a>
             </div>
         @else
-            <?php foreach ($vehicles as $vehicle) { ?>
+            @foreach ($vehicles as $vehicle)
             @php
                 $verificationRequest = $vehicleVerificationRequests->get($vehicle->id);
                 $uploadedDocuments = collect($verificationRequest?->documents ?? [])->pluck('key')->all();
@@ -102,9 +102,9 @@
 
                 @if ($uploadedDocuments !== [])
                     <ul class="grid gap-2 sm:grid-cols-2">
-                        <?php foreach ($verificationRequest->documents as $document) { ?>
+                        @foreach ($verificationRequest->documents as $document)
                             <li class="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm"><strong>{{ $document['label'] }}</strong><span class="mt-1 block truncate text-xs text-slate-600">{{ $document['original_name'] }}</span></li>
-                        <?php } ?>
+                        @endforeach
                     </ul>
                 @endif
 
@@ -112,20 +112,20 @@
                     @csrf
                     <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <?php foreach ($vehicleDocuments as $document) { ?>
+                        @foreach ($vehicleDocuments as $document)
                             @php($hasDocument = in_array($document['key'], $uploadedDocuments, true))
                             <label class="grid content-start gap-2 rounded border border-slate-200 bg-slate-50 p-3 text-sm font-bold text-slate-800" for="vehicle-{{ $vehicle->id }}-{{ $document['key'] }}">
                                 <span>{{ $document['label'] }}@if ($document['required'])<span class="text-red-700" aria-hidden="true"> *</span>@endif</span>
                                 <span class="text-xs font-normal leading-5 text-slate-600">{{ $document['image'] ? 'JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, ICO image, maximum 5 MB.' : 'PDF, JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, ICO, maximum 10 MB.' }}@if ($hasDocument) Leave empty to keep the current file.@endif</span>
                                 <input id="vehicle-{{ $vehicle->id }}-{{ $document['key'] }}" type="file" name="documents[{{ $document['key'] }}]" accept="{{ $document['image'] ? 'image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon' : '.pdf,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.bmp,.tiff,.tif,.ico,application/pdf,image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon' }}" class="min-h-11 w-full text-xs file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @if ($document['required'] && ! $hasDocument) required @endif>
                             </label>
-                        <?php } ?>
+                        @endforeach
                     </div>
                     <label class="grid gap-2 text-sm font-semibold text-slate-800" for="vehicle-{{ $vehicle->id }}-verification-notes">Note for the reviewer <span class="text-xs font-normal text-slate-600">Optional</span><textarea id="vehicle-{{ $vehicle->id }}-verification-notes" name="notes" rows="2" maxlength="2000" class="rounded border border-slate-300 p-3">{{ old('notes') }}</textarea></label>
                     <button type="submit" class="min-h-11 w-full rounded bg-amber-800 px-5 py-3 text-sm font-bold text-white hover:bg-amber-900 sm:w-fit">Submit {{ $vehicle->registration_number }} for verification</button>
                 </form>
             </article>
-            <?php } ?>
+            @endforeach
         @endif
     </section>
 </div>
