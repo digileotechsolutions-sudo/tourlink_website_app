@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\AccountApprovalStatus;
 use App\AccountStatus;
 use App\Models\AdminLog;
+use App\Models\AccountSession;
 use App\Models\User;
 use App\Role;
+use App\Services\Auth\AccountSessionService;
 use App\Services\Referral\ReferralService;
 use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpDeliveryService;
@@ -23,6 +25,40 @@ use Throwable;
 
 class AdminUserController extends Controller
 {
+    public function sessions(): View
+    {
+        $sessions = AccountSession::query()
+            ->with('user:id,name,email,role')
+            ->where('expires_at', '>', now())
+            ->latest('last_activity_at')
+            ->paginate(50);
+
+        return view('admin.users.sessions', compact('sessions'));
+    }
+
+    public function terminateSession(Request $request, User $user, AccountSessionService $sessions): RedirectResponse
+    {
+        $terminated = DB::transaction(function () use ($request, $user, $sessions): bool {
+            if (! $sessions->revokeUser($user)) {
+                return false;
+            }
+
+            AdminLog::query()->create([
+                'admin_id' => $request->user()->id,
+                'action' => 'user.session_terminated',
+                'entity' => 'User',
+                'entity_id' => $user->id,
+                'metadata' => ['terminated_user_id' => $user->id],
+            ]);
+
+            return true;
+        });
+
+        return back()->with('status', $terminated
+            ? "The active session for {$user->name} was terminated."
+            : "{$user->name} has no active session.");
+    }
+
     public function index(Request $request): View
     {
         $filters = $request->validate([
@@ -56,6 +92,7 @@ class AdminUserController extends Controller
         OtpDeliveryService $delivery,
         ReferralService $referrals,
         AccountVerificationService $verification,
+        AccountSessionService $sessions,
     ): RedirectResponse
     {
         $data = $request->validate([
@@ -96,7 +133,7 @@ class AdminUserController extends Controller
         }
 
         $changes = [];
-        DB::transaction(function () use ($request, $user, $data, &$changes): void {
+        DB::transaction(function () use ($request, $user, $data, $sessions, &$changes): void {
             $attributes = $data;
             $roleChanged = $user->role->value !== $data['role'];
 
@@ -112,6 +149,10 @@ class AdminUserController extends Controller
 
             $user->forceFill($attributes)->save();
             $changes = array_keys($attributes);
+
+            if ($user->account_status !== AccountStatus::Active || $user->approval_status !== AccountApprovalStatus::Approved) {
+                $sessions->revokeUser($user);
+            }
 
             if ($roleChanged) {
                 match (Role::from($data['role'])) {
@@ -153,7 +194,7 @@ class AdminUserController extends Controller
         return back()->with('status', "{$user->name}'s account was updated.");
     }
 
-    public function destroy(Request $request, User $user): RedirectResponse
+    public function destroy(Request $request, User $user, AccountSessionService $sessions): RedirectResponse
     {
         if ($user->is($request->user())) {
             return back()->withErrors(['user' => 'You cannot remove your own admin account.']);
@@ -163,7 +204,7 @@ class AdminUserController extends Controller
             return back()->withErrors(['user' => 'Admin accounts cannot be removed.']);
         }
 
-        DB::transaction(function () use ($request, $user): void {
+        DB::transaction(function () use ($request, $user, $sessions): void {
             $user->forceFill([
                 'name' => 'Deleted user',
                 'email' => 'deleted-'.$user->id.'@tourlink.invalid',
@@ -173,6 +214,7 @@ class AdminUserController extends Controller
                 'approval_status' => AccountApprovalStatus::Rejected,
                 'approval_note' => 'Account removed by an administrator.',
             ])->save();
+            $sessions->revokeUser($user);
 
             AdminLog::query()->create([
                 'admin_id' => $request->user()->id,

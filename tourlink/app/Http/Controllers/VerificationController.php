@@ -8,6 +8,7 @@ use App\Models\User;
 use App\OtpChannel;
 use App\Role;
 use App\Services\Referral\ReferralService;
+use App\Services\Auth\AccountSessionService;
 use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpDeliveryService;
 use App\Services\Verification\OtpService;
@@ -37,8 +38,9 @@ class VerificationController extends Controller
         return view('pages.auth.verification', compact('user', 'verificationMethods', 'continueToSupport', 'otpExpiresAt'));
     }
 
-    public function verify(Request $request, OtpService $otpService, OtpDeliveryService $delivery, AccountVerificationService $verification, ReferralService $referrals): mixed
+    public function verify(Request $request, OtpService $otpService, OtpDeliveryService $delivery, AccountVerificationService $verification, ReferralService $referrals, AccountSessionService $sessions): mixed
     {
+        $previousSessionId = $request->session()->getId();
         $input = $request->validate([
             'user_id' => ['required', 'string', 'exists:users,id'],
             'channel' => ['required', Rule::in([OtpChannel::Email->value])],
@@ -84,6 +86,11 @@ class VerificationController extends Controller
         if ($verification->isFullyVerified($user) && $user->approval_status === AccountApprovalStatus::Approved && $user->account_status === AccountStatus::Active) {
             Auth::login($user);
             $request->session()->regenerate();
+            if (! $sessions->registerWebLogin($user, $request, $previousSessionId)) {
+                $sessions->discardUnregisteredWebLogin($request);
+
+                return redirect()->route('login')->withErrors(['email' => AccountSessionService::LOGIN_CONFLICT_MESSAGE]);
+            }
 
             $dashboard = match ($user->role) {
                 Role::Admin => Route::has('admin.dashboard') ? route('admin.dashboard') : route('home'),

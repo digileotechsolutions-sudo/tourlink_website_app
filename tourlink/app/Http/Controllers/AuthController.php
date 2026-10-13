@@ -12,6 +12,7 @@ use App\OtpChannel;
 use App\Role;
 use App\Rules\PasswordRules;
 use App\Services\Referral\ReferralService;
+use App\Services\Auth\AccountSessionService;
 use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpService;
 use App\Services\Verification\PhoneNumberNormalizer;
@@ -59,9 +60,10 @@ class AuthController extends Controller
         return view('pages.auth.register', compact('initialRole', 'referrer', 'verificationAvailable', 'googleClientId', 'googleNonce', 'continueToSupport'));
     }
 
-    public function login(Request $request, AccountVerificationService $verification): mixed
+    public function login(Request $request, AccountVerificationService $verification, AccountSessionService $sessions): mixed
     {
         $this->rememberSupportDestination($request);
+        $previousSessionId = $request->session()->getId();
         $credentials = $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'max:255'],
@@ -119,6 +121,12 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
+        if (! $sessions->registerWebLogin($user, $request, $previousSessionId)) {
+            $sessions->discardUnregisteredWebLogin($request);
+
+            return back()->withErrors(['email' => AccountSessionService::LOGIN_CONFLICT_MESSAGE])->onlyInput('email');
+        }
+
         $dashboardUrl = $this->dashboardUrl($user);
 
         if ($this->canVisitIntendedPath($user, $request->session()->get('url.intended'))) {
@@ -219,11 +227,22 @@ class AuthController extends Controller
         return $redirect;
     }
 
-    public function logout(Request $request): mixed
+    public function logout(Request $request, AccountSessionService $sessions): mixed
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $user = $request->user();
+        if ($user instanceof User) {
+            $sessions->revokeCurrent($user, $request);
+        }
+
+        Auth::guard('web')->logout();
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->noContent();
+        }
 
         return redirect()->route('home');
     }

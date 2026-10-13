@@ -164,12 +164,21 @@ class VehicleOwnerController extends Controller
             ->latest()
             ->get()
             ->keyBy('vehicle_id');
+        $vehicleVerificationData = $vehicles->map(static function (Vehicle $vehicle) use ($vehicleVerificationRequests): array {
+            $verificationRequest = $vehicleVerificationRequests->get($vehicle->id);
+
+            return [
+                'vehicle' => $vehicle,
+                'verificationRequest' => $verificationRequest,
+                'uploadedDocuments' => collect($verificationRequest?->documents ?? [])->pluck('key')->all(),
+            ];
+        });
 
         return view('vehicle-owner.profile', [
             'profile' => $owner->vehicleOwnerProfile()->firstOrCreate([], ['business_name' => $owner->name]),
             'identityVerificationRequest' => $this->latestVerificationRequest($owner, 'VEHICLE_OWNER_IDENTITY'),
             'vehicles' => $vehicles,
-            'vehicleVerificationRequests' => $vehicleVerificationRequests,
+            'vehicleVerificationData' => $vehicleVerificationData,
         ]);
     }
 

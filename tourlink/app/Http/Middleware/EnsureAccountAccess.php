@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\AccountApprovalStatus;
 use App\AccountStatus;
+use App\Services\Auth\AccountSessionService;
 use App\Services\Verification\AccountVerificationService;
 use Closure;
 use Illuminate\Http\Request;
@@ -12,7 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureAccountAccess
 {
-    public function __construct(private readonly AccountVerificationService $verification) {}
+    public function __construct(
+        private readonly AccountVerificationService $verification,
+        private readonly AccountSessionService $sessions,
+    ) {}
 
     /**
      * Handle an incoming request.
@@ -47,6 +51,7 @@ class EnsureAccountAccess
 
         if ($user->account_status !== AccountStatus::Active
             || $user->approval_status !== AccountApprovalStatus::Approved) {
+            $this->sessions->revokeCurrent($user, $request);
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

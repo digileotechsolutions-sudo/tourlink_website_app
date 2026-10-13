@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\AccountApprovalStatus;
 use App\AccountStatus;
 use App\Role;
+use App\Services\Auth\AccountSessionService;
 use App\Services\Verification\AccountVerificationService;
 use Closure;
 use Illuminate\Http\Request;
@@ -13,7 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureAdmin
 {
-    public function __construct(private readonly AccountVerificationService $verification) {}
+    public function __construct(
+        private readonly AccountVerificationService $verification,
+        private readonly AccountSessionService $sessions,
+    ) {}
 
     /**
      * @param  Closure(Request): (Response)  $next
@@ -32,6 +36,7 @@ class EnsureAdmin
 
         if ($request->user()->account_status !== AccountStatus::Active
             || $request->user()->approval_status !== AccountApprovalStatus::Approved) {
+            $this->sessions->revokeCurrent($request->user(), $request);
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

@@ -43,6 +43,10 @@ Use `php artisan tourlink:check-verification` to check the effective email trans
 
 After changing deployed mail configuration, refresh cached configuration with `php artisan config:clear` (or rebuild the config cache during deployment).
 
+## Single active account session
+
+Each account is limited to one active web session or Sanctum personal-access-token session across all roles. Additional sign-ins are rejected without displacing the current session. Logout revokes the current session, and sessions expire after the configured `SESSION_LIFETIME` idle period. Administrators can review and terminate active sessions from **Manage users → Manage active sessions**. Deploy the account-session migration with `php artisan migrate --force`; mobile/API clients should revoke their token with `POST /api/logout`.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
