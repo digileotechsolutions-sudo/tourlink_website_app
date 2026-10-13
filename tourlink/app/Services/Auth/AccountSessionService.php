@@ -51,9 +51,15 @@ class AccountSessionService
 
     public function validateWebSession(User $user, Request $request): bool
     {
+        $fingerprint = $request->session()->get('_account_session_fingerprint');
+
+        if (! is_string($fingerprint) || preg_match('/\A[a-f0-9]{64}\z/', $fingerprint) !== 1) {
+            return false;
+        }
+
         return $this->refresh(
             $user,
-            $this->fingerprint('web', $request->session()->getId()),
+            $fingerprint,
             'web',
         );
     }

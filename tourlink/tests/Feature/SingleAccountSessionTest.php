@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\Auth\AccountSessionService;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -35,6 +36,27 @@ class SingleAccountSessionTest extends TestCase
         $this->assertSame('web', $session->session_type);
         $this->assertSame(hash('sha256', 'web:'.session()->getId()), $session->session_fingerprint);
         $this->assertGreaterThan(now()->timestamp, $session->expires_at->timestamp);
+    }
+
+    public function test_web_session_validation_uses_its_registered_fingerprint_after_session_id_rotation(): void
+    {
+        $user = User::factory()->create();
+        $fingerprint = hash('sha256', 'web:registered-session-id');
+        AccountSession::query()->create([
+            'user_id' => $user->id,
+            'session_fingerprint' => $fingerprint,
+            'session_type' => 'web',
+            'last_activity_at' => now(),
+            'expires_at' => now()->addMinutes(15),
+        ]);
+
+        $session = app('session')->driver();
+        $session->setId('rotated-session-id');
+        $session->put('_account_session_fingerprint', $fingerprint);
+        $request = Request::create('/dashboard');
+        $request->setLaravelSession($session);
+
+        $this->assertTrue(app(AccountSessionService::class)->validateWebSession($user, $request));
     }
 
     public function test_session_storage_failure_returns_a_login_error_instead_of_leaving_login_pending(): void
