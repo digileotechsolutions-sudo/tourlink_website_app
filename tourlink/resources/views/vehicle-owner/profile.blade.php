@@ -67,6 +67,7 @@
             <p class="mt-2 text-sm leading-6 text-slate-600">Vehicle details come from your listing. Submit a separate document packet for each vehicle.</p>
         </div>
 
+        <?php $vehicleVerificationRequest = null; ?>
         <?php if ($vehicles->isEmpty()) { ?>
             <div class="rounded border border-dashed border-slate-300 bg-white p-6">
                 <p class="text-sm text-slate-700">Add a vehicle before submitting its registration details and documents.</p>
@@ -75,8 +76,8 @@
         <?php } else { ?>
             <?php foreach ($vehicles as $vehicle) { ?>
             @php
-                $verificationRequest = $vehicleVerificationRequests->get($vehicle->id);
-                $uploadedDocuments = collect($verificationRequest?->documents ?? [])->pluck('key')->all();
+                $vehicleVerificationRequest = $vehicleVerificationRequests->get($vehicle->id);
+                $uploadedDocuments = collect($vehicleVerificationRequest?->documents ?? [])->pluck('key')->all();
                 $vehicleDocuments = [
                     ['key' => 'logbook', 'label' => 'Vehicle logbook', 'required' => true, 'image' => false],
                     ['key' => 'insurance', 'label' => 'Current insurance certificate', 'required' => true, 'image' => false],
@@ -95,14 +96,14 @@
                         <h3 class="text-lg font-black text-slate-950">{{ $vehicle->registration_number }} · {{ $vehicle->year }} {{ $vehicle->make }} {{ $vehicle->model }}</h3>
                         <p class="mt-1 text-sm text-slate-600">{{ $vehicle->body_type }} · {{ $vehicle->seating_capacity }} seats</p>
                     </div>
-                    @if ($verificationRequest)
-                        <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-950">{{ $verificationRequest->status->label() }}</span>
+                    @if ($vehicleVerificationRequest)
+                        <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-950">{{ $vehicleVerificationRequest->status->label() }}</span>
                     @endif
                 </div>
 
                 @if ($uploadedDocuments !== [])
                     <ul class="grid gap-2 sm:grid-cols-2">
-                        <?php foreach (($verificationRequest->documents ?? []) as $document): ?>
+                        <?php foreach (($vehicleVerificationRequest?->documents ?? []) as $document): ?>
                             <li class="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm"><strong>{{ $document['label'] }}</strong><span class="mt-1 block truncate text-xs text-slate-600">{{ $document['original_name'] }}</span></li>
                         <?php endforeach; ?>
                     </ul>
