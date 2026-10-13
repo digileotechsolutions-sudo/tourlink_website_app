@@ -353,7 +353,7 @@ document.addEventListener('click', (event) => {
     toggle.setAttribute('title', nextLabel);
 });
 
-document.querySelectorAll('[data-auth-form]').forEach((form) => {
+document.querySelectorAll('[data-auth-form]:not([data-no-loading])').forEach((form) => {
     form.addEventListener('submit', () => {
         const button = form.querySelector('[data-auth-submit]');
         const label = button?.querySelector('[data-auth-submit-label]');

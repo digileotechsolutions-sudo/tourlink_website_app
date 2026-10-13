@@ -10,17 +10,29 @@
         <header class="auth-login-header">
             <p class="auth-login-eyebrow">{{ __('Havenedge Tourlink account') }}</p>
             <h1 id="login-heading">{{ __('Welcome Back') }}</h1>
-            <p>{{ __('Sign in to continue your journey.') }}</p>
+            <p>{{ __('Sign in to continue to your Tourlink account.') }}</p>
         </header>
         @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
         @error('google')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
-        <form method="POST" action="{{ route('login') }}" data-auth-form data-auth-loading-label="{{ __('Signing in...') }}">@csrf
+        @if ($errors->any())
+            <div class="auth-msg auth-msg-error" role="alert" aria-live="assertive">
+                <p class="font-bold">{{ __('We could not sign you in.') }}</p>
+                <ul class="mt-2 list-disc pl-5">
+                    @foreach ($errors->all() as $message)
+                        <li>{{ $message }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        <p class="auth-login-account-hint">{{ __('Travelers, operators, vehicle owners, and administrators all sign in here.') }}</p>
+        <form method="POST" action="{{ route('login') }}" data-auth-form data-no-loading>
+            @csrf
             @if ($continueToSupport)<input type="hidden" name="continue" value="support">@endif
             <div class="auth-login-field">
                 <label for="email">{{ __('Email address') }}</label>
                 <div class="auth-login-control">
                     <svg class="auth-login-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="m5 7 7 5 7-5"/></svg>
-                    <input id="email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" value="{{ old('email') }}" placeholder="you@example.com" required autofocus @error('email') aria-invalid="true" aria-describedby="login-email-error" @enderror>
+                    <input id="email" name="email" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" value="{{ old('email') }}" placeholder="you@example.com" required autofocus @error('email') aria-invalid="true" aria-describedby="login-email-error" @enderror>
                 </div>
                 @error('email')<span class="field-error" id="login-email-error" role="alert">{{ $message }}</span>@enderror
             </div>
@@ -39,10 +51,9 @@
             </div>
             <div class="auth-login-actions">
                 <label class="auth-login-remember"><input name="remember" type="checkbox" value="1"><span>{{ __('Remember me') }}</span></label>
-                <button class="auth-login-submit" type="submit" data-auth-submit>
-                    <span data-auth-submit-label>{{ __('Sign in') }}</span>
+                <button class="auth-login-submit" type="submit">
+                    <span>{{ __('Sign in') }}</span>
                     <svg data-submit-arrow viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
-                    <span class="auth-login-spinner" data-auth-spinner aria-hidden="true"></span>
                 </button>
             </div>
         </form>

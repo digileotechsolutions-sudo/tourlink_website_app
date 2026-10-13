@@ -11,6 +11,15 @@ class AuthRoleRedirectTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_login_page_is_shared_by_all_account_roles_without_a_stuck_loading_state(): void
+    {
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('Travelers, operators, vehicle owners, and administrators all sign in here.')
+            ->assertSee('data-auth-form data-no-loading', false)
+            ->assertSee('action="'.route('login').'"', false);
+    }
+
     public function test_authenticated_pages_configure_fifteen_minute_idle_logout(): void
     {
         $traveler = User::factory()->create(['role' => 'TRAVELER']);
