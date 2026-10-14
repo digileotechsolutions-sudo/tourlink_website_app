@@ -34,7 +34,8 @@ class SingleAccountSessionTest extends TestCase
         $session = AccountSession::query()->where('user_id', $user->id)->firstOrFail();
 
         $this->assertSame('web', $session->session_type);
-        $this->assertSame(hash('sha256', 'web:'.session()->getId()), $session->session_fingerprint);
+        $this->assertSame(session()->get('_account_session_fingerprint'), $session->session_fingerprint);
+        $this->assertMatchesRegularExpression('/\A[a-f0-9]{64}\z/', $session->session_fingerprint);
         $this->assertGreaterThan(now()->timestamp, $session->expires_at->timestamp);
 
         $this->get(route('dashboard'))->assertOk();
@@ -43,7 +44,7 @@ class SingleAccountSessionTest extends TestCase
     public function test_web_session_validation_uses_its_registered_fingerprint_after_session_id_rotation(): void
     {
         $user = User::factory()->create();
-        $fingerprint = hash('sha256', 'web:registered-session-id');
+        $fingerprint = hash('sha256', 'random-web-session-token');
         AccountSession::query()->create([
             'user_id' => $user->id,
             'session_fingerprint' => $fingerprint,
@@ -59,6 +60,29 @@ class SingleAccountSessionTest extends TestCase
         $request->setLaravelSession($session);
 
         $this->assertTrue(app(AccountSessionService::class)->validateWebSession($user, $request));
+    }
+
+    public function test_logout_revokes_the_registered_session_after_session_id_rotation(): void
+    {
+        $user = User::factory()->create();
+        $fingerprint = hash('sha256', 'random-web-session-token');
+        AccountSession::query()->create([
+            'user_id' => $user->id,
+            'session_fingerprint' => $fingerprint,
+            'session_type' => 'web',
+            'last_activity_at' => now(),
+            'expires_at' => now()->addMinutes(15),
+        ]);
+
+        $session = app('session')->driver();
+        $session->setId('rotated-session-id');
+        $session->put('_account_session_fingerprint', $fingerprint);
+        $request = Request::create('/logout');
+        $request->setLaravelSession($session);
+
+        app(AccountSessionService::class)->revokeCurrent($user, $request);
+
+        $this->assertDatabaseMissing('account_sessions', ['user_id' => $user->id]);
     }
 
     public function test_untracked_web_session_cannot_replace_another_active_session(): void
@@ -157,7 +181,7 @@ class SingleAccountSessionTest extends TestCase
         ])->assertRedirect(route('dashboard'));
 
         $this->assertSame(
-            hash('sha256', 'web:'.session()->getId()),
+            session()->get('_account_session_fingerprint'),
             AccountSession::query()->where('user_id', $user->id)->value('session_fingerprint'),
         );
     }

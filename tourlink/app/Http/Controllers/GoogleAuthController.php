@@ -316,10 +316,9 @@ class GoogleAuthController extends Controller
             return redirect()->route('login')->withErrors(['email' => $message]);
         }
 
-        $previousSessionId = $request->session()->getId();
+        $previousFingerprint = $request->session()->get('_account_session_fingerprint');
         Auth::login($user);
-        $request->session()->regenerate();
-        $sessions->registerWebLogin($user, $request, $previousSessionId);
+        $sessions->registerWebLogin($user, $request, is_string($previousFingerprint) ? $previousFingerprint : null);
 
         $dashboardUrl = match ($user->role) {
             Role::Admin => Route::has('admin.dashboard') ? route('admin.dashboard') : route('home'),

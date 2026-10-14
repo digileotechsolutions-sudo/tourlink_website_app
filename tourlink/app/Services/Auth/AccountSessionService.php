@@ -12,16 +12,16 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class AccountSessionService
 {
-    public function registerWebLogin(User $user, Request $request, string $previousSessionId): bool
+    public function registerWebLogin(User $user, Request $request, ?string $previousFingerprint): bool
     {
-        $fingerprint = $this->fingerprint('web', $request->session()->getId());
+        $fingerprint = $this->newWebFingerprint();
         $claimed = $this->claim(
             $user,
             $fingerprint,
             'web',
             $request,
             null,
-            $this->fingerprint('web', $previousSessionId),
+            $previousFingerprint,
         );
 
         if ($claimed) {
@@ -33,7 +33,7 @@ class AccountSessionService
 
     public function registerUntrackedWebSession(User $user, Request $request): bool
     {
-        $fingerprint = $this->fingerprint('web', $request->session()->getId());
+        $fingerprint = $this->newWebFingerprint();
         $claimed = $this->claim($user, $fingerprint, 'web', $request, null, null, false);
 
         if ($claimed) {
@@ -112,9 +112,14 @@ class AccountSessionService
             return;
         }
 
+        $fingerprint = $request->session()->get('_account_session_fingerprint');
+        if (! is_string($fingerprint) || preg_match('/\A[a-f0-9]{64}\z/', $fingerprint) !== 1) {
+            $fingerprint = $this->fingerprint('web', $request->session()->getId());
+        }
+
         AccountSession::query()
             ->where('user_id', $user->getKey())
-            ->where('session_fingerprint', $this->fingerprint('web', $request->session()->getId()))
+            ->where('session_fingerprint', $fingerprint)
             ->where('session_type', 'web')
             ->delete();
     }
@@ -229,5 +234,10 @@ class AccountSessionService
     private function fingerprint(string $type, string $identifier): string
     {
         return hash('sha256', $type.':'.$identifier);
+    }
+
+    private function newWebFingerprint(): string
+    {
+        return hash('sha256', Str::random(64));
     }
 }
