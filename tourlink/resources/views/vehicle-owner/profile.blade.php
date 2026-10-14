@@ -38,7 +38,9 @@
         <button type="submit" class="min-h-12 w-full rounded-xl bg-ink px-6 text-sm font-bold text-white shadow-soft sm:w-fit">Save profile</button>
     </form>
 
-    @php($identityDocuments = collect($identityVerificationRequest->documents ?? [])->pluck('key')->all())
+    @php
+        $identityDocuments = collect($identityVerificationRequest->documents ?? [])->pluck('key')->all();
+    @endphp
     <section class="grid gap-4 rounded border border-amber-200 bg-amber-50 p-5 sm:p-6" aria-labelledby="owner-verification-heading">
         <div>
             <p class="text-xs font-bold uppercase tracking-wider text-amber-900">Identity verification</p>
@@ -58,7 +60,9 @@
             @csrf
             <div class="grid gap-4 sm:grid-cols-2">
                 @foreach ([['owner_id', 'National ID or passport', true], ['driving_license', 'Driving licence, if you or your assigned driver will drive', false]] as [$key, $label, $required])
-                    @php($hasDocument = in_array($key, $identityDocuments, true))
+                    @php
+                        $hasDocument = in_array($key, $identityDocuments, true);
+                    @endphp
                     <label class="grid content-start gap-2 rounded border border-amber-200 bg-white p-3 text-sm font-bold text-slate-800" for="owner-document-{{ $key }}">
                         <span>{{ $label }}@if ($required)<span class="text-red-700" aria-hidden="true"> *</span>@endif</span>
                         <span class="text-xs font-normal leading-5 text-slate-600">PDF, JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, ICO. Maximum 10 MB.@if ($hasDocument) Leave empty to keep the current file.@endif</span>
@@ -124,7 +128,9 @@
                     <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
                     <div class="grid gap-3 sm:grid-cols-2">
                         @foreach ($vehicleDocuments as $document)
-                            @php($hasDocument = in_array($document['key'], $uploadedDocuments, true))
+                            @php
+                                $hasDocument = in_array($document['key'], $uploadedDocuments, true);
+                            @endphp
                             <label class="grid content-start gap-2 rounded border border-slate-200 bg-slate-50 p-3 text-sm font-bold text-slate-800" for="vehicle-{{ $vehicle->id }}-{{ $document['key'] }}">
                                 <span>{{ $document['label'] }}@if ($document['required'])<span class="text-red-700" aria-hidden="true"> *</span>@endif</span>
                                 <span class="text-xs font-normal leading-5 text-slate-600">{{ $document['image'] ? 'JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, ICO image, maximum 5 MB.' : 'PDF, JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, ICO, maximum 10 MB.' }}@if ($hasDocument) Leave empty to keep the current file.@endif</span>
