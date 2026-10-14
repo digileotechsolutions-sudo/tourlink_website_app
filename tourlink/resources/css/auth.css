@@ -431,6 +431,27 @@
     height: 32px;
 }
 
+.auth-page:has(.auth-login-shell) .google-auth-divider {
+    gap: 12px;
+    color: #7f8c8d;
+}
+
+.auth-page:has(.auth-login-shell) .google-auth-divider::before,
+.auth-page:has(.auth-login-shell) .google-auth-divider::after {
+    background: #b2bec3;
+}
+
+.auth-page:has(.auth-login-shell) .google-auth-divider span {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: none;
+    place-items: center;
+    border-radius: 50%;
+    background: #e0e5ec;
+    box-shadow: 3px 3px 6px rgb(163 177 198 / 50%), -3px -3px 6px rgb(255 255 255 / 50%);
+}
+
 .auth-page:has(.auth-login-shell) .auth-login-eyebrow {
     display: none;
 }
