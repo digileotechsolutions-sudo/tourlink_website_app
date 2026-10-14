@@ -247,6 +247,37 @@ document.querySelectorAll('[data-provider-role-fields]').forEach((form) => {
     roleSelect.addEventListener('change', updateBusinessFields);
 });
 
+document.querySelectorAll('#register-form').forEach((form) => {
+    const password = form.querySelector('#password');
+    const confirmation = form.querySelector('[data-password-confirmation]');
+    const error = form.querySelector('[data-password-confirmation-error]');
+
+    if (!password || !confirmation || !error) {
+        return;
+    }
+
+    const validatePasswordConfirmation = (showError = false) => {
+        const mismatch = confirmation.value !== '' && password.value !== confirmation.value;
+        confirmation.setCustomValidity(mismatch ? confirmation.dataset.mismatchMessage : '');
+        confirmation.toggleAttribute('aria-invalid', mismatch);
+        error.hidden = !(mismatch && showError);
+
+        return !mismatch;
+    };
+
+    password.addEventListener('input', () => validatePasswordConfirmation(!error.hidden));
+    confirmation.addEventListener('input', () => validatePasswordConfirmation(true));
+    form.addEventListener('submit', (event) => {
+        if (validatePasswordConfirmation(true)) {
+            return;
+        }
+
+        event.preventDefault();
+        confirmation.focus();
+        confirmation.reportValidity();
+    });
+});
+
 if (portalSidebar && sidebarToggle) {
     const storageKey = 'tourlink:sidebar-collapsed';
     let isCollapsed = false;

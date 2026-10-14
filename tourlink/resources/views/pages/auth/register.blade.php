@@ -100,17 +100,18 @@
 
             <x-password-strength />
 
-            <div class="auth-field auth-field-password">
+            <div class="auth-field auth-field-password" data-password-confirmation-field>
                 <label for="password_confirmation">{{ __('Confirm password') }}</label>
                 <div class="auth-modern-control auth-modern-control-password">
                     <svg class="auth-modern-leading-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7M12 14.5v2.5"/></svg>
-                    <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" minlength="8" required @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
+                    <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" minlength="8" required data-password-confirmation data-mismatch-message="{{ __('Passwords do not match.') }}" aria-describedby="password-confirmation-error" @if ($errors->has('password')) aria-invalid="true" @endif>
                     <button class="auth-password-toggle auth-modern-toggle" type="button" data-password-toggle="password_confirmation" data-show-label="{{ __('Show password') }}" data-hide-label="{{ __('Hide password') }}" aria-label="{{ __('Show password') }}" title="{{ __('Show password') }}">
                         <svg data-password-eye viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg>
                         <svg data-password-eye-off hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 3 18 18M10.6 6.2A10.8 10.8 0 0 1 12 6c6.1 0 9.5 6 9.5 6a14.8 14.8 0 0 1-3 3.6M6.2 6.9C3.8 8.5 2.5 12 2.5 12s3.4 6 9.5 6c1 0 1.9-.2 2.7-.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
                         <span class="sr-only" data-password-toggle-label>{{ __('Show password') }}</span>
                     </button>
                 </div>
+                <span id="password-confirmation-error" class="field-error" data-password-confirmation-error role="alert" aria-live="assertive" hidden>{{ __('Passwords do not match.') }}</span>
             </div>
 
             <div class="auth-field">
