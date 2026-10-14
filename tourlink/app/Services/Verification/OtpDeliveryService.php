@@ -3,6 +3,7 @@
 namespace App\Services\Verification;
 
 use App\Mail\PasswordResetMail;
+use App\Mail\PasswordChangedMail;
 use App\Mail\VerificationCodeMail;
 use App\Models\User;
 use App\OtpChannel;
@@ -226,6 +227,16 @@ class OtpDeliveryService
                 'resetUrl' => $resetUrl,
                 'expiresInMinutes' => $minutes,
             ],
+        );
+    }
+
+    public function sendPasswordChanged(User $user): void
+    {
+        $this->sendAuthEmail(
+            $user->email,
+            new PasswordChangedMail($user->name),
+            'emails.auth.password-changed',
+            ['name' => $user->name],
         );
     }
 

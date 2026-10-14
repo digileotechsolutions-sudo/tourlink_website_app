@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use App\Rules\Password\NotBreachedPassword;
 use App\Rules\Password\NotCommonPassword;
+use App\Rules\Password\NotCurrentPassword;
 use App\Rules\Password\NotDerivedFromAccount;
 use App\Rules\Password\RequiresDigit;
 use App\Rules\Password\RequiresLowercase;
@@ -70,6 +71,7 @@ final class PasswordRules
                 'requires_symbol' => (new RequiresSymbol)->message(),
                 'not_common_password' => (new NotCommonPassword)->message(),
                 'not_breached_password' => (new NotBreachedPassword)->message(),
+                'not_current_password' => (new NotCurrentPassword(''))->message(),
                 'not_derived_from_account' => (new NotDerivedFromAccount)->message(),
             ],
             'current_password' => [

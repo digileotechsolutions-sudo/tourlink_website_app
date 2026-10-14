@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\RequireTermsAcceptance;
+use App\Mail\PasswordChangedMail;
 use App\Mail\PasswordResetMail;
 use App\Mail\VerificationCodeMail;
 use App\Models\OtpChallenge;
@@ -184,13 +185,32 @@ class EmailAuthenticationTest extends TestCase
                 'email' => $query['email'],
                 'password' => 'Jungle@Trail29',
                 'password_confirmation' => 'Jungle@Trail29',
-            ])->assertRedirect(route('login'));
+            ])->assertRedirect(route('login'))
+                ->assertSessionHas('status', 'Your password was successfully changed. A confirmation email has been sent.');
 
             $this->assertTrue(Hash::check('Jungle@Trail29', $user->fresh()->password));
             $this->assertDatabaseMissing('personal_access_tokens', ['id' => $apiToken->accessToken->id]);
 
             return $mail->hasTo($user->email);
         });
+
+        Mail::assertSent(PasswordChangedMail::class, fn (PasswordChangedMail $mail): bool => $mail->hasTo($user->email)
+            && str_contains($mail->render(), 'Your Havenedge Tourlink account password was successfully changed.'));
+    }
+
+    public function test_password_change_displays_success_and_emails_account_notice(): void
+    {
+        $user = User::factory()->create(['password' => 'Current@Trail29']);
+
+        $this->actingAs($user)->put(route('password.change.update'), [
+            'current_password' => 'Current@Trail29',
+            'password' => 'Jungle@Trail29',
+            'password_confirmation' => 'Jungle@Trail29',
+        ])->assertRedirect()
+            ->assertSessionHas('status', 'Your password was successfully changed. A confirmation email has been sent.');
+
+        Mail::assertSent(PasswordChangedMail::class, fn (PasswordChangedMail $mail): bool => $mail->hasTo($user->email)
+            && str_contains($mail->render(), 'Your Havenedge Tourlink account password was successfully changed.'));
     }
 
     public function test_authentication_forms_are_not_cached(): void

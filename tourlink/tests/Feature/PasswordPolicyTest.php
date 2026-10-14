@@ -316,6 +316,21 @@ class PasswordPolicyTest extends TestCase
         ])->assertSessionHasErrors(['current_password', 'password']);
     }
 
+    public function test_password_change_rejects_reusing_the_current_password(): void
+    {
+        $user = User::factory()->create(['password' => 'OldPassword#29']);
+
+        $this->actingAs($user)->put(route('password.change.update'), [
+            'current_password' => 'OldPassword#29',
+            'password' => 'OldPassword#29',
+            'password_confirmation' => 'OldPassword#29',
+        ])->assertSessionHasErrors([
+            'password' => 'Your new password must be different from your current password.',
+        ]);
+
+        $this->assertTrue(Hash::check('OldPassword#29', $user->fresh()->password));
+    }
+
     public function test_password_reset_accepts_a_strong_password_and_hashes_it(): void
     {
         $user = User::factory()->create(['password' => 'OldPassword#29']);
@@ -329,6 +344,24 @@ class PasswordPolicyTest extends TestCase
         ])->assertRedirect(route('login'));
 
         $this->assertTrue(Hash::check('Jungle@Trail29', $user->refresh()->password));
+    }
+
+    public function test_password_reset_rejects_reusing_the_current_password(): void
+    {
+        $user = User::factory()->create(['password' => 'OldPassword#29']);
+        $token = Password::createToken($user);
+
+        $this->from(route('password.reset', ['token' => $token, 'email' => $user->email]))
+            ->post(route('password.update'), [
+                'token' => $token,
+                'email' => $user->email,
+                'password' => 'OldPassword#29',
+                'password_confirmation' => 'OldPassword#29',
+            ])->assertSessionHasErrors([
+                'password' => 'Your new password must be different from your current password.',
+            ]);
+
+        $this->assertTrue(Hash::check('OldPassword#29', $user->fresh()->password));
     }
 
     public function test_password_reset_request_sends_email_through_the_configured_resend_transport(): void

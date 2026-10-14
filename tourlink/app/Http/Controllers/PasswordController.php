@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\Password\NotCurrentPassword;
 use App\Rules\PasswordRules;
+use App\Services\Verification\OtpDeliveryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use RuntimeException;
 
 class PasswordController extends Controller
 {
@@ -22,9 +25,10 @@ class PasswordController extends Controller
         return view('pages.password.change');
     }
 
-    public function change(Request $request): RedirectResponse
+    public function change(Request $request, OtpDeliveryService $delivery): RedirectResponse
     {
         $passwordRules = PasswordRules::withAccountContext(PasswordRules::rules(), $request->user());
+        $passwordRules[] = new NotCurrentPassword($request->user()->password);
         $passwordRules[] = 'confirmed';
 
         $input = $request->validate([
@@ -37,8 +41,9 @@ class PasswordController extends Controller
             'remember_token' => Str::random(60),
         ])->save();
         $request->user()->tokens()->delete();
+        $delivery->sendPasswordChanged($request->user());
 
-        return back()->with('status', __('Your password has been changed.'));
+        return back()->with('status', __('Your password was successfully changed. A confirmation email has been sent.'));
     }
 
     public function sendResetLink(Request $request): mixed
@@ -58,12 +63,15 @@ class PasswordController extends Controller
         ]);
     }
 
-    public function reset(Request $request): mixed
+    public function reset(Request $request, OtpDeliveryService $delivery): mixed
     {
         $email = $request->input('email');
         $email = is_string($email) && strlen($email) <= 255 ? Str::lower(trim($email)) : '';
         $account = User::query()->where('email', $email)->first();
         $passwordRules = PasswordRules::withAccountContext(PasswordRules::rules(), $account ?? $email);
+        if ($account !== null) {
+            $passwordRules[] = new NotCurrentPassword($account->password);
+        }
         $passwordRules[] = 'confirmed';
 
         $input = $request->validate([
@@ -72,6 +80,7 @@ class PasswordController extends Controller
             'password' => $passwordRules,
         ], PasswordRules::messages());
 
+        $resetUser = null;
         $status = Password::reset(
             [
                 'email' => Str::lower(trim($input['email'])),
@@ -79,13 +88,14 @@ class PasswordController extends Controller
                 'password_confirmation' => $request->input('password_confirmation'),
                 'token' => $input['token'],
             ],
-            function (User $user, string $password): void {
+            function (User $user, string $password) use (&$resetUser): void {
                 $user->forceFill([
                     'password' => $password,
                     'remember_token' => Str::random(60),
                 ])->save();
 
                 $user->tokens()->delete();
+                $resetUser = $user;
             },
         );
 
@@ -93,6 +103,12 @@ class PasswordController extends Controller
             return back()->withErrors(['email' => __('That password reset link is invalid or expired.')]);
         }
 
-        return redirect()->route('login')->with('status', __('Your password has been reset. You can now sign in.'));
+        if (! $resetUser instanceof User) {
+            throw new RuntimeException('Password reset succeeded without returning the reset user.');
+        }
+
+        $delivery->sendPasswordChanged($resetUser);
+
+        return redirect()->route('login')->with('status', __('Your password was successfully changed. A confirmation email has been sent.'));
     }
 }
