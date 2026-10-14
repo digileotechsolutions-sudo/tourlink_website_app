@@ -127,9 +127,14 @@ Route::middleware(['guest', PreventAuthPageCaching::class])->group(function (): 
     Route::post('/auth/google/complete', [GoogleAuthController::class, 'complete'])->middleware([RequireTermsAcceptance::class, 'throttle:auth-register']);
     Route::get('/forgot-password', [PasswordController::class, 'requestForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordController::class, 'sendResetLink'])->middleware('throttle:password-reset')->name('password.email');
-    Route::get('/reset-password/{token}', [PasswordController::class, 'resetForm'])->name('password.reset');
-    Route::post('/reset-password', [PasswordController::class, 'reset'])->middleware('throttle:password-reset')->name('password.update');
 });
+
+Route::get('/reset-password/{token}', [PasswordController::class, 'resetForm'])
+    ->middleware(PreventAuthPageCaching::class)
+    ->name('password.reset');
+Route::post('/reset-password', [PasswordController::class, 'reset'])
+    ->middleware([PreventAuthPageCaching::class, 'throttle:password-reset'])
+    ->name('password.update');
 
 Route::get('/verify/{user}', [VerificationController::class, 'show'])->middleware(PreventAuthPageCaching::class)->name('verification.notice');
 Route::post('/verify', [VerificationController::class, 'verify'])->middleware([PreventAuthPageCaching::class, 'throttle:auth-otp-verify'])->name('verification.verify');

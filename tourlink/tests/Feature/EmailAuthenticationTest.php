@@ -8,6 +8,7 @@ use App\Mail\VerificationCodeMail;
 use App\Models\OtpChallenge;
 use App\Models\User;
 use App\OtpChannel;
+use App\Role;
 use App\Services\Verification\OtpService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -153,6 +154,43 @@ class EmailAuthenticationTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('status', 'If that email is registered, password reset instructions have been sent.');
         Mail::assertNothingOutgoing();
+    }
+
+    public function test_emailed_password_reset_link_opens_form_and_completes_password_reset(): void
+    {
+        $user = User::factory()->create(['email' => 'reset-link@example.com']);
+        $admin = User::factory()->create(['role' => Role::Admin]);
+        $apiToken = $user->createToken('before-email-password-reset');
+
+        $this->post(route('password.email'), ['email' => $user->email])
+            ->assertRedirect()
+            ->assertSessionHas('status');
+
+        Mail::assertSent(PasswordResetMail::class, function (PasswordResetMail $mail) use ($user, $admin, $apiToken): bool {
+            $path = (string) parse_url($mail->resetUrl, PHP_URL_PATH);
+            $query = [];
+            parse_str((string) parse_url($mail->resetUrl, PHP_URL_QUERY), $query);
+            $token = basename($path);
+
+            $this->assertSame($user->email, $query['email'] ?? null);
+            $this->actingAs($admin)
+                ->get($mail->resetUrl)
+                ->assertOk()
+                ->assertSee('name="token" value="'.$token.'"', false)
+                ->assertSee('name="email"');
+
+            $this->post(route('password.update'), [
+                'token' => $token,
+                'email' => $query['email'],
+                'password' => 'Jungle@Trail29',
+                'password_confirmation' => 'Jungle@Trail29',
+            ])->assertRedirect(route('login'));
+
+            $this->assertTrue(Hash::check('Jungle@Trail29', $user->fresh()->password));
+            $this->assertDatabaseMissing('personal_access_tokens', ['id' => $apiToken->accessToken->id]);
+
+            return $mail->hasTo($user->email);
+        });
     }
 
     public function test_authentication_forms_are_not_cached(): void
