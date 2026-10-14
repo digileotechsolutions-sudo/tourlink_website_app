@@ -1580,7 +1580,7 @@ p { font-weight: 400; }
 .home-search-row button { display: grid; width: 48px; min-height: 48px; place-items: center; flex: none; border-radius: 12px; }
 .home-search-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .home-native-visual { position: relative; min-width: 0; min-height: 440px; margin: 0; overflow: hidden; border: 1px solid #E5E7EB; border-radius: 28px; background: #E5F1F8; box-shadow: var(--shadow-lg); }
-.home-native-visual > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.home-native-visual > img, .home-native-visual > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .home-native-visual::after { position: absolute; inset: 28% 0 0; background: linear-gradient(180deg, transparent 0%, rgb(15 23 42 / 68%) 100%); content: ''; pointer-events: none; }
 .home-native-visual figcaption { position: absolute; inset: auto 22px 22px; z-index: 1; display: grid; justify-items: start; gap: 8px; color: #fff; }
 .home-native-visual__badge { display: inline-flex; min-height: 30px; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid rgb(255 255 255 / 35%); border-radius: 999px; background: rgb(17 24 39 / 25%); color: #fff; font-size: 10px; font-weight: 600; backdrop-filter: blur(8px); }
@@ -1636,7 +1636,8 @@ p { font-weight: 400; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .home-native-visual img { transition: none; }
+    .home-native-visual > video { display: none; }
+    .home-native-visual { background: #E5F1F8 url('/images/safari-roadtrip-people.jpg') center / cover no-repeat; }
 }
 
 .home-destination-intro { max-width: 520px; margin: 9px 0 0; color: #64748B; font-size: 14px; line-height: 1.6; }
