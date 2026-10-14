@@ -2110,8 +2110,8 @@ p { font-weight: 400; }
 
 .about-redesign { overflow: hidden; color: #221B34; background: #fff; }
 .about-redesign-hero { position: relative; padding: 38px 0 58px; background: linear-gradient(180deg, #F8F7FC 0%, #fff 100%); }
-.about-redesign-hero::before { position: absolute; top: -190px; right: -150px; width: 480px; height: 480px; border: 1px solid rgb(25 12 110 / 6%); border-radius: 50%; content: ''; pointer-events: none; }
-.about-redesign-hero__grid { position: relative; display: grid; align-items: center; gap: 34px; }
+.about-redesign-hero::before { position: absolute; inset: 0; background: url('/images/transport-pattern.svg') repeat; background-size: 360px 300px; content: ''; opacity: .13; pointer-events: none; animation: about-vector-drift 12s ease-in-out infinite alternate; }
+.about-redesign-hero__grid { position: relative; z-index: 1; display: grid; align-items: center; gap: 34px; }
 .about-redesign-hero__copy { max-width: 650px; }
 .about-redesign-back { display: inline-flex; align-items: center; gap: 7px; color: #6E6680; font-size: 11px; font-weight: 700; }
 .about-redesign-back:hover { color: #190C6E; }
@@ -2210,6 +2210,11 @@ p { font-weight: 400; }
     .about-redesign-button { min-height: 45px; padding-inline: 14px; }
     .about-redesign-contact { padding: 21px; }
 }
+@keyframes about-vector-drift {
+    from { background-position: 0 0; }
+    to { background-position: 72px 46px; }
+}
 @media (prefers-reduced-motion: reduce) {
     .about-redesign-button, .about-redesign-service-card { transition: none; }
+    .about-redesign-hero::before { animation: none; background-position: center; }
 }
