@@ -19,6 +19,12 @@
                 <span class="site-header__tagline">{{ __('Trips · Vehicles · Together') }}</span>
             </span>
         </a>
+        <a class="auth-back-link" href="{{ route('home') }}">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"></path>
+            </svg>
+            <span>{{ __('Back to website') }}</span>
+        </a>
         <div class="auth-language-switcher"><x-language-switcher /></div>
     </header>
     <main class="login-page">

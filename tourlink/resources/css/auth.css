@@ -850,6 +850,39 @@
     letter-spacing: .17em;
 }
 
+.auth-page .auth-back-link {
+    display: inline-flex;
+    min-height: 40px;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 13px;
+    border: 1px solid #ded9e8;
+    border-radius: 12px;
+    color: #34284a;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color .18s ease, border-color .18s ease;
+}
+
+.auth-page .auth-back-link:hover {
+    border-color: #b9aacd;
+    background: #f0ebf7;
+}
+
+.auth-page .auth-back-link svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+}
+
+html[dir="rtl"] .auth-page .auth-back-link svg {
+    transform: rotate(180deg);
+}
+
 .auth-page .auth-language-switcher {
     position: static;
     flex: none;
@@ -893,6 +926,18 @@
         font-size: 14px;
     }
 
+    .auth-page .auth-back-link {
+        min-height: 38px;
+        gap: 4px;
+        padding: 0 7px;
+        font-size: 10px;
+    }
+
+    .auth-page .auth-back-link svg {
+        width: 14px;
+        height: 14px;
+    }
+
     .auth-page .auth-topbar .site-header__tagline {
         display: none;
     }
@@ -914,7 +959,13 @@
 }
 
 @media (max-width: 360px) {
+    .auth-page .auth-topbar .site-header__brand-name {
+        max-width: 96px;
+        font-size: 12px;
+        text-overflow: ellipsis;
+    }
+
     .auth-page .auth-topbar .language-switcher select {
-        width: 82px;
+        width: 76px;
     }
 }
