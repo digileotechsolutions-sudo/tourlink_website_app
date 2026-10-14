@@ -13,9 +13,9 @@
     @if ($errors->any())
         <div class="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-950" role="alert">
             <p class="font-bold">We couldn't submit the verification documents.</p>
-            <?php foreach ($errors->all() as $error): ?>
+            @foreach ($errors->all() as $error)
                 <p class="mt-1">{{ $error }}</p>
-            <?php endforeach; ?>
+            @endforeach
         </div>
     @endif
 
@@ -49,22 +49,22 @@
         </div>
         @if ($identityDocuments !== [])
             <ul class="grid gap-2 sm:grid-cols-2">
-                <?php foreach (($identityVerificationRequest->documents ?? []) as $document): ?>
+                @foreach (($identityVerificationRequest->documents ?? []) as $document)
                     <li class="rounded border border-amber-200 bg-white px-3 py-2 text-sm"><strong>{{ $document['label'] }}</strong><span class="mt-1 block truncate text-xs text-slate-600">{{ $document['original_name'] }}</span></li>
-                <?php endforeach; ?>
+                @endforeach
             </ul>
         @endif
         <form method="POST" action="{{ route('vehicle-owner.verification.identity.store') }}" enctype="multipart/form-data" class="grid gap-4">
             @csrf
             <div class="grid gap-4 sm:grid-cols-2">
-                <?php foreach ([['owner_id', 'National ID or passport', true], ['driving_license', 'Driving licence, if you or your assigned driver will drive', false]] as [$key, $label, $required]): ?>
+                @foreach ([['owner_id', 'National ID or passport', true], ['driving_license', 'Driving licence, if you or your assigned driver will drive', false]] as [$key, $label, $required])
                     @php($hasDocument = in_array($key, $identityDocuments, true))
                     <label class="grid content-start gap-2 rounded border border-amber-200 bg-white p-3 text-sm font-bold text-slate-800" for="owner-document-{{ $key }}">
                         <span>{{ $label }}@if ($required)<span class="text-red-700" aria-hidden="true"> *</span>@endif</span>
                         <span class="text-xs font-normal leading-5 text-slate-600">PDF, JPG, JPEG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF, ICO. Maximum 10 MB.@if ($hasDocument) Leave empty to keep the current file.@endif</span>
                         <input id="owner-document-{{ $key }}" type="file" name="documents[{{ $key }}]" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.bmp,.tiff,.tif,.ico,application/pdf,image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon" class="min-h-11 w-full text-xs file:mr-2 file:min-h-10 file:rounded file:border-0 file:bg-amber-800 file:px-3 file:font-bold file:text-white" @if ($required && ! $hasDocument) required @endif>
                     </label>
-                <?php endforeach; ?>
+                @endforeach
             </div>
             <button type="submit" class="min-h-11 w-full rounded bg-amber-800 px-5 py-3 text-sm font-bold text-white hover:bg-amber-900 sm:w-fit">Submit owner identity</button>
         </form>
