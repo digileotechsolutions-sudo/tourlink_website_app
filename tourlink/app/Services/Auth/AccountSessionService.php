@@ -31,6 +31,18 @@ class AccountSessionService
         return $claimed;
     }
 
+    public function registerUntrackedWebSession(User $user, Request $request): bool
+    {
+        $fingerprint = $this->fingerprint('web', $request->session()->getId());
+        $claimed = $this->claim($user, $fingerprint, 'web', $request, null, null, false);
+
+        if ($claimed) {
+            $request->session()->put('_account_session_fingerprint', $fingerprint);
+        }
+
+        return $claimed;
+    }
+
     public function registerToken(User $user, PersonalAccessToken $token, Request $request): bool
     {
         return $this->claim(
@@ -138,8 +150,9 @@ class AccountSessionService
         Request $request,
         ?int $tokenId,
         ?string $previousFingerprint = null,
+        bool $replaceActiveSession = true,
     ): bool {
-        return DB::transaction(function () use ($user, $fingerprint, $type, $request, $tokenId, $previousFingerprint): bool {
+        return DB::transaction(function () use ($user, $fingerprint, $type, $request, $tokenId, $previousFingerprint, $replaceActiveSession): bool {
             $lockedUser = User::query()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
             $session = AccountSession::query()->where('user_id', $user->getKey())->lockForUpdate()->first();
             $now = now();
@@ -147,6 +160,10 @@ class AccountSessionService
             if ($session && $session->expires_at->isFuture()) {
                 $isSameClient = hash_equals($session->session_fingerprint, $fingerprint)
                     || ($previousFingerprint !== null && hash_equals($session->session_fingerprint, $previousFingerprint));
+
+                if (! $replaceActiveSession && ! $isSameClient) {
+                    return false;
+                }
 
                 if (! $isSameClient && $session->session_type === 'web') {
                     $rememberToken = Str::random(60);

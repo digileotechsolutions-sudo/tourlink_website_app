@@ -31,7 +31,7 @@ class EnforceSingleAccountSession
 
         if (! $valid && ! ($token instanceof PersonalAccessToken) && $request->hasSession()
             && $request->session()->get('_account_session_fingerprint') === null) {
-            $valid = $this->sessions->registerWebLogin($user, $request, $request->session()->getId());
+            $valid = $this->sessions->registerUntrackedWebSession($user, $request);
         }
 
         if ($valid) {

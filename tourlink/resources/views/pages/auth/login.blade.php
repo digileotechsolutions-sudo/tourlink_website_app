@@ -10,7 +10,6 @@
         <header class="auth-login-header">
             <p class="auth-login-eyebrow">{{ __('Havenedge Tourlink account') }}</p>
             <h1 id="login-heading">{{ __('Welcome Back') }}</h1>
-            <p>{{ __('Sign in to continue to your Tourlink account.') }}</p>
         </header>
         @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
         @error('google')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror

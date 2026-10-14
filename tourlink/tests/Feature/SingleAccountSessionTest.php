@@ -36,6 +36,8 @@ class SingleAccountSessionTest extends TestCase
         $this->assertSame('web', $session->session_type);
         $this->assertSame(hash('sha256', 'web:'.session()->getId()), $session->session_fingerprint);
         $this->assertGreaterThan(now()->timestamp, $session->expires_at->timestamp);
+
+        $this->get(route('dashboard'))->assertOk();
     }
 
     public function test_web_session_validation_uses_its_registered_fingerprint_after_session_id_rotation(): void
@@ -57,6 +59,29 @@ class SingleAccountSessionTest extends TestCase
         $request->setLaravelSession($session);
 
         $this->assertTrue(app(AccountSessionService::class)->validateWebSession($user, $request));
+    }
+
+    public function test_untracked_web_session_cannot_replace_another_active_session(): void
+    {
+        $user = User::factory()->create();
+        $activeFingerprint = hash('sha256', 'web:active-session-id');
+        AccountSession::query()->create([
+            'user_id' => $user->id,
+            'session_fingerprint' => $activeFingerprint,
+            'session_type' => 'web',
+            'last_activity_at' => now(),
+            'expires_at' => now()->addMinutes(15),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('email');
+
+        $this->assertSame(
+            $activeFingerprint,
+            AccountSession::query()->where('user_id', $user->id)->value('session_fingerprint'),
+        );
     }
 
     public function test_session_storage_failure_returns_a_login_error_instead_of_leaving_login_pending(): void
