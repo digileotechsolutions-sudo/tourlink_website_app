@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -206,6 +207,8 @@ class EmailAuthenticationTest extends TestCase
 
     public function test_api_logout_revokes_the_current_token_without_the_session_registry(): void
     {
+        $this->assertSame('string', Schema::getColumnType('personal_access_tokens', 'tokenable_id'));
+
         $user = User::factory()->create();
         $token = $user->createToken('logout-test');
 
