@@ -12,7 +12,6 @@ use App\OtpChannel;
 use App\Role;
 use App\Rules\PasswordRules;
 use App\Services\Referral\ReferralService;
-use App\Services\Auth\AccountSessionService;
 use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpService;
 use App\Services\Verification\PhoneNumberNormalizer;
@@ -28,6 +27,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use InvalidArgumentException;
+use Laravel\Sanctum\PersonalAccessToken;
 use RuntimeException;
 use Throwable;
 
@@ -60,10 +60,9 @@ class AuthController extends Controller
         return view('pages.auth.register', compact('initialRole', 'referrer', 'verificationAvailable', 'googleClientId', 'googleNonce', 'continueToSupport'));
     }
 
-    public function login(Request $request, AccountVerificationService $verification, AccountSessionService $sessions): mixed
+    public function login(Request $request, AccountVerificationService $verification): mixed
     {
         $this->rememberSupportDestination($request);
-        $previousSessionId = $request->session()->getId();
         $credentials = $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'max:255'],
@@ -118,20 +117,6 @@ class AuthController extends Controller
             return redirect()->route('login', $continueToSupport ? ['continue' => 'support'] : [])
                 ->withErrors(['email' => $message])
                 ->onlyInput('email');
-        }
-
-        try {
-            $sessions->registerWebLogin($user, $request, $previousSessionId);
-        } catch (QueryException $exception) {
-            Log::error('Unable to register the authenticated account session.', [
-                'user_id' => $user->id,
-                'exception' => $exception::class,
-            ]);
-            $sessions->discardUnregisteredWebLogin($request);
-
-            return back()->withErrors([
-                'email' => 'Sign-in is temporarily unavailable because session security could not be initialized. Please contact support.',
-            ])->onlyInput('email');
         }
 
         $dashboardUrl = $this->dashboardUrl($user);
@@ -234,11 +219,11 @@ class AuthController extends Controller
         return $redirect;
     }
 
-    public function logout(Request $request, AccountSessionService $sessions): mixed
+    public function logout(Request $request): mixed
     {
-        $user = $request->user();
-        if ($user instanceof User) {
-            $sessions->revokeCurrent($user, $request);
+        $token = $request->user()?->currentAccessToken();
+        if ($token instanceof PersonalAccessToken) {
+            $token->delete();
         }
 
         Auth::guard('web')->logout();

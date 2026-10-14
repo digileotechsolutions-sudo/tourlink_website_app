@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Http\Middleware\RequireTermsAcceptance;
 use App\Mail\PasswordResetMail;
 use App\Mail\VerificationCodeMail;
-use App\Models\AccountSession;
 use App\Models\OtpChallenge;
 use App\Models\User;
 use App\OtpChannel;
@@ -192,20 +191,36 @@ class EmailAuthenticationTest extends TestCase
             ->assertHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
 
+    public function test_password_login_works_without_the_app_session_registry(): void
+    {
+        $user = User::factory()->create(['password' => Hash::make('password')]);
+
+        $this->post(route('login'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('account_sessions'));
+        $this->get(route('dashboard'))->assertOk();
+    }
+
+    public function test_api_logout_revokes_the_current_token_without_the_session_registry(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('logout-test');
+
+        $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
+            ->postJson('/api/logout')
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('personal_access_tokens', ['id' => $token->accessToken->id]);
+        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('account_sessions'));
+    }
+
     public function test_valid_password_reset_hashes_password_invalidates_token_and_allows_login(): void
     {
         $user = User::factory()->create(['email' => 'reset@example.com']);
-        $sessionId = 'password-reset-active-session';
-        $sessionHandler = app('session')->driver()->getHandler();
-        $sessionHandler->write($sessionId, 'session-data');
-        AccountSession::query()->create([
-            'user_id' => $user->id,
-            'session_fingerprint' => hash('sha256', 'web:'.$sessionId),
-            'session_type' => 'web',
-            'session_id' => $sessionId,
-            'last_activity_at' => now(),
-            'expires_at' => now()->addMinutes(15),
-        ]);
+        $apiToken = $user->createToken('before-password-reset');
         $user->forceFill(['remember_token' => 'previous-remember-token'])->save();
         $token = Password::createToken($user);
         $newPassword = 'Jungle@Trail29';
@@ -219,8 +234,7 @@ class EmailAuthenticationTest extends TestCase
 
         $this->assertTrue(Hash::check($newPassword, $user->fresh()->password));
         $this->assertNotSame('previous-remember-token', $user->fresh()->remember_token);
-        $this->assertDatabaseMissing('account_sessions', ['user_id' => $user->id]);
-        $this->assertSame('', $sessionHandler->read($sessionId));
+        $this->assertDatabaseMissing('personal_access_tokens', ['id' => $apiToken->accessToken->id]);
         $this->assertDatabaseMissing('password_reset_tokens', ['email' => $user->email]);
 
         $this->post(route('password.update'), [

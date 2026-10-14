@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use App\AccountApprovalStatus;
 use App\AccountStatus;
-use App\Services\Auth\AccountSessionService;
 use App\Services\Verification\AccountVerificationService;
 use Closure;
 use Illuminate\Http\Request;
@@ -15,7 +14,6 @@ class EnsureAccountAccess
 {
     public function __construct(
         private readonly AccountVerificationService $verification,
-        private readonly AccountSessionService $sessions,
     ) {}
 
     /**
@@ -51,7 +49,7 @@ class EnsureAccountAccess
 
         if ($user->account_status !== AccountStatus::Active
             || $user->approval_status !== AccountApprovalStatus::Approved) {
-            $this->sessions->revokeCurrent($user, $request);
+            $user->tokens()->delete();
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

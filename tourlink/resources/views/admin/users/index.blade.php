@@ -11,7 +11,6 @@
                 <p class="mt-2 text-sm text-slate-600">Review traveler, operator, and vehicle owner profiles and account access. New accounts must verify their email with an OTP before approval.</p>
             </div>
             <div class="flex flex-wrap items-center gap-4">
-                <a href="{{ route('admin.sessions.index') }}" class="inline-flex min-h-11 items-center rounded border border-slate-300 px-4 text-sm font-bold text-slate-800 hover:bg-slate-50">Manage active sessions</a>
                 <span class="text-sm text-slate-500">{{ number_format($users->total()) }} accounts</span>
             </div>
         </header>

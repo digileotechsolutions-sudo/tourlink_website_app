@@ -3,17 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use RuntimeException;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('account_sessions')) {
-            throw new RuntimeException('Cannot repair account_sessions.session_id because account_sessions does not exist.');
-        }
-
-        if (Schema::hasColumn('account_sessions', 'session_id')) {
+        if (! Schema::hasTable('account_sessions') || Schema::hasColumn('account_sessions', 'session_id')) {
             return;
         }
 

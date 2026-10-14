@@ -12,7 +12,6 @@ use App\OtpChannel;
 use App\Role;
 use App\Services\Auth\GoogleIdTokenVerifier;
 use App\Services\Referral\ReferralService;
-use App\Services\Auth\AccountSessionService;
 use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpService;
 use App\Services\Verification\PhoneNumberNormalizer;
@@ -31,7 +30,7 @@ use Throwable;
 
 class GoogleAuthController extends Controller
 {
-    public function authenticate(Request $request, GoogleIdTokenVerifier $verifier, AccountVerificationService $verification, AccountSessionService $sessions): mixed
+    public function authenticate(Request $request, GoogleIdTokenVerifier $verifier, AccountVerificationService $verification): mixed
     {
         $returnRoute = $request->input('mode') === 'register' ? 'register' : 'login';
         $validator = Validator::make($request->only(['credential', 'mode', 'role']), [
@@ -117,7 +116,7 @@ class GoogleAuthController extends Controller
                 return redirect()->route('google.complete');
             }
 
-            return $this->finishSignIn($request, $user, $verification, $sessions);
+            return $this->finishSignIn($request, $user, $verification);
         }
 
         $role = Role::tryFrom((string) ($input['role'] ?? $nonceEntry['role'] ?? ''));
@@ -301,7 +300,7 @@ class GoogleAuthController extends Controller
         });
     }
 
-    private function finishSignIn(Request $request, User $user, AccountVerificationService $verification, AccountSessionService $sessions): mixed
+    private function finishSignIn(Request $request, User $user, AccountVerificationService $verification): mixed
     {
         if (! $verification->isFullyVerified($user)) {
             return redirect()->route('verification.notice', ['user' => $user->id])
@@ -318,7 +317,9 @@ class GoogleAuthController extends Controller
 
         $previousSessionId = $request->session()->getId();
         Auth::login($user);
-        $sessions->registerWebLogin($user, $request, $previousSessionId);
+        if ($request->session()->getId() === $previousSessionId) {
+            $request->session()->regenerate();
+        }
 
         $dashboardUrl = match ($user->role) {
             Role::Admin => Route::has('admin.dashboard') ? route('admin.dashboard') : route('home'),

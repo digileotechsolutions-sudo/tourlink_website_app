@@ -243,8 +243,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::put('/catalog/categories/{category}', [AdminCatalogController::class, 'updateCategory'])->name('catalog.categories.update');
     Route::delete('/catalog/categories/{category}', [AdminCatalogController::class, 'deleteCategory'])->name('catalog.categories.delete');
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
-    Route::get('/sessions', [AdminUserController::class, 'sessions'])->name('sessions.index');
-    Route::delete('/sessions/{user}', [AdminUserController::class, 'terminateSession'])->name('sessions.destroy');
     Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');

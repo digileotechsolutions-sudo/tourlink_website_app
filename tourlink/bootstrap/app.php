@@ -2,7 +2,6 @@
 
 use App\Http\Middleware\EnsureAccountAccess;
 use App\Http\Middleware\EnsureAdmin;
-use App\Http\Middleware\EnforceSingleAccountSession;
 use App\Http\Middleware\ApplyLocale;
 use App\Http\Middleware\MarkPublicPwaPages;
 use Illuminate\Foundation\Application;
@@ -25,8 +24,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'pwa.public' => MarkPublicPwaPages::class,
         ]);
         $middleware->appendToGroup('web', ApplyLocale::class);
-        $middleware->appendToGroup('web', EnforceSingleAccountSession::class);
-        $middleware->appendToGroup('api', EnforceSingleAccountSession::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash([

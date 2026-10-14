@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Rules\PasswordRules;
-use App\Services\Auth\AccountSessionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -37,6 +36,7 @@ class PasswordController extends Controller
             'password' => $input['password'],
             'remember_token' => Str::random(60),
         ])->save();
+        $request->user()->tokens()->delete();
 
         return back()->with('status', __('Your password has been changed.'));
     }
@@ -58,7 +58,7 @@ class PasswordController extends Controller
         ]);
     }
 
-    public function reset(Request $request, AccountSessionService $sessions): mixed
+    public function reset(Request $request): mixed
     {
         $email = $request->input('email');
         $email = is_string($email) && strlen($email) <= 255 ? Str::lower(trim($email)) : '';
@@ -79,13 +79,13 @@ class PasswordController extends Controller
                 'password_confirmation' => $request->input('password_confirmation'),
                 'token' => $input['token'],
             ],
-            function (User $user, string $password) use ($sessions): void {
+            function (User $user, string $password): void {
                 $user->forceFill([
                     'password' => $password,
                     'remember_token' => Str::random(60),
                 ])->save();
 
-                $sessions->revokeUser($user);
+                $user->tokens()->delete();
             },
         );
 
