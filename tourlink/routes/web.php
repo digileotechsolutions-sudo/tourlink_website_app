@@ -45,6 +45,15 @@ use Illuminate\Support\Facades\Storage;
 
 Route::get('/storage/{path}', [PublicUploadController::class, 'show'])->where('path', '.*')->name('public.uploads.storage');
 Route::get('/media/{path}', [PublicUploadController::class, 'show'])->where('path', '.*')->name('public.uploads.show');
+Route::get('/videos/home-hero.mp4', function () {
+    $videoPath = public_path('videos/home-hero.mp4');
+    abort_unless(is_file($videoPath), 404);
+
+    return response()->file($videoPath, [
+        'Content-Type' => 'video/mp4',
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->name('public.home-hero-video');
 
 Route::post('/language', function (Request $request) {
     $data = $request->validate([
