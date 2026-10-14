@@ -55,7 +55,9 @@ class TravelerController extends Controller
         }
         $request->user()->travelerProfile()->updateOrCreate([], $data);
 
-        return back()->with('status', 'Profile updated.');
+        return back()->with('status', filled($data['bio'] ?? null)
+            ? 'Profile completed successfully.'
+            : 'Profile updated.');
     }
 
     public function bookings(Request $request, PaymentService $payments): View

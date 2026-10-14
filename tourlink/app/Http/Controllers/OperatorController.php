@@ -235,7 +235,9 @@ class OperatorController extends Controller
         }
         $request->user()->operatorProfile()->updateOrCreate([], $data);
 
-        return back()->with('status', 'Company profile updated.');
+        return back()->with('status', filled($data['description'] ?? null)
+            ? 'Profile completed successfully.'
+            : 'Company profile updated.');
     }
 
     public function requestVerification(Request $request): RedirectResponse

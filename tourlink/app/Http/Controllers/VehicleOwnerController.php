@@ -196,7 +196,9 @@ class VehicleOwnerController extends Controller
 
         $request->user()->vehicleOwnerProfile()->updateOrCreate([], $data);
 
-        return back()->with('status', 'Vehicle-owner profile updated.');
+        return back()->with('status', filled($data['description'] ?? null)
+            ? 'Profile completed successfully.'
+            : 'Vehicle-owner profile updated.');
     }
 
     public function requestIdentityVerification(Request $request): RedirectResponse
