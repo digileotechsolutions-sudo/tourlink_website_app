@@ -225,6 +225,8 @@ document.querySelectorAll('[data-provider-role-fields]').forEach((form) => {
     const roleSelect = form.querySelector('select[name="role"]');
     const businessFields = form.querySelector('[data-provider-business-fields]');
     const businessName = businessFields?.querySelector('[name="business_name"]');
+    const ownerLogoField = businessFields?.querySelector('[data-owner-logo-field]');
+    const ownerLogoInput = ownerLogoField?.querySelector('input[type="file"]');
 
     if (!roleSelect || !businessFields || !businessName) {
         return;
@@ -232,8 +234,13 @@ document.querySelectorAll('[data-provider-role-fields]').forEach((form) => {
 
     const updateBusinessFields = () => {
         const isProvider = ['OPERATOR', 'VEHICLE_OWNER'].includes(roleSelect.value);
+        const isVehicleOwner = roleSelect.value === 'VEHICLE_OWNER';
         businessFields.hidden = !isProvider;
         businessName.required = isProvider;
+        if (ownerLogoField && ownerLogoInput) {
+            ownerLogoField.hidden = !isVehicleOwner;
+            ownerLogoInput.disabled = !isVehicleOwner;
+        }
     };
 
     updateBusinessFields();

@@ -11,6 +11,7 @@ use App\Models\VehicleOwnerProfile;
 use App\OtpChannel;
 use App\Role;
 use App\Rules\PasswordRules;
+use App\Services\PublicImageStorage;
 use App\Services\Referral\ReferralService;
 use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpService;
@@ -136,6 +137,7 @@ class AuthController extends Controller
         OtpService $otpService,
         AccountVerificationService $verification,
         ReferralService $referrals,
+        PublicImageStorage $publicImages,
     ): mixed {
         $this->rememberSupportDestination($request);
         Log::info('Registration pipeline: request received.');
@@ -146,6 +148,7 @@ class AuthController extends Controller
             'phone' => ['required', 'string', 'min:8', 'max:30'],
             'business_name' => ['nullable', 'string', 'min:2', 'max:255', Rule::requiredIf(in_array($request->input('role'), [Role::Operator->value, Role::VehicleOwner->value], true))],
             'business_description' => ['nullable', 'string', 'max:10000'],
+            'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:5120'],
             'terms_accepted' => ['accepted'],
             'password' => [...PasswordRules::withAccountContext(PasswordRules::rules(), $request), 'confirmed'],
             'role' => ['required', Rule::in([Role::Traveler->value, Role::Operator->value, Role::VehicleOwner->value])],
@@ -177,6 +180,10 @@ class AuthController extends Controller
         if ($existingAccount) {
             return back()->withInput($request->except(['password', 'password_confirmation']))
                 ->withErrors(['email' => 'An account with that email or phone number already exists.']);
+        }
+
+        if (Role::from($input['role']) === Role::VehicleOwner && $request->hasFile('logo')) {
+            $input['logo_url'] = $publicImages->store($request->file('logo'), 'operator-logos', 'logo');
         }
 
         $user = $this->createAccountWithReferralCode($input, $email, $phone, $referrals);
@@ -311,6 +318,7 @@ class AuthController extends Controller
                         Role::VehicleOwner => $user->vehicleOwnerProfile()->save(new VehicleOwnerProfile([
                             'business_name' => $input['business_name'] ?? $input['name'],
                             'description' => $input['business_description'] ?? null,
+                            'logo_url' => $input['logo_url'] ?? null,
                         ])),
                         Role::Admin => null,
                     };

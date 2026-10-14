@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class VehicleOwnerProfile extends TourLinkModel
 {
-    protected $fillable = ['user_id', 'business_name', 'description'];
+    protected $fillable = ['user_id', 'business_name', 'description', 'logo_url'];
 
     public function user(): BelongsTo
     {

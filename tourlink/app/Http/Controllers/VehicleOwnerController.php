@@ -184,7 +184,16 @@ class VehicleOwnerController extends Controller
 
     public function updateProfile(Request $request): RedirectResponse
     {
-        $data = $request->validate(['business_name' => ['required', 'string', 'max:255'], 'description' => ['nullable', 'string', 'max:10000']]);
+        $data = $request->validate([
+            'business_name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:10000'],
+            'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif,avif,heic,bmp,tiff,ico', 'max:5120'],
+        ]);
+        unset($data['logo']);
+        if ($request->hasFile('logo')) {
+            $data['logo_url'] = app(PublicImageStorage::class)->store($request->file('logo'), 'operator-logos', 'logo');
+        }
+
         $request->user()->vehicleOwnerProfile()->updateOrCreate([], $data);
 
         return back()->with('status', 'Vehicle-owner profile updated.');

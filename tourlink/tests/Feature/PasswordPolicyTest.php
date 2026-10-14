@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\OtpChannel;
 use App\Http\Middleware\RequireTermsAcceptance;
+use App\Services\PublicImageStorage;
 use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpDeliveryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
@@ -202,6 +204,37 @@ class PasswordPolicyTest extends TestCase
             $this->assertSame($provider['name'], $profile->{$nameColumn});
             $this->assertSame('Locally operated journeys and transport.', $profile->description);
         }
+    }
+
+    public function test_vehicle_owner_can_add_a_company_logo_during_registration(): void
+    {
+        $image = UploadedFile::fake()->image('company-logo.png');
+        $storage = \Mockery::mock(PublicImageStorage::class);
+        $storage->shouldReceive('store')
+            ->once()
+            ->with($image, 'operator-logos', 'logo')
+            ->andReturn('/media/operator-logos/company-logo.png');
+        $this->instance(PublicImageStorage::class, $storage);
+
+        $this->post(route('register'), [
+            'name' => 'Account Owner',
+            'email' => 'vehicle-owner-logo@example.com',
+            'phone' => '0712345680',
+            'terms_accepted' => '1',
+            'password' => 'Jungle@Trail29',
+            'password_confirmation' => 'Jungle@Trail29',
+            'role' => 'VEHICLE_OWNER',
+            'business_name' => 'Savanna Car Hire',
+            'logo' => $image,
+        ])->assertRedirect();
+
+        $owner = User::query()->where('email', 'vehicle-owner-logo@example.com')->firstOrFail();
+
+        $this->assertDatabaseHas('vehicle_owner_profiles', [
+            'user_id' => $owner->id,
+            'business_name' => 'Savanna Car Hire',
+            'logo_url' => '/media/operator-logos/company-logo.png',
+        ]);
     }
 
     public function test_phone_verification_is_not_required_or_available(): void

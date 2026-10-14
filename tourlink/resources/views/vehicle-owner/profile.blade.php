@@ -19,11 +19,21 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('vehicle-owner.profile.update') }}" class="grid gap-4 rounded border border-slate-200 bg-white p-6">
+    <form method="POST" action="{{ route('vehicle-owner.profile.update') }}" enctype="multipart/form-data" class="grid gap-4 rounded border border-slate-200 bg-white p-6">
         @csrf
         @method('PUT')
         <h2 class="text-lg font-black">Owner information</h2>
         <label class="grid gap-2 text-sm font-semibold">Business name<input required name="business_name" type="text" autocomplete="organization" autocapitalize="words" value="{{ old('business_name', $profile->business_name) }}" class="min-h-12 w-full rounded-xl border border-slate-300 px-3"></label>
+        @if ($profile->logo_url)
+            <div class="flex items-center gap-3">
+                <img src="{{ $profile->logo_url }}" alt="{{ $profile->business_name }} logo" class="size-14 rounded-xl border border-slate-200 bg-white object-contain p-1">
+                <span class="text-sm font-semibold text-slate-700">Current company logo</span>
+            </div>
+        @endif
+        <label class="grid gap-2 text-sm font-semibold">Company logo
+            <span class="text-xs font-normal text-slate-600">Upload a square or landscape company logo. JPG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF or ICO, up to 5 MB. Leave empty to keep the current logo.</span>
+            <input type="file" name="logo" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.bmp,.tiff,.ico,image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon" class="min-h-11 w-full text-sm file:mr-3 file:min-h-10 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:font-bold">
+        </label>
         <label class="grid gap-2 text-sm font-semibold">About your business<textarea name="description" rows="4" class="w-full rounded-xl border border-slate-300 p-3">{{ old('description', $profile->description) }}</textarea></label>
         <button type="submit" class="min-h-12 w-full rounded-xl bg-ink px-6 text-sm font-bold text-white shadow-soft sm:w-fit">Save profile</button>
     </form>

@@ -65,6 +65,7 @@
 .vehicle-detail-specs dd { overflow-wrap: anywhere; margin: 5px 0 0; color: #2A2638; font-size: 13px; font-weight: 800; }
 .vehicle-detail-host { display: flex; align-items: center; gap: 11px; margin-top: 19px; padding-top: 17px; border-top: 1px solid #EEF0F4; }
 .vehicle-detail-host__mark { display: grid; width: 42px; height: 42px; flex: none; place-items: center; border-radius: 14px; color: #fff; background: linear-gradient(145deg, #190C6E, #5C438E); font-size: 15px; font-weight: 850; }
+.vehicle-detail-host__logo { display: block; width: 48px; height: 48px; flex: none; padding: 4px; border: 1px solid #E8E5EF; border-radius: 14px; background: #fff; object-fit: contain; }
 .vehicle-detail-host__copy { display: grid; min-width: 0; gap: 2px; }
 .vehicle-detail-host__copy > span { color: #94A3B8; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .vehicle-detail-host__copy strong { overflow: hidden; color: #272139; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }

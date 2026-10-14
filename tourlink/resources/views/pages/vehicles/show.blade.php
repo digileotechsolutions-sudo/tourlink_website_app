@@ -13,6 +13,8 @@
     $ownerName = $vehicle->owner?->vehicleOwnerProfile?->business_name
         ?: $vehicle->owner?->name
         ?: __('Vehicle owner');
+    $ownerLogo = $vehicle->owner?->vehicleOwnerProfile?->logo_url;
+    $ownerLogo = $isPublicValue($ownerLogo) ? $ownerLogo : null;
     $verification = $vehicle->owner?->verification_level?->value ?? 'BASIC';
     $currency = $vehicle->currency ?: 'KES';
     $charges = collect($vehicle->additional_charges ?? [])->filter(fn ($charge) => is_array($charge)
@@ -133,9 +135,13 @@
                         @endif
                     </dl>
                     <div class="vehicle-detail-host">
-                        <span class="vehicle-detail-host__mark" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($ownerName, 0, 1)) }}</span>
+                        @if($ownerLogo)
+                            <img class="vehicle-detail-host__logo" src="{{ $ownerLogo }}" alt="{{ $ownerName }} logo" width="48" height="48" loading="lazy" decoding="async">
+                        @else
+                            <span class="vehicle-detail-host__mark" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($ownerName, 0, 1)) }}</span>
+                        @endif
                         <span class="vehicle-detail-host__copy">
-                            <span>{{ __('Your vehicle host') }}</span>
+                            <span>{{ __('Listed by') }}</span>
                             <strong>{{ $ownerName }}</strong>
                         </span>
                         <span class="vehicle-detail-verification">{{ $verification === 'TRUSTED' ? __('Trusted host') : __(':level provider', ['level' => ucfirst(strtolower($verification))]) }}</span>

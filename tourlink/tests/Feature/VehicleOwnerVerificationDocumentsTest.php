@@ -6,6 +6,7 @@ use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VerificationRequest;
+use App\Services\PublicImageStorage;
 use App\VerificationStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -34,6 +35,50 @@ class VehicleOwnerVerificationDocumentsTest extends TestCase
             ->assertOk()
             ->assertSee('Owner information')
             ->assertSee('Add a vehicle before submitting its registration details and documents.');
+    }
+
+    public function test_vehicle_owner_can_upload_a_company_logo_to_their_profile(): void
+    {
+        $owner = User::factory()->create(['role' => 'VEHICLE_OWNER']);
+        $image = UploadedFile::fake()->image('company-logo.png');
+
+        $storage = \Mockery::mock(PublicImageStorage::class);
+        $storage->shouldReceive('store')
+            ->once()
+            ->with($image, 'operator-logos', 'logo')
+            ->andReturn('/media/operator-logos/company-logo.png');
+        $this->instance(PublicImageStorage::class, $storage);
+
+        $this->actingAs($owner)
+            ->put(route('vehicle-owner.profile.update'), [
+                'business_name' => 'Savanna Car Hire',
+                'logo' => $image,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('status');
+
+        $this->assertDatabaseHas('vehicle_owner_profiles', [
+            'user_id' => $owner->id,
+            'business_name' => 'Savanna Car Hire',
+            'logo_url' => '/media/operator-logos/company-logo.png',
+        ]);
+    }
+
+    public function test_vehicle_listing_shows_owner_company_logo_and_name(): void
+    {
+        $owner = User::factory()->create(['role' => 'VEHICLE_OWNER']);
+        $owner->vehicleOwnerProfile()->create([
+            'business_name' => 'Savanna Car Hire',
+            'logo_url' => '/media/operator-logos/savanna.png',
+        ]);
+        $vehicle = Vehicle::factory()->create(['owner_id' => $owner->id]);
+
+        $this->get(route('vehicles.show', $vehicle))
+            ->assertOk()
+            ->assertSee('Listed by')
+            ->assertSee('Savanna Car Hire')
+            ->assertSee('src="/media/operator-logos/savanna.png"', false)
+            ->assertSee('alt="Savanna Car Hire logo"', false);
     }
 
     public function test_vehicle_owner_profile_renders_vehicle_without_verification_documents(): void

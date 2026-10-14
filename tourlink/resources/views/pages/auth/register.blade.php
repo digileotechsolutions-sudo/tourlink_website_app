@@ -28,7 +28,7 @@
             </div>
         @endif
 
-        <form id="register-form" method="POST" action="{{ route('register') }}" data-auth-form data-form-draft="register" data-provider-role-fields data-auth-loading-label="{{ __('Creating account...') }}">
+        <form id="register-form" method="POST" action="{{ route('register') }}" enctype="multipart/form-data" data-auth-form data-form-draft="register" data-provider-role-fields data-auth-loading-label="{{ __('Creating account...') }}">
             @csrf
             @if ($continueToSupport)<input type="hidden" name="continue" value="support">@endif
 
@@ -68,6 +68,12 @@
                     <label for="business_name">{{ __('Company/business name') }}</label>
                     <input id="business_name" name="business_name" type="text" autocomplete="organization" autocapitalize="words" data-draft-field value="{{ old('business_name') }}" maxlength="255" @if (old('role', $initialRole) !== 'TRAVELER') required @endif>
                     @error('business_name')<span class="field-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="auth-field" data-owner-logo-field @if (old('role', $initialRole) !== 'VEHICLE_OWNER') hidden @endif>
+                    <label for="logo">{{ __('Company logo') }} <span class="font-normal text-slate-500">({{ __('optional') }})</span></label>
+                    <input id="logo" name="logo" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.bmp,.tiff,.ico,image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/bmp,image/tiff,image/x-icon" @if (old('role', $initialRole) !== 'VEHICLE_OWNER') disabled @endif>
+                    <p class="mt-1 text-xs font-normal text-slate-500">{{ __('Upload your company logo so it appears on your vehicle listings. JPG, PNG, WebP, GIF, AVIF, HEIC, BMP, TIFF or ICO, up to 5 MB.') }}</p>
+                    @error('logo')<span class="field-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="auth-field">
                     <label for="business_description">{{ __('About your business') }} <span class="font-normal text-slate-500">({{ __('optional') }})</span></label>
