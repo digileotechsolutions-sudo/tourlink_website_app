@@ -2107,3 +2107,109 @@ p { font-weight: 400; }
 @media (prefers-reduced-motion: reduce) {
     .trip-detail-booking__form button { transition: none; }
 }
+
+.about-redesign { overflow: hidden; color: #221B34; background: #fff; }
+.about-redesign-hero { position: relative; padding: 38px 0 58px; background: linear-gradient(180deg, #F8F7FC 0%, #fff 100%); }
+.about-redesign-hero::before { position: absolute; top: -190px; right: -150px; width: 480px; height: 480px; border: 1px solid rgb(25 12 110 / 6%); border-radius: 50%; content: ''; pointer-events: none; }
+.about-redesign-hero__grid { position: relative; display: grid; align-items: center; gap: 34px; }
+.about-redesign-hero__copy { max-width: 650px; }
+.about-redesign-back { display: inline-flex; align-items: center; gap: 7px; color: #6E6680; font-size: 11px; font-weight: 700; }
+.about-redesign-back:hover { color: #190C6E; }
+.about-redesign-back svg { width: 16px; height: 16px; }
+.about-redesign-kicker { display: flex; align-items: center; gap: 9px; margin: 25px 0 12px; color: #6C568F; font-size: 10px; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
+.about-redesign-kicker > span { width: 23px; height: 3px; border-radius: 999px; background: #FFD51E; }
+.about-redesign-hero h1 { max-width: 12ch; margin: 0; color: #190C6E; font-size: clamp(38px, 6vw, 68px) !important; font-weight: 850 !important; letter-spacing: -.055em; line-height: 1.04; }
+.about-redesign-hero__intro { max-width: 53ch; margin: 17px 0 0; color: #625C70; font-size: clamp(14px, 1.45vw, 16px); line-height: 1.8; }
+.about-redesign-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 24px; }
+.about-redesign-button { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 17px; padding: 0 18px; border-radius: 12px; font-size: 12px; font-weight: 850; transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease; }
+.about-redesign-button:hover { transform: translateY(-2px); box-shadow: 0 9px 20px rgb(25 12 110 / 14%); }
+.about-redesign-button--yellow { color: #21183A; background: #FFD51E; }
+.about-redesign-button--yellow:hover { background: #F5C900; }
+.about-redesign-button > span { font-size: 17px; }
+.about-redesign-text-link { display: inline-flex; align-items: center; gap: 8px; color: #47356D; font-size: 12px; font-weight: 800; }
+.about-redesign-text-link:hover { color: #190C6E; }
+.about-redesign-text-link span { font-size: 16px; }
+.about-redesign-hero__note { display: flex; align-items: center; gap: 11px; margin-top: 30px; padding-top: 18px; border-top: 1px solid #E8E4EF; }
+.about-redesign-hero__note-mark { display: grid; width: 39px; height: 39px; flex: none; place-items: center; border-radius: 13px; color: #fff; background: #190C6E; font-size: 12px; font-weight: 900; letter-spacing: -.08em; }
+.about-redesign-hero__note > span:last-child { display: grid; gap: 3px; }
+.about-redesign-hero__note strong { color: #322949; font-size: 11px; }
+.about-redesign-hero__note small { color: #898396; font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.about-redesign-photo { position: relative; min-height: 420px; margin: 0; overflow: hidden; border-radius: 26px; background: #28203A; box-shadow: 0 24px 55px rgb(25 12 110 / 16%); }
+.about-redesign-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 80% center; }
+.about-redesign-photo__wash { position: absolute; inset: 28% 0 0; background: linear-gradient(180deg, transparent 0%, rgb(16 12 34 / 77%) 100%); }
+.about-redesign-photo figcaption { position: absolute; right: 20px; bottom: 18px; left: 20px; z-index: 1; display: grid; gap: 7px; color: #fff; }
+.about-redesign-photo__caption { max-width: 24ch; font-size: 20px; font-weight: 800; letter-spacing: -.025em; line-height: 1.25; }
+.about-redesign-photo figcaption small { max-width: 54ch; color: rgb(255 255 255 / 78%); font-size: 9px; line-height: 1.5; }
+.about-redesign-photo figcaption a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.about-redesign-photo__stamp { position: absolute; top: 17px; right: 17px; display: grid; width: 68px; height: 68px; place-items: center; border: 1px solid rgb(255 255 255 / 35%); border-radius: 50%; color: #21183A; background: #FFD51E; font-size: 11px; font-weight: 900; line-height: 1.05; text-align: center; transform: rotate(8deg); }
+.about-redesign-mission { padding: 55px 0 62px; color: #fff; background: #190C6E; }
+.about-redesign-mission .about-redesign-kicker { margin-top: 0; color: rgb(255 255 255 / 70%); }
+.about-redesign-mission__grid { display: grid; gap: 20px; }
+.about-redesign-mission h2 { max-width: 15ch; margin: 0; color: #fff; font-size: clamp(29px, 4vw, 43px) !important; font-weight: 800 !important; letter-spacing: -.04em; line-height: 1.15; }
+.about-redesign-mission__grid > div { max-width: 62ch; }
+.about-redesign-mission__grid p { margin: 0; color: rgb(255 255 255 / 76%); font-size: 13px; line-height: 1.85; }
+.about-redesign-mission__grid p + p { margin-top: 12px; }
+.about-redesign-services { padding: 62px 0 68px; background: #F7F8FB; }
+.about-redesign-section-heading { display: grid; align-items: end; gap: 13px; margin-bottom: 24px; }
+.about-redesign-section-heading .about-redesign-kicker { margin-top: 0; }
+.about-redesign-section-heading h2, .about-redesign-vision h2, .about-redesign-commitment h2, .about-redesign-contact h2 { max-width: 19ch; margin: 0; color: #21183A; font-size: clamp(27px, 3.5vw, 38px) !important; font-weight: 850 !important; letter-spacing: -.04em; line-height: 1.15; }
+.about-redesign-section-heading > p { max-width: 43ch; margin: 0; color: #777184; font-size: 12px; line-height: 1.7; }
+.about-redesign-service-grid { display: grid; gap: 11px; }
+.about-redesign-service-card { position: relative; min-height: 175px; padding: 20px; border: 1px solid #E8E6ED; border-radius: 17px; background: #fff; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.about-redesign-service-card:hover { transform: translateY(-3px); border-color: #D8CCE9; box-shadow: 0 12px 27px rgb(25 12 110 / 7%); }
+.about-redesign-service-card__number { color: #9A8CB0; font-size: 10px; font-weight: 850; letter-spacing: .1em; }
+.about-redesign-service-card__arrow { position: absolute; top: 17px; right: 18px; display: grid; width: 28px; height: 28px; place-items: center; border-radius: 9px; color: #6E568F; background: #F4F1F8; font-size: 14px; }
+.about-redesign-service-card h3 { margin: 20px 0 0; color: #28213D; font-size: 15px !important; font-weight: 850 !important; letter-spacing: -.02em; }
+.about-redesign-service-card p { max-width: 35ch; margin: 7px 0 0; color: #777184; font-size: 11px; line-height: 1.65; }
+.about-redesign-vision { padding: 58px 0 64px; background: #fff; }
+.about-redesign-vision__inner { display: grid; gap: 28px; }
+.about-redesign-vision__title .about-redesign-kicker { margin-top: 0; }
+.about-redesign-principles { display: grid; gap: 0; border-top: 1px solid #EAE8EF; }
+.about-redesign-principles article { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding: 17px 0; border-bottom: 1px solid #EAE8EF; }
+.about-redesign-principles article > span { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 9px; color: #5B4384; background: #F1EDF7; font-size: 15px; }
+.about-redesign-principles h3 { margin: 0; color: #302746; font-size: 13px !important; font-weight: 850 !important; }
+.about-redesign-principles p { max-width: 48ch; margin: 5px 0 0; color: #797385; font-size: 11px; line-height: 1.65; }
+.about-redesign-commitment { padding: 35px 0; background: #FFF8D9; }
+.about-redesign-commitment__inner { display: grid; align-items: center; gap: 15px; }
+.about-redesign-commitment .about-redesign-kicker { margin: 0 0 10px; color: #69592B; }
+.about-redesign-commitment h2 { max-width: 15ch; }
+.about-redesign-commitment__inner > p { max-width: 54ch; margin: 0; color: #6D654F; font-size: 12px; line-height: 1.8; }
+.about-redesign-contact { display: grid; align-items: center; gap: 20px; margin-top: 42px; margin-bottom: 64px; padding: 24px; border-radius: 21px; color: #fff; background: linear-gradient(120deg, #190C6E, #38206D); box-shadow: 0 15px 36px rgb(25 12 110 / 14%); }
+.about-redesign-contact .about-redesign-kicker { margin: 0 0 10px; color: rgb(255 255 255 / 68%); }
+.about-redesign-contact h2 { max-width: 17ch; color: #fff; font-size: clamp(24px, 3.4vw, 34px) !important; }
+.about-redesign-contact__copy > p:last-child { margin: 8px 0 0; color: rgb(255 255 255 / 73%); font-size: 12px; line-height: 1.7; }
+.about-redesign-contact .about-redesign-button { justify-self: start; }
+@media (min-width: 700px) {
+    .about-redesign-hero { padding: 44px 0 72px; }
+    .about-redesign-hero__grid { grid-template-columns: minmax(0, 1.05fr) minmax(330px, .95fr); gap: clamp(35px, 6vw, 78px); }
+    .about-redesign-photo { min-height: 510px; }
+    .about-redesign-mission__grid { grid-template-columns: minmax(0, 1fr) minmax(300px, .86fr); align-items: start; gap: 50px; }
+    .about-redesign-section-heading { grid-template-columns: minmax(0, 1fr) minmax(240px, .65fr); gap: 25px; }
+    .about-redesign-service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .about-redesign-service-card { min-height: 190px; padding: 23px; }
+    .about-redesign-vision__inner { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 50px; }
+    .about-redesign-commitment__inner { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 50px; }
+    .about-redesign-contact { grid-template-columns: minmax(0, 1fr) auto; padding: 34px 38px; }
+}
+@media (min-width: 1024px) {
+    .about-redesign-hero { padding: 49px 0 82px; }
+    .about-redesign-photo { min-height: 560px; }
+    .about-redesign-mission { padding: 72px 0 78px; }
+    .about-redesign-services { padding: 78px 0 84px; }
+    .about-redesign-service-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .about-redesign-service-card { min-height: 200px; padding: 25px; }
+    .about-redesign-vision { padding: 76px 0 82px; }
+    .about-redesign-commitment { padding: 43px 0; }
+    .about-redesign-contact { margin-top: 54px; margin-bottom: 78px; }
+}
+@media (max-width: 480px) {
+    .about-redesign-hero { padding-top: 25px; }
+    .about-redesign-photo { min-height: 330px; border-radius: 19px; }
+    .about-redesign-photo__caption { font-size: 17px; }
+    .about-redesign-hero__actions { gap: 13px; }
+    .about-redesign-button { min-height: 45px; padding-inline: 14px; }
+    .about-redesign-contact { padding: 21px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .about-redesign-button, .about-redesign-service-card { transition: none; }
+}

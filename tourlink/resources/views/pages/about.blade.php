@@ -1,86 +1,127 @@
 @extends('layouts.app')
 @section('title', 'About Havenedge Tourlink')
-@section('meta_description', 'Learn about Havenedge Tourlink and how we connect people with tours, vehicles, transport, and roadside services.')
+@section('meta_description', 'Learn how Havenedge Tourlink connects people with trips, vehicles, transport and roadside services.')
 @section('content')
-<div class="about-page">
-    <header class="about-page__hero">
-        <div class="container-page about-page__hero-inner">
-            <div class="about-page__hero-copy">
-                <p class="eyebrow">About us</p>
-                <h1 class="display">Havenedge Tourlink</h1>
-                <p class="about-page__tagline">Connecting People, Vehicles, Tours and Travel Services</p>
-                <p>Havenedge Tourlink is a digital platform designed to make travel, tourism, transportation, and roadside assistance easier, more accessible, and more connected.</p>
-                <p>We bring together <strong>tourists, travellers, vehicle owners, tour operators, drivers, and towing/recovery operators</strong> on one convenient platform, making it easier for users to discover services, connect with service providers, and arrange the support they need.</p>
-                <div class="about-page__actions">
-                    <a href="{{ route('trips.index') }}">{{ __('Explore trips') }}<span aria-hidden="true">→</span></a>
-                    <a href="{{ route('vehicles.index') }}">{{ __('Find a vehicle') }}<span aria-hidden="true">→</span></a>
+@php
+    $aboutServices = [
+        ['number' => '01', 'title' => __('Tours & travel'), 'description' => __('Discover trips and connect with tour operators and local travel providers.')],
+        ['number' => '02', 'title' => __('Vehicle hire'), 'description' => __('Find vehicles for journeys, transfers and the ways you want to explore.')],
+        ['number' => '03', 'title' => __('Transport & drivers'), 'description' => __('Explore transport options and connect with available driving services.')],
+        ['number' => '04', 'title' => __('Towing & recovery'), 'description' => __('Find roadside assistance and vehicle recovery providers when you need support.')],
+        ['number' => '05', 'title' => __('Provider listings'), 'description' => __('Give operators and service providers a place to showcase what they offer.')],
+        ['number' => '06', 'title' => __('Booking & communication'), 'description' => __('Make service discovery, requests and conversations easier to manage.')],
+    ];
+    $aboutPrinciples = [
+        ['title' => __('More connected'), 'description' => __('Bring travel, vehicles and mobility services together in one place.')],
+        ['title' => __('Clearer choices'), 'description' => __('Help people find services that fit their plans and reach out to providers.')],
+        ['title' => __('Built around trust'), 'description' => __('Verification features are designed to support confidence across the platform.')],
+        ['title' => __('Opportunity to grow'), 'description' => __('Help local businesses and individuals present their services to more people.')],
+    ];
+@endphp
+
+<div class="about-redesign">
+    <section class="about-redesign-hero">
+        <div class="container-page about-redesign-hero__grid">
+            <div class="about-redesign-hero__copy">
+                <a class="about-redesign-back" href="{{ route('home') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/><path d="M9 12h12"/></svg>
+                    {{ __('Back to home') }}
+                </a>
+                <p class="about-redesign-kicker"><span></span>{{ __('About Havenedge Tourlink') }}</p>
+                <h1>{{ __('Good journeys begin with a connection.') }}</h1>
+                <p class="about-redesign-hero__intro">{{ __('We bring people and travel services closer together, making it easier to discover a trip, find a vehicle or connect with the support a journey needs.') }}</p>
+                <div class="about-redesign-hero__actions">
+                    <a class="about-redesign-button about-redesign-button--yellow" href="{{ route('trips.index') }}">{{ __('Explore trips') }} <span aria-hidden="true">→</span></a>
+                    <a class="about-redesign-text-link" href="{{ route('vehicles.index') }}">{{ __('Find a vehicle') }} <span aria-hidden="true">↗</span></a>
+                </div>
+                <div class="about-redesign-hero__note">
+                    <span class="about-redesign-hero__note-mark" aria-hidden="true">HT</span>
+                    <span><strong>{{ __('One platform, many ways to go.') }}</strong><small>{{ __('Trips · Vehicles · Transport · Support') }}</small></span>
                 </div>
             </div>
-            <div class="about-page__hero-media">
-                <img src="{{ asset('images/about-kenya-community.jpg') }}" alt="A Maasai host and a traveler work together to light a fire in a Kenyan village" fetchpriority="high" decoding="async">
-                <span>
-                    Kenyan people connecting through travel
+
+            <figure class="about-redesign-photo">
+                <img src="{{ asset('images/about-kenya-community.jpg') }}" alt="A Maasai host and a traveler share a cultural activity in a Kenyan village" fetchpriority="high" decoding="async">
+                <div class="about-redesign-photo__wash" aria-hidden="true"></div>
+                <figcaption>
+                    <span class="about-redesign-photo__caption">{{ __('Travel connects us to places — and to one another.') }}</span>
                     <small><a href="https://commons.wikimedia.org/wiki/File:Maasai_people_and_a_tourist_lighting_a_fire_in_a_Maasai_village_on_the_A109_road,_Kenya.jpg" target="_blank" rel="noopener noreferrer">Maasai people and a traveler sharing a cultural activity</a> by CT Cooper · <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer">CC0</a></small>
-                </span>
-            </div>
+                </figcaption>
+                <span class="about-redesign-photo__stamp" aria-hidden="true">Go<br>together</span>
+            </figure>
         </div>
-    </header>
+    </section>
 
-    <main class="container-page about-page__content">
-        <section class="about-page__section" aria-labelledby="about-mission-heading">
-            <p class="eyebrow">Our mission</p>
-            <h2 id="about-mission-heading">Make travel and mobility easier to access.</h2>
-            <p>Our mission is to simplify the way people access travel and mobility services by creating a trusted digital environment where customers and service providers can connect efficiently.</p>
-            <p>Whether you are planning a tour, looking for a vehicle, arranging transportation, or need towing and roadside assistance, Havenedge Tourlink is designed to help you find and connect with the right service provider.</p>
-        </section>
-
-        <section class="about-page__section" aria-labelledby="about-services-heading">
-            <p class="eyebrow">What we do</p>
-            <h2 id="about-services-heading">Services and connections in one place.</h2>
-            <dl class="about-services">
-                <div><dt>Tour &amp; Travel Services</dt><dd>Discover and connect with tour operators and travel service providers.</dd></div>
-                <div><dt>Vehicle Services</dt><dd>Connect vehicle owners and customers for available transportation solutions.</dd></div>
-                <div><dt>Towing &amp; Recovery</dt><dd>Find towing and vehicle recovery service providers when assistance is needed.</dd></div>
-                <div><dt>Driver &amp; Transport Services</dt><dd>Connect customers with available transport and driving services.</dd></div>
-                <div><dt>Service Provider Listings</dt><dd>Allow businesses and individuals to showcase their services and reach potential customers.</dd></div>
-                <div><dt>Digital Booking &amp; Communication</dt><dd>Make it easier for customers and service providers to communicate and manage service requests.</dd></div>
-            </dl>
-        </section>
-
-        <section class="about-page__section" aria-labelledby="about-vision-heading">
-            <p class="eyebrow">Our vision</p>
-            <h2 id="about-vision-heading">A connected tourism and mobility ecosystem.</h2>
-            <p>We envision a connected tourism and mobility ecosystem where finding a tour, vehicle, driver, or roadside assistance service is simple, transparent, and convenient.</p>
-            <p>Through technology, we aim to connect more people with reliable service providers while creating opportunities for businesses and individuals to grow their reach.</p>
-        </section>
-
-        <section class="about-page__section" aria-labelledby="about-why-heading">
-            <p class="eyebrow">Why Havenedge Tourlink?</p>
-            <h2 id="about-why-heading">Designed to make the next step clearer.</h2>
-            <dl class="about-reasons">
-                <div><dt>One Platform</dt><dd>Access different tourism, transport, vehicle, and roadside services through one digital platform.</dd></div>
-                <div><dt>Easy Connections</dt><dd>Connect customers with service providers based on their needs and available services.</dd></div>
-                <div><dt>Verified Information</dt><dd>We provide verification features designed to help improve trust and confidence within the platform.</dd></div>
-                <div><dt>Convenient Access</dt><dd>Designed as a modern web and PWA platform that can be accessed conveniently from compatible devices.</dd></div>
-                <div><dt>Opportunities for Service Providers</dt><dd>Vehicle owners, tour operators, drivers, and towing operators can showcase their services and connect with potential customers.</dd></div>
-            </dl>
-        </section>
-
-        <section class="about-page__section" aria-labelledby="about-commitment-heading">
-            <p class="eyebrow">Our commitment</p>
-            <h2 id="about-commitment-heading">Keep improving the journey.</h2>
-            <p>At Havenedge Tourlink, we are committed to continuously improving the platform and creating a better experience for both customers and service providers.</p>
-            <p>We believe technology can make tourism, transportation, and roadside assistance more connected and convenient.</p>
-            <p class="about-page__closing"><strong>Havenedge Tourlink — Connecting People, Vehicles, Tours and Travel Services.</strong></p>
-        </section>
-
-        <section id="about-contact" class="about-page__contact" aria-labelledby="about-contact-heading">
-            <div>
-                <p class="eyebrow">Contact us</p>
-                <h2 id="about-contact-heading">Talk to Havenedge Tourlink.</h2>
-                <p>For questions, complaints, support, or other concerns, contact us using the details below.</p>
+    <main>
+        <section class="about-redesign-mission">
+            <div class="container-page about-redesign-mission__inner">
+                <p class="about-redesign-kicker"><span></span>{{ __('Why we are here') }}</p>
+                <div class="about-redesign-mission__grid">
+                    <h2>{{ __('Make travel and mobility easier to access.') }}</h2>
+                    <div>
+                        <p>{{ __('Planning a tour, arranging transport or looking for roadside help should feel less fragmented. Havenedge Tourlink is designed to help customers discover services, connect with providers and take the next step with more confidence.') }}</p>
+                        <p>{{ __('We bring travellers, vehicle owners, tour operators, drivers and recovery providers into a shared digital space — connecting the people behind the journey.') }}</p>
+                    </div>
+                </div>
             </div>
-            <a class="about-page__contact-link" href="{{ route('contact') }}">Visit our contact page <span aria-hidden="true">&rarr;</span></a>
+        </section>
+
+        <section class="about-redesign-services" aria-labelledby="about-services-title">
+            <div class="container-page">
+                <header class="about-redesign-section-heading">
+                    <div>
+                        <p class="about-redesign-kicker"><span></span>{{ __('What you can find here') }}</p>
+                        <h2 id="about-services-title">{{ __('Many services. A more connected journey.') }}</h2>
+                    </div>
+                    <p>{{ __('Explore the services that help people plan, move and get support along the way.') }}</p>
+                </header>
+                <div class="about-redesign-service-grid">
+                    @foreach($aboutServices as $service)
+                        <article class="about-redesign-service-card">
+                            <span class="about-redesign-service-card__number">{{ $service['number'] }}</span>
+                            <span class="about-redesign-service-card__arrow" aria-hidden="true">↗</span>
+                            <h3>{{ $service['title'] }}</h3>
+                            <p>{{ $service['description'] }}</p>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        <section class="about-redesign-vision">
+            <div class="container-page about-redesign-vision__inner">
+                <div class="about-redesign-vision__title">
+                    <p class="about-redesign-kicker"><span></span>{{ __('Our vision') }}</p>
+                    <h2>{{ __('A more connected tourism and mobility ecosystem.') }}</h2>
+                </div>
+                <div class="about-redesign-principles">
+                    @foreach($aboutPrinciples as $principle)
+                        <article>
+                            <span aria-hidden="true">✳</span>
+                            <div><h3>{{ $principle['title'] }}</h3><p>{{ $principle['description'] }}</p></div>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        <section class="about-redesign-commitment">
+            <div class="container-page about-redesign-commitment__inner">
+                <div>
+                    <p class="about-redesign-kicker"><span></span>{{ __('Our commitment') }}</p>
+                    <h2>{{ __('Keep making the journey better.') }}</h2>
+                </div>
+                <p>{{ __('We are committed to improving the experience for customers and service providers, and to using technology to make tourism, transport and roadside assistance more convenient and connected.') }}</p>
+            </div>
+        </section>
+
+        <section class="container-page about-redesign-contact" aria-labelledby="about-contact-heading">
+            <div class="about-redesign-contact__copy">
+                <p class="about-redesign-kicker"><span></span>{{ __('Let’s connect') }}</p>
+                <h2 id="about-contact-heading">{{ __('Have a question or need a hand?') }}</h2>
+                <p>{{ __('We are here to help with questions, feedback, support and other concerns.') }}</p>
+            </div>
+            <a class="about-redesign-button about-redesign-button--yellow" href="{{ route('contact') }}">{{ __('Get in touch') }} <span aria-hidden="true">→</span></a>
         </section>
     </main>
 </div>
