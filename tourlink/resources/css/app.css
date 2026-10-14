@@ -1218,10 +1218,10 @@ a.contact-method:hover { border-color: #D5C7E5; background: #FCFBFE; box-shadow:
 .site-header--floating .site-header__brand-icon { border-color: rgba(25, 12, 110, .18); color: #190c6e; background: #F3F9FE; box-shadow: none; }
 .site-header--floating .site-header__tagline { color: #64748B; }
 .site-header--floating .site-header__nav a { color: #475569; }
-.site-header--floating .site-header__nav a:hover, .site-header--floating .site-header__nav a:focus-visible { color: #190c6e; background: #F3F9FE; }
+.site-header--floating .site-header__nav a:hover, .site-header--floating .site-header__nav a:focus-visible { color: #D6A900; background: #FFF9D9; }
 .site-header--floating .site-header__nav a.is-active { border-color: rgba(25, 12, 110, .16); color: #190c6e; background: #F3F9FE; }
 .site-header--floating .site-header__account-link, .site-header--floating .site-header__login { color: #334155; }
-.site-header--floating .site-header__account-link:hover, .site-header--floating .site-header__login:hover { color: #190c6e; background: #F3F9FE; }
+.site-header--floating .site-header__account-link:hover, .site-header--floating .site-header__login:hover { color: #D6A900; background: #FFF9D9; }
 .site-header--floating .site-header__join { border-color: #190c6e; color: #fff; background: #190c6e; box-shadow: 0 5px 14px rgba(25, 12, 110, .14); }
 .site-header--floating .site-header__mobile > summary { border-color: #E5E7EB; color: #111827; background: #F8FAFC; }
 .site-header__mobile-app-bar { display: flex; align-items: center; gap: 10px; }
