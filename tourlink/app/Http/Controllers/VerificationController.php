@@ -40,7 +40,7 @@ class VerificationController extends Controller
 
     public function verify(Request $request, OtpService $otpService, OtpDeliveryService $delivery, AccountVerificationService $verification, ReferralService $referrals, AccountSessionService $sessions): mixed
     {
-        $previousFingerprint = $request->session()->get('_account_session_fingerprint');
+        $previousSessionId = $request->session()->getId();
         $input = $request->validate([
             'user_id' => ['required', 'string', 'exists:users,id'],
             'channel' => ['required', Rule::in([OtpChannel::Email->value])],
@@ -85,7 +85,7 @@ class VerificationController extends Controller
 
         if ($verification->isFullyVerified($user) && $user->approval_status === AccountApprovalStatus::Approved && $user->account_status === AccountStatus::Active) {
             Auth::login($user);
-            $sessions->registerWebLogin($user, $request, is_string($previousFingerprint) ? $previousFingerprint : null);
+            $sessions->registerWebLogin($user, $request, $previousSessionId);
 
             $dashboard = match ($user->role) {
                 Role::Admin => Route::has('admin.dashboard') ? route('admin.dashboard') : route('home'),

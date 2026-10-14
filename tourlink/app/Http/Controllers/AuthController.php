@@ -63,7 +63,7 @@ class AuthController extends Controller
     public function login(Request $request, AccountVerificationService $verification, AccountSessionService $sessions): mixed
     {
         $this->rememberSupportDestination($request);
-        $previousFingerprint = $request->session()->get('_account_session_fingerprint');
+        $previousSessionId = $request->session()->getId();
         $credentials = $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'max:255'],
@@ -121,7 +121,7 @@ class AuthController extends Controller
         }
 
         try {
-            $sessions->registerWebLogin($user, $request, is_string($previousFingerprint) ? $previousFingerprint : null);
+            $sessions->registerWebLogin($user, $request, $previousSessionId);
         } catch (QueryException $exception) {
             Log::error('Unable to register the authenticated account session.', [
                 'user_id' => $user->id,

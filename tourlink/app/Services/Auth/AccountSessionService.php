@@ -12,16 +12,16 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class AccountSessionService
 {
-    public function registerWebLogin(User $user, Request $request, ?string $previousFingerprint): bool
+    public function registerWebLogin(User $user, Request $request, string $previousSessionId): bool
     {
-        $fingerprint = $this->newWebFingerprint();
+        $fingerprint = $this->fingerprint('web', $request->session()->getId());
         $claimed = $this->claim(
             $user,
             $fingerprint,
             'web',
             $request,
             null,
-            $previousFingerprint,
+            $this->fingerprint('web', $previousSessionId),
         );
 
         if ($claimed) {
@@ -33,7 +33,7 @@ class AccountSessionService
 
     public function registerUntrackedWebSession(User $user, Request $request): bool
     {
-        $fingerprint = $this->newWebFingerprint();
+        $fingerprint = $this->fingerprint('web', $request->session()->getId());
         $claimed = $this->claim($user, $fingerprint, 'web', $request, null, null, false);
 
         if ($claimed) {
@@ -64,16 +64,20 @@ class AccountSessionService
     public function validateWebSession(User $user, Request $request): bool
     {
         $fingerprint = $request->session()->get('_account_session_fingerprint');
+        $sessionIdFingerprint = $this->fingerprint('web', $request->session()->getId());
 
-        if (! is_string($fingerprint) || preg_match('/\A[a-f0-9]{64}\z/', $fingerprint) !== 1) {
+        if (is_string($fingerprint) && preg_match('/\A[a-f0-9]{64}\z/', $fingerprint) === 1
+            && $this->refresh($user, $fingerprint, 'web')) {
+            return true;
+        }
+
+        if (! $this->refresh($user, $sessionIdFingerprint, 'web')) {
             return false;
         }
 
-        return $this->refresh(
-            $user,
-            $fingerprint,
-            'web',
-        );
+        $request->session()->put('_account_session_fingerprint', $sessionIdFingerprint);
+
+        return true;
     }
 
     public function validateToken(User $user, PersonalAccessToken $token, Request $request): bool
@@ -112,14 +116,15 @@ class AccountSessionService
             return;
         }
 
-        $fingerprint = $request->session()->get('_account_session_fingerprint');
-        if (! is_string($fingerprint) || preg_match('/\A[a-f0-9]{64}\z/', $fingerprint) !== 1) {
-            $fingerprint = $this->fingerprint('web', $request->session()->getId());
+        $fingerprints = [$this->fingerprint('web', $request->session()->getId())];
+        $storedFingerprint = $request->session()->get('_account_session_fingerprint');
+        if (is_string($storedFingerprint) && preg_match('/\A[a-f0-9]{64}\z/', $storedFingerprint) === 1) {
+            $fingerprints[] = $storedFingerprint;
         }
 
         AccountSession::query()
             ->where('user_id', $user->getKey())
-            ->where('session_fingerprint', $fingerprint)
+            ->whereIn('session_fingerprint', array_unique($fingerprints))
             ->where('session_type', 'web')
             ->delete();
     }
@@ -236,8 +241,4 @@ class AccountSessionService
         return hash('sha256', $type.':'.$identifier);
     }
 
-    private function newWebFingerprint(): string
-    {
-        return hash('sha256', Str::random(64));
-    }
 }
