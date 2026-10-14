@@ -62,7 +62,6 @@
                     <source src="{{ asset('videos/home-hero.mp4') }}" type="video/mp4">
                 </video>
                 <figcaption>
-                    <span class="home-native-visual__badge"><svg viewBox="0 0 20 20" aria-hidden="true" fill="currentColor"><path d="m10 1.7 2.4 5 5.5.8-4 3.9.9 5.5-4.8-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8L10 1.7Z"/></svg>{{ __('Locally hosted') }}</span>
                     <span class="home-native-visual__caption">{{ __('Go beyond the usual route.') }}</span>
                     <span class="home-native-visual__subcaption">{{ __('Find a trip that feels like yours.') }}</span>
                 </figcaption>
