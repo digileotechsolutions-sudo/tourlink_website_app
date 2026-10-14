@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureAccountAccess;
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureCurrentAccountSession;
 use App\Http\Middleware\ApplyLocale;
 use App\Http\Middleware\MarkPublicPwaPages;
 use App\Role;
@@ -31,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             default => route('dashboard'),
         });
         $middleware->appendToGroup('web', ApplyLocale::class);
+        $middleware->appendToGroup('web', EnsureCurrentAccountSession::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash([

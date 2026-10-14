@@ -146,6 +146,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
             'approval_reviewed_at' => 'datetime',
+            'session_version' => 'integer',
             'password' => 'hashed',
             'approval_status' => AccountApprovalStatus::class,
             'account_status' => AccountStatus::class,

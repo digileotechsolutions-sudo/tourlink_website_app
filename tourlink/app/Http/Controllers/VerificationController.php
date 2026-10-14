@@ -7,6 +7,7 @@ use App\AccountStatus;
 use App\Models\User;
 use App\OtpChannel;
 use App\Role;
+use App\Services\Auth\AccountSessionService;
 use App\Services\Referral\ReferralService;
 use App\Services\Verification\AccountVerificationService;
 use App\Services\Verification\OtpDeliveryService;
@@ -37,7 +38,7 @@ class VerificationController extends Controller
         return view('pages.auth.verification', compact('user', 'verificationMethods', 'continueToSupport', 'otpExpiresAt'));
     }
 
-    public function verify(Request $request, OtpService $otpService, OtpDeliveryService $delivery, AccountVerificationService $verification, ReferralService $referrals): mixed
+    public function verify(Request $request, OtpService $otpService, OtpDeliveryService $delivery, AccountVerificationService $verification, ReferralService $referrals, AccountSessionService $sessions): mixed
     {
         $input = $request->validate([
             'user_id' => ['required', 'string', 'exists:users,id'],
@@ -82,11 +83,8 @@ class VerificationController extends Controller
         }
 
         if ($verification->isFullyVerified($user) && $user->approval_status === AccountApprovalStatus::Approved && $user->account_status === AccountStatus::Active) {
-            $previousSessionId = $request->session()->getId();
             Auth::login($user);
-            if ($request->session()->getId() === $previousSessionId) {
-                $request->session()->regenerate();
-            }
+            $sessions->begin($user, $request);
 
             $dashboard = match ($user->role) {
                 Role::Admin => Route::has('admin.dashboard') ? route('admin.dashboard') : route('home'),

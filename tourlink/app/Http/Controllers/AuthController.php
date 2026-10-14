@@ -11,6 +11,7 @@ use App\Models\VehicleOwnerProfile;
 use App\OtpChannel;
 use App\Role;
 use App\Rules\PasswordRules;
+use App\Services\Auth\AccountSessionService;
 use App\Services\PublicImageStorage;
 use App\Services\Referral\ReferralService;
 use App\Services\Verification\AccountVerificationService;
@@ -61,7 +62,7 @@ class AuthController extends Controller
         return view('pages.auth.register', compact('initialRole', 'referrer', 'verificationAvailable', 'googleClientId', 'googleNonce', 'continueToSupport'));
     }
 
-    public function login(Request $request, AccountVerificationService $verification): mixed
+    public function login(Request $request, AccountVerificationService $verification, AccountSessionService $sessions): mixed
     {
         $this->rememberSupportDestination($request);
         $credentials = $request->validate([
@@ -120,6 +121,7 @@ class AuthController extends Controller
                 ->onlyInput('email');
         }
 
+        $sessions->begin($user, $request);
         $dashboardUrl = $this->dashboardUrl($user);
 
         if ($this->canVisitIntendedPath($user, $request->session()->get('url.intended'))) {
