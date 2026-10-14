@@ -36,6 +36,7 @@ use App\Http\Controllers\TripController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\VehicleOwnerController;
 use App\Http\Controllers\VerificationController;
+use App\Http\Middleware\PreventAuthPageCaching;
 use App\Http\Middleware\RequireTermsAcceptance;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -116,7 +117,7 @@ Route::get('/media/blog/{filename}', [BlogController::class, 'image'])
 Route::get('/journal', [BlogController::class, 'index'])->middleware('pwa.public')->name('blog.index');
 Route::get('/journal/{blogPost:slug}', [BlogController::class, 'show'])->middleware('pwa.public')->name('blog.show');
 
-Route::middleware('guest')->group(function (): void {
+Route::middleware(['guest', PreventAuthPageCaching::class])->group(function (): void {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
     Route::get('/register', [AuthController::class, 'showRegistration'])->middleware(RequireTermsAcceptance::class)->name('register');
@@ -130,15 +131,15 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/reset-password', [PasswordController::class, 'reset'])->middleware('throttle:password-reset')->name('password.update');
 });
 
-Route::get('/verify/{user}', [VerificationController::class, 'show'])->name('verification.notice');
-Route::post('/verify', [VerificationController::class, 'verify'])->middleware('throttle:auth-otp-verify')->name('verification.verify');
-Route::post('/verify/resend', [VerificationController::class, 'resend'])->middleware('throttle:auth-otp-resend')->name('verification.resend');
+Route::get('/verify/{user}', [VerificationController::class, 'show'])->middleware(PreventAuthPageCaching::class)->name('verification.notice');
+Route::post('/verify', [VerificationController::class, 'verify'])->middleware([PreventAuthPageCaching::class, 'throttle:auth-otp-verify'])->name('verification.verify');
+Route::post('/verify/resend', [VerificationController::class, 'resend'])->middleware([PreventAuthPageCaching::class, 'throttle:auth-otp-resend'])->name('verification.resend');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::middleware('auth')->group(function (): void {
     Route::get('/payments/{payment}/receipt', [PaymentReceiptController::class, 'show'])->name('payments.receipt');
     Route::get('/payments/{payment}/receipt/download', [PaymentReceiptController::class, 'download'])->name('payments.receipt.download');
-    Route::get('/account/password', [PasswordController::class, 'changeForm'])->name('password.change');
-    Route::put('/account/password', [PasswordController::class, 'change'])->name('password.change.update');
+    Route::get('/account/password', [PasswordController::class, 'changeForm'])->middleware(PreventAuthPageCaching::class)->name('password.change');
+    Route::put('/account/password', [PasswordController::class, 'change'])->middleware(PreventAuthPageCaching::class)->name('password.change.update');
 });
 
 Route::middleware(['auth', 'account.access'])->group(function (): void {

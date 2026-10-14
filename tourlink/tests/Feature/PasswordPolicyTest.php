@@ -288,7 +288,12 @@ class PasswordPolicyTest extends TestCase
 
     public function test_password_change_requires_current_password_and_updates_to_a_hashed_value(): void
     {
-        $user = User::factory()->create(['name' => 'Amina Kariuki', 'email' => 'amina@example.com', 'password' => 'OldPassword#29']);
+        $user = User::factory()->create([
+            'name' => 'Amina Kariuki',
+            'email' => 'amina@example.com',
+            'password' => 'OldPassword#29',
+            'remember_token' => 'previous-remember-token',
+        ]);
 
         $this->actingAs($user)->put(route('password.change.update'), [
             'current_password' => 'OldPassword#29',
@@ -297,6 +302,7 @@ class PasswordPolicyTest extends TestCase
         ])->assertSessionHasNoErrors();
 
         $this->assertTrue(Hash::check('Jungle@Trail29', $user->refresh()->password));
+        $this->assertNotSame('previous-remember-token', $user->fresh()->remember_token);
     }
 
     public function test_password_change_rejects_wrong_current_password_and_account_identifiers(): void

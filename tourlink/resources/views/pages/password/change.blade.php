@@ -6,6 +6,12 @@
     <section class="auth-right"><div class="auth-card">
         <header class="auth-header"><h2>Change password</h2><p class="auth-subtitle">Confirm your current password before choosing a new one.</p></header>
         @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
+        @if ($errors->any())
+            <div class="auth-msg auth-msg-error" role="alert" aria-live="assertive" tabindex="-1">
+                <strong>We could not change your password.</strong>
+                <ul class="mt-2 list-disc pl-5">@foreach ($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul>
+            </div>
+        @endif
         <form method="POST" action="{{ route('password.change.update') }}" data-auth-form data-auth-loading-label="Updating password...">@csrf @method('PUT')
             <div class="auth-field auth-field-password"><label for="current_password">Current password</label><input id="current_password" name="current_password" type="password" autocomplete="current-password" required @error('current_password') aria-invalid="true" aria-describedby="current-password-error" @enderror><button class="auth-password-toggle" type="button" data-password-toggle="current_password" aria-label="Show current password" title="Show current password">Show</button>@error('current_password')<span id="current-password-error" class="field-error" role="alert">{{ $message }}</span>@enderror</div>
             <div class="auth-field auth-field-password"><label for="password">New password</label><input id="password" name="password" type="password" autocomplete="new-password" data-strength-input required @error('password') aria-invalid="true" aria-describedby="new-password-error" @enderror><button class="auth-password-toggle" type="button" data-password-toggle="password" aria-label="Show new password" title="Show new password">Show</button>@error('password')<span id="new-password-error" class="field-error" role="alert">{{ $message }}</span>@enderror</div>

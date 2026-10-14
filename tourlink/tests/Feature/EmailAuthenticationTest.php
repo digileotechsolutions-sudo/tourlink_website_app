@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Middleware\RequireTermsAcceptance;
 use App\Mail\PasswordResetMail;
 use App\Mail\VerificationCodeMail;
+use App\Models\AccountSession;
 use App\Models\OtpChallenge;
 use App\Models\User;
 use App\OtpChannel;
@@ -154,9 +155,58 @@ class EmailAuthenticationTest extends TestCase
         Mail::assertNothingOutgoing();
     }
 
+    public function test_authentication_forms_are_not_cached(): void
+    {
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+            ->assertHeader('Pragma', 'no-cache')
+            ->assertHeader('Referrer-Policy', 'no-referrer')
+            ->assertSee('name="_token"', false);
+
+        $this->get(route('register'))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+            ->assertSee('name="_token"', false);
+
+        $this->get(route('password.request'))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+            ->assertSee('name="_token"', false);
+
+        $this->get(route('password.reset', ['token' => 'reset-token', 'email' => 'reset@example.com']))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+            ->assertSee('name="referrer" content="no-referrer"', false);
+
+        $userAwaitingVerification = User::factory()->unverified()->create();
+        $this->get(route('verification.notice', $userAwaitingVerification))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+            ->assertSee('name="_token"', false);
+
+        $user = User::factory()->create();
+        $this->actingAs($user)
+            ->get(route('password.change'))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    }
+
     public function test_valid_password_reset_hashes_password_invalidates_token_and_allows_login(): void
     {
         $user = User::factory()->create(['email' => 'reset@example.com']);
+        $sessionId = 'password-reset-active-session';
+        $sessionHandler = app('session')->driver()->getHandler();
+        $sessionHandler->write($sessionId, 'session-data');
+        AccountSession::query()->create([
+            'user_id' => $user->id,
+            'session_fingerprint' => hash('sha256', 'web:'.$sessionId),
+            'session_type' => 'web',
+            'session_id' => $sessionId,
+            'last_activity_at' => now(),
+            'expires_at' => now()->addMinutes(15),
+        ]);
+        $user->forceFill(['remember_token' => 'previous-remember-token'])->save();
         $token = Password::createToken($user);
         $newPassword = 'Jungle@Trail29';
 
@@ -168,6 +218,9 @@ class EmailAuthenticationTest extends TestCase
         ])->assertRedirect(route('login'));
 
         $this->assertTrue(Hash::check($newPassword, $user->fresh()->password));
+        $this->assertNotSame('previous-remember-token', $user->fresh()->remember_token);
+        $this->assertDatabaseMissing('account_sessions', ['user_id' => $user->id]);
+        $this->assertSame('', $sessionHandler->read($sessionId));
         $this->assertDatabaseMissing('password_reset_tokens', ['email' => $user->email]);
 
         $this->post(route('password.update'), [

@@ -3,13 +3,13 @@
 @section('content')
 <div class="auth-wrapper auth-login-shell">
     <section class="auth-login-card" aria-labelledby="login-heading">
-        <a class="auth-login-back" href="{{ route('home') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
-            <span>{{ __('Back to home') }}</span>
-        </a>
         <header class="auth-login-header">
+            <span class="auth-heading-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 4.6 2.8 8.1 7 10 4.2-1.9 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
             <p class="auth-login-eyebrow">{{ __('Havenedge Tourlink account') }}</p>
             <h1 id="login-heading">{{ __('Welcome Back') }}</h1>
+            <p>{{ __('Sign in to continue your journey.') }}</p>
         </header>
         @if(session('status'))<p class="auth-msg auth-msg-notice" role="status">{{ session('status') }}</p>@endif
         @error('google')<p class="auth-msg auth-msg-error" role="alert">{{ $message }}</p>@enderror
@@ -60,6 +60,3 @@
     </section>
 </div>
 @endsection
-<div>
-    <!-- Simplicity is the essence of happiness. - Cedric Bledsoe -->
-</div>
