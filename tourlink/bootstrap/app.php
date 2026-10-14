@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureAccountAccess;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\ApplyLocale;
 use App\Http\Middleware\MarkPublicPwaPages;
+use App\Role;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -23,6 +24,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureAdmin::class,
             'pwa.public' => MarkPublicPwaPages::class,
         ]);
+        $middleware->redirectUsersTo(fn (Request $request): string => match ($request->user()?->role) {
+            Role::Admin => route('admin.dashboard'),
+            Role::Operator => route('operator.dashboard'),
+            Role::VehicleOwner => route('vehicle-owner.dashboard'),
+            default => route('dashboard'),
+        });
         $middleware->appendToGroup('web', ApplyLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -19,6 +19,22 @@ class AuthRoleRedirectTest extends TestCase
             ->assertSee('action="'.route('login').'"', false);
     }
 
+    public function test_authenticated_users_opening_login_are_redirected_to_their_role_dashboard(): void
+    {
+        foreach ([
+            ['ADMIN', 'admin.dashboard'],
+            ['OPERATOR', 'operator.dashboard'],
+            ['VEHICLE_OWNER', 'vehicle-owner.dashboard'],
+            ['TRAVELER', 'dashboard'],
+        ] as [$role, $dashboard]) {
+            $user = User::factory()->create(['role' => $role]);
+
+            $this->actingAs($user)
+                ->get(route('login'))
+                ->assertRedirect(route($dashboard));
+        }
+    }
+
     public function test_authenticated_pages_configure_fifteen_minute_idle_logout(): void
     {
         $traveler = User::factory()->create(['role' => 'TRAVELER']);
