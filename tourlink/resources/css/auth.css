@@ -380,6 +380,192 @@
     }
 }
 
+.auth-page:has(.auth-login-shell) {
+    background: #e0e5ec;
+}
+
+.auth-page:has(.auth-login-shell) .auth-topbar,
+.auth-page:has(.auth-login-shell) > .portal-footer {
+    background: #e0e5ec;
+}
+
+.auth-page:has(.auth-login-shell) > .login-page {
+    align-items: center;
+    padding: 30px;
+    background: #e0e5ec;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-shell {
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-card {
+    width: min(100%, 400px);
+    padding: 50px 40px 40px;
+    border: 0;
+    border-radius: 24px;
+    color: #2d3436;
+    background: #e0e5ec;
+    box-shadow: 9px 9px 16px rgb(163 177 198 / 60%), -9px -9px 16px rgb(255 255 255 / 50%);
+}
+
+.auth-page:has(.auth-login-shell) .auth-heading-mark {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 30px;
+    border-radius: 50%;
+    color: #2d3436;
+    background: #e0e5ec;
+    box-shadow: 6px 6px 12px rgb(163 177 198 / 60%), -6px -6px 12px rgb(255 255 255 / 50%);
+}
+
+.auth-page:has(.auth-login-shell) .auth-heading-mark svg {
+    width: 32px;
+    height: 32px;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-eyebrow {
+    display: none;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-header {
+    margin-bottom: 40px;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-header h1 {
+    color: #2d3436;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-header > p:last-child {
+    margin-top: 8px;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-field {
+    margin-top: 24px;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-field label {
+    margin-bottom: 8px;
+    color: #2d3436;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-label-row a,
+.auth-page:has(.auth-login-shell) .auth-login-footer a {
+    color: #46545a;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-field-icon {
+    display: none;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-control input {
+    min-height: 50px;
+    padding: 14px 54px 14px 18px;
+    border: 0;
+    border-radius: 12px;
+    color: #2d3436;
+    background: #e0e5ec;
+    box-shadow: inset 4px 4px 8px rgb(163 177 198 / 50%), inset -4px -4px 8px rgb(255 255 255 / 50%);
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-control input::placeholder {
+    color: #9aa6ab;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-control input:hover {
+    border: 0;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-control input:focus {
+    transform: none;
+    border: 0;
+    background: #e0e5ec;
+    box-shadow: inset 4px 4px 8px rgb(163 177 198 / 70%), inset -4px -4px 8px rgb(255 255 255 / 70%), 0 0 0 2px #7f8c8d;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-toggle {
+    color: #7f8c8d;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-toggle:hover {
+    color: #2d3436;
+    background: rgb(163 177 198 / 15%);
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-actions {
+    gap: 18px;
+    margin-top: 24px;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-remember {
+    color: #626f73;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-remember input {
+    accent-color: #2d3436;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-submit {
+    min-height: 50px;
+    margin-top: 10px;
+    border-radius: 12px;
+    color: #2d3436;
+    background: #e0e5ec;
+    box-shadow: 6px 6px 12px rgb(163 177 198 / 60%), -6px -6px 12px rgb(255 255 255 / 50%);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-submit:hover {
+    transform: none;
+    background: #e0e5ec;
+    box-shadow: 4px 4px 8px rgb(163 177 198 / 60%), -4px -4px 8px rgb(255 255 255 / 50%);
+    filter: none;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-submit:active {
+    transform: none;
+    box-shadow: inset 4px 4px 8px rgb(163 177 198 / 50%), inset -4px -4px 8px rgb(255 255 255 / 50%);
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-submit svg[data-submit-arrow] {
+    display: none;
+}
+
+.auth-page:has(.auth-login-shell) .auth-login-footer {
+    color: #7f8c8d;
+}
+
+@media (max-width: 480px) {
+    .auth-page:has(.auth-login-shell) > .login-page {
+        align-items: center;
+        padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+    }
+
+    .auth-page:has(.auth-login-shell) .auth-login-card {
+        padding: 40px 30px 35px;
+    }
+
+    .auth-page:has(.auth-login-shell) .auth-login-header h1 {
+        font-size: 22px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .auth-page *,
     .auth-page *::before,
