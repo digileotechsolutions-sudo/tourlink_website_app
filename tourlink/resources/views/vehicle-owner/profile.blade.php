@@ -83,9 +83,7 @@
                 <a class="mt-4 inline-flex min-h-11 items-center rounded bg-emerald-800 px-5 py-3 text-sm font-bold text-white" href="{{ route('vehicle-owner.vehicles.create') }}">Add your first vehicle</a>
             </div>
         @else
-            @php
-                foreach ($vehicleVerificationData as $vehicleData) {
-            @endphp
+            @foreach ($vehicleVerificationData as $vehicleData)
                 @php
                 $vehicle = $vehicleData['vehicle'];
                 $vehicleVerificationRequest = $vehicleData['verificationRequest'];
@@ -138,9 +136,7 @@
                     <button type="submit" class="min-h-11 w-full rounded bg-amber-800 px-5 py-3 text-sm font-bold text-white hover:bg-amber-900 sm:w-fit">Submit {{ $vehicle->registration_number }} for verification</button>
                 </form>
             </article>
-                @php
-                }
-                @endphp
+            @endforeach
         @endif
     </section>
 </div>
