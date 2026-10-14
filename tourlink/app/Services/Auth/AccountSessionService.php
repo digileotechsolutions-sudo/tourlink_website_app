@@ -64,14 +64,15 @@ class AccountSessionService
     public function validateWebSession(User $user, Request $request): bool
     {
         $fingerprint = $request->session()->get('_account_session_fingerprint');
-        $sessionIdFingerprint = $this->fingerprint('web', $request->session()->getId());
+        $sessionId = $request->session()->getId();
+        $sessionIdFingerprint = $this->fingerprint('web', $sessionId);
 
         if (is_string($fingerprint) && preg_match('/\A[a-f0-9]{64}\z/', $fingerprint) === 1
-            && $this->refresh($user, $fingerprint, 'web')) {
+            && $this->refresh($user, $fingerprint, 'web', $sessionId)) {
             return true;
         }
 
-        if (! $this->refresh($user, $sessionIdFingerprint, 'web')) {
+        if (! $this->refresh($user, $sessionIdFingerprint, 'web', $sessionId)) {
             return false;
         }
 
@@ -131,14 +132,15 @@ class AccountSessionService
 
     public function revokeUser(User $user): bool
     {
-        return DB::transaction(function () use ($user): bool {
+        [$revoked, $sessionId] = DB::transaction(function () use ($user): array {
             $lockedUser = User::query()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
             $session = AccountSession::query()->where('user_id', $user->getKey())->lockForUpdate()->first();
 
             if (! $session) {
-                return false;
+                return [false, null];
             }
 
+            $sessionId = $session->session_type === 'web' ? $session->session_id : null;
             $session->delete();
 
             if ($session->personal_access_token_id !== null) {
@@ -149,8 +151,14 @@ class AccountSessionService
                 $lockedUser->forceFill(['remember_token' => Str::random(60)])->save();
             }
 
-            return true;
+            return [true, $sessionId];
         }, 3);
+
+        if (is_string($sessionId) && $sessionId !== '') {
+            app('session')->driver()->getHandler()->destroy($sessionId);
+        }
+
+        return $revoked;
     }
 
     private function claim(
@@ -204,20 +212,25 @@ class AccountSessionService
         }, 3);
     }
 
-    private function refresh(User $user, string $fingerprint, string $type): bool
+    private function refresh(User $user, string $fingerprint, string $type, ?string $sessionId = null): bool
     {
         $now = now();
+        $attributes = [
+            'last_activity_at' => $now,
+            'expires_at' => $now->copy()->addMinutes(max(1, (int) config('session.lifetime', 120))),
+            'updated_at' => $now,
+        ];
+
+        if ($sessionId !== null) {
+            $attributes['session_id'] = $sessionId;
+        }
 
         return AccountSession::query()
             ->where('user_id', $user->getKey())
             ->where('session_fingerprint', $fingerprint)
             ->where('session_type', $type)
             ->where('expires_at', '>', $now)
-            ->update([
-                'last_activity_at' => $now,
-                'expires_at' => $now->copy()->addMinutes(max(1, (int) config('session.lifetime', 120))),
-                'updated_at' => $now,
-            ]) === 1;
+            ->update($attributes) === 1;
     }
 
     /**
@@ -228,6 +241,9 @@ class AccountSessionService
         return [
             'session_fingerprint' => $fingerprint,
             'session_type' => $type,
+            'session_id' => $type === 'web' && $request->hasSession()
+                ? $request->session()->getId()
+                : null,
             'personal_access_token_id' => $tokenId,
             'ip_address' => $request->ip(),
             'user_agent' => mb_substr((string) $request->userAgent(), 0, 2000),

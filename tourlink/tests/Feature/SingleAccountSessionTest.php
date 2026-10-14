@@ -34,6 +34,7 @@ class SingleAccountSessionTest extends TestCase
         $session = AccountSession::query()->where('user_id', $user->id)->firstOrFail();
 
         $this->assertSame('web', $session->session_type);
+        $this->assertSame(session()->getId(), $session->session_id);
         $this->assertSame(session()->get('_account_session_fingerprint'), $session->session_fingerprint);
         $this->assertMatchesRegularExpression('/\A[a-f0-9]{64}\z/', $session->session_fingerprint);
         $this->assertSame(hash('sha256', 'web:'.session()->getId()), $session->session_fingerprint);
@@ -324,10 +325,13 @@ class SingleAccountSessionTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'ADMIN']);
         $user = User::factory()->create();
+        $sessionHandler = app('session')->driver()->getHandler();
+        $sessionHandler->write('revoked-session-id', 'serialized-session-data');
         AccountSession::query()->create([
             'user_id' => $user->id,
-            'session_fingerprint' => hash('sha256', 'web:revoked-session'),
+            'session_fingerprint' => hash('sha256', 'web:revoked-session-id'),
             'session_type' => 'web',
+            'session_id' => 'revoked-session-id',
             'last_activity_at' => now(),
             'expires_at' => now()->addMinutes(15),
         ]);
@@ -342,6 +346,7 @@ class SingleAccountSessionTest extends TestCase
             ->assertSessionHas('status');
 
         $this->assertDatabaseMissing('account_sessions', ['user_id' => $user->id]);
+        $this->assertSame('', $sessionHandler->read('revoked-session-id'));
         $this->assertDatabaseHas('admin_logs', [
             'admin_id' => $admin->id,
             'action' => 'user.session_terminated',

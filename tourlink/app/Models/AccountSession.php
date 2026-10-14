@@ -12,6 +12,7 @@ class AccountSession extends TourLinkModel
         'user_id',
         'session_fingerprint',
         'session_type',
+        'session_id',
         'personal_access_token_id',
         'ip_address',
         'user_agent',
