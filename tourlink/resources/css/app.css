@@ -1556,7 +1556,7 @@ p { font-weight: 400; }
 
 /* Homepage hero: clear editorial headline, focused search and a single travel image. */
 .home-native-shell { position: relative; padding: clamp(30px, 5vw, 66px) 0 42px; isolation: isolate; background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%); }
-.home-native-shell::before { position: absolute; inset: 0; z-index: 0; background-image: url('/images/transport-pattern.svg'); background-size: 360px 300px; background-repeat: repeat; content: ''; pointer-events: none; animation: home-transport-watermark-drift 12s ease-in-out infinite alternate, home-transport-watermark-breathe 3s ease-in-out infinite alternate; }
+.home-native-shell::before { position: absolute; inset: 0; z-index: 0; background-image: url('/images/transport-pattern.svg'); background-size: 360px 300px; background-repeat: repeat; content: ''; pointer-events: none; animation: home-transport-watermark-drift 6s ease-in-out infinite alternate, home-transport-watermark-breathe 1.5s ease-in-out infinite alternate; }
 .home-native-shell > .container-page { position: relative; z-index: 1; }
 @keyframes home-transport-watermark-drift { from { background-position: 0 0; } to { background-position: 72px 46px; } }
 @keyframes home-transport-watermark-breathe { from { opacity: .68; } to { opacity: 1; } }
