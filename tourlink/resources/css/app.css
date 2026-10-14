@@ -2218,3 +2218,97 @@ p { font-weight: 400; }
     .about-redesign-button, .about-redesign-service-card { transition: none; }
     .about-redesign-hero::before { animation: none; background-position: center; }
 }
+
+.destination-redesign { overflow: hidden; color: #221B34; background: #fff; }
+.destination-redesign-hero { position: relative; padding: 32px 0 52px; background: linear-gradient(180deg, #F8F7FC 0%, #fff 100%); }
+.destination-redesign-hero::before { position: absolute; inset: 0; background: url('/images/transport-pattern.svg') repeat; background-size: 360px 300px; content: ''; opacity: .52; pointer-events: none; animation: about-vector-drift 12s ease-in-out infinite alternate; }
+.destination-redesign-hero__grid { position: relative; z-index: 1; display: grid; align-items: center; gap: 30px; }
+.destination-redesign-hero__copy { max-width: 650px; }
+.destination-redesign-back { display: inline-flex; align-items: center; gap: 7px; color: #6E6680; font-size: 11px; font-weight: 700; }
+.destination-redesign-back:hover, .destination-redesign-back:focus-visible { color: #190C6E; }
+.destination-redesign-back svg, .destination-redesign-location svg { width: 16px; height: 16px; flex: none; }
+.destination-redesign-kicker { display: flex; align-items: center; gap: 9px; margin: 21px 0 11px; color: #6C568F; font-size: 10px; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
+.destination-redesign-kicker > span { width: 23px; height: 3px; border-radius: 999px; background: #FFD51E; }
+.destination-redesign-hero h1 { max-width: 12ch; margin: 0; color: #190C6E; font-size: clamp(38px, 6vw, 66px) !important; font-weight: 850 !important; letter-spacing: -.055em; line-height: 1.04; }
+.destination-redesign-location { display: flex; align-items: center; gap: 7px; margin: 13px 0 0; color: #625C70; font-size: 12px; font-weight: 700; }
+.destination-redesign-location svg { color: #6C568F; }
+.destination-redesign-description { max-width: 54ch; margin: 15px 0 0; color: #625C70; font-size: 14px; line-height: 1.8; }
+.destination-redesign-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; margin-top: 22px; }
+.destination-redesign-button { display: inline-flex; min-height: 47px; align-items: center; justify-content: center; gap: 14px; padding: 0 17px; border-radius: 12px; color: #21183A; background: #FFD51E; font-size: 12px; font-weight: 850; transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease; }
+.destination-redesign-button:hover, .destination-redesign-button:focus-visible { transform: translateY(-2px); background: #F5C900; box-shadow: 0 9px 20px rgb(25 12 110 / 14%); }
+.destination-redesign-button span { font-size: 16px; }
+.destination-redesign-count { color: #777184; font-size: 11px; font-weight: 750; }
+.destination-redesign-summary { display: flex; flex-wrap: wrap; gap: 9px 17px; margin-top: 22px; }
+.destination-redesign-summary > span { display: inline-flex; align-items: center; gap: 6px; color: #625C70; font-size: 10px; font-weight: 750; }
+.destination-redesign-summary b { color: #6C568F; font-size: 14px; }
+.destination-redesign-photo { position: relative; min-height: 330px; margin: 0; overflow: hidden; border-radius: 24px; background: #EAE6F2; box-shadow: 0 24px 55px rgb(25 12 110 / 14%); }
+.destination-redesign-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.destination-redesign-photo__fallback { position: absolute; inset: 0; display: grid; place-items: center; color: #6C568F; background: radial-gradient(circle at 70% 24%, #FFF2B7 0, transparent 22%), linear-gradient(145deg, #E8E2F1, #D7E9F0); }
+.destination-redesign-photo__fallback svg { width: 120px; height: 100px; }
+.destination-redesign-photo__wash { position: absolute; inset: 28% 0 0; background: linear-gradient(180deg, transparent 0%, rgb(16 12 34 / 75%) 100%); }
+.destination-redesign-photo figcaption { position: absolute; right: 18px; bottom: 17px; left: 18px; z-index: 1; display: grid; gap: 5px; color: #fff; font-size: 17px; font-weight: 850; letter-spacing: -.02em; }
+.destination-redesign-photo figcaption small { color: rgb(255 255 255 / 78%); font-size: 10px; font-weight: 650; }
+.destination-redesign-photo__stamp { position: absolute; top: 17px; right: 17px; display: grid; width: 67px; height: 67px; place-content: center; border: 1px solid rgb(255 255 255 / 35%); border-radius: 50%; color: #21183A; background: #FFD51E; font-size: 10px; font-weight: 900; line-height: 1.05; text-align: center; transform: rotate(8deg); }
+.destination-redesign-highlights { padding: 48px 0 55px; background: #F7F8FB; }
+.destination-redesign-section-heading { display: grid; align-items: end; gap: 13px; margin-bottom: 22px; }
+.destination-redesign-section-heading .destination-redesign-kicker, .destination-redesign-trips__heading .destination-redesign-kicker { margin-top: 0; }
+.destination-redesign-section-heading h2, .destination-redesign-trips__heading h2 { max-width: 20ch; margin: 0; color: #21183A; font-size: clamp(25px, 3.5vw, 36px) !important; font-weight: 850 !important; letter-spacing: -.04em; line-height: 1.15; }
+.destination-redesign-section-heading > p { max-width: 43ch; margin: 0; color: #777184; font-size: 12px; line-height: 1.7; }
+.destination-redesign-highlight-grid { display: grid; gap: 13px; }
+.destination-redesign-highlight-card { padding: 20px; border: 1px solid #E8E6ED; border-radius: 17px; background: #fff; }
+.destination-redesign-highlight-card__heading { display: flex; align-items: center; gap: 12px; padding-bottom: 15px; border-bottom: 1px solid #EEEAF2; }
+.destination-redesign-highlight-card__heading > span { display: grid; width: 38px; height: 38px; flex: none; place-items: center; border-radius: 12px; color: #5B4384; background: #F1EDF7; font-size: 17px; }
+.destination-redesign-highlight-card__heading p { margin: 0 0 3px; color: #9A8CB0; font-size: 9px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.destination-redesign-highlight-card__heading h3 { margin: 0; color: #302746; font-size: 15px !important; font-weight: 850 !important; }
+.destination-redesign-highlight-card ul { display: grid; gap: 10px; margin: 15px 0 0; padding: 0; list-style: none; }
+.destination-redesign-highlight-card li { display: flex; align-items: flex-start; gap: 9px; color: #625C70; font-size: 11px; font-weight: 650; line-height: 1.55; }
+.destination-redesign-highlight-card li span { color: #8B72AB; font-size: 13px; }
+.destination-redesign-trips { min-height: 45vh; padding-top: 48px; padding-bottom: 70px; }
+.destination-redesign-trips__heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+.destination-redesign-trips__heading h2 { max-width: none; }
+.destination-redesign-trips__heading > div > p:last-child { margin: 8px 0 0; color: #777184; font-size: 12px; line-height: 1.65; }
+.destination-redesign-trips__count { flex: none; padding: 8px 11px; border: 1px solid #E8E6ED; border-radius: 999px; color: #6E6680; background: #fff; font-size: 10px; font-weight: 800; }
+.destination-redesign-trips__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.destination-redesign-trips__grid > .group { min-width: 0; overflow: hidden; border: 1px solid #E8E6ED; border-radius: 18px; background: #fff; box-shadow: 0 5px 15px rgb(25 12 110 / 5%); }
+.destination-redesign-empty { display: grid; min-height: 250px; justify-items: center; align-content: center; padding: 28px 20px; border: 1px dashed #D7D1E1; border-radius: 18px; background: #FAF9FC; text-align: center; }
+.destination-redesign-empty > span { display: grid; width: 42px; height: 42px; margin-bottom: 12px; place-items: center; border-radius: 14px; color: #5B4384; background: #F1EDF7; font-size: 20px; }
+.destination-redesign-empty h3 { margin: 0; color: #302746; font-size: 18px; font-weight: 850; }
+.destination-redesign-empty p { max-width: 440px; margin: 8px 0 0; color: #777184; font-size: 12px; line-height: 1.7; }
+.destination-redesign-empty a { display: inline-flex; min-height: 44px; align-items: center; gap: 8px; margin-top: 16px; padding: 0 15px; border-radius: 11px; color: #21183A; background: #FFD51E; font-size: 11px; font-weight: 850; }
+.destination-redesign-pagination { margin-top: 28px; }
+@media (min-width: 700px) {
+    .destination-redesign-hero__grid { grid-template-columns: minmax(0, 1.05fr) minmax(300px, .95fr); gap: 38px; }
+    .destination-redesign-photo { min-height: 430px; }
+    .destination-redesign-section-heading { grid-template-columns: minmax(0, 1fr) minmax(220px, .7fr); gap: 30px; }
+    .destination-redesign-highlight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+    .destination-redesign-hero { padding: 48px 0 72px; }
+    .destination-redesign-hero__grid { grid-template-columns: minmax(0, 1fr) minmax(400px, .95fr); gap: 60px; }
+    .destination-redesign-photo { min-height: 540px; }
+    .destination-redesign-highlights { padding: 68px 0 74px; }
+    .destination-redesign-highlight-card { padding: 24px; }
+    .destination-redesign-trips { padding-top: 65px; padding-bottom: 82px; }
+}
+@media (max-width: 700px) {
+    .destination-redesign-hero { padding: 25px 0 36px; }
+    .destination-redesign-kicker { margin-top: 19px; }
+    .destination-redesign-photo { min-height: 270px; border-radius: 19px; }
+    .destination-redesign-highlights { padding: 37px 0 42px; }
+    .destination-redesign-trips { padding-top: 37px; padding-bottom: 48px; }
+    .destination-redesign-trips__heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+    .destination-redesign-trips__heading h2 { font-size: 24px !important; }
+    .destination-redesign-trips__grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .destination-redesign-trips__grid > .group > a > div:first-child { height: 190px; }
+    .destination-redesign-trips__grid > .group > a > div:last-child { padding: 14px; }
+}
+@media (max-width: 480px) {
+    .destination-redesign-photo { min-height: 230px; }
+    .destination-redesign-description { font-size: 13px; }
+    .destination-redesign-actions { gap: 11px; }
+    .destination-redesign-highlight-card { padding: 17px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .destination-redesign-hero::before { animation: none; background-position: center; }
+    .destination-redesign-button { transition: none; }
+}
