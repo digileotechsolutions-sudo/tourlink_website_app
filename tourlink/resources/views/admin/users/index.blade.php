@@ -88,6 +88,11 @@
                                         <p class="text-xs text-slate-500 lg:col-span-4">Changing an email or phone number resets its verification status. Approval notifications are sent when configured.</p>
                                         <button class="justify-self-start rounded bg-emerald-800 px-4 py-2.5 text-sm font-bold text-white lg:col-span-4">Save changes</button>
                                     </form>
+                                    <form method="POST" action="{{ route('admin.users.password-reset', $user) }}" onsubmit="return confirm('Send this user a password reset link?')" class="mt-3 border-t border-slate-200 pt-4">
+                                        @csrf
+                                        <p class="mb-2 text-xs text-slate-600">The user will receive an expiring reset link at {{ $user->email }}. Their password will not change until they use it.</p>
+                                        <button class="rounded border border-amber-300 px-4 py-2.5 text-sm font-bold text-amber-900 hover:bg-amber-50">Send password reset link</button>
+                                    </form>
                                             @if ($user->role !== \App\Role::Admin)
                                         <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Anonymize this account? Linked booking records will be retained.')" class="mt-3">
                                             @csrf @method('DELETE')

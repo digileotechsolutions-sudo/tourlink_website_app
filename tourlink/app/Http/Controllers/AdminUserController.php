@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -156,6 +157,25 @@ class AdminUserController extends Controller
         }
 
         return back()->with('status', "{$user->name}'s account was updated.");
+    }
+
+    public function sendPasswordResetLink(Request $request, User $user): RedirectResponse
+    {
+        $status = Password::sendResetLink(['email' => $user->email]);
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            return back()->withErrors(['password_reset' => __($status)]);
+        }
+
+        AdminLog::query()->create([
+            'admin_id' => $request->user()->id,
+            'action' => 'user.password_reset_link_sent',
+            'entity' => 'User',
+            'entity_id' => $user->id,
+            'metadata' => ['delivery' => 'email'],
+        ]);
+
+        return back()->with('status', "A password reset link was sent to {$user->email}.");
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
