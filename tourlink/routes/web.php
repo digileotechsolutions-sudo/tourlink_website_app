@@ -22,7 +22,6 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\MpesaPaymentController;
 use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentReceiptController;
@@ -314,7 +313,3 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         ->name('verification.document.download');
     Route::patch('/vehicles/{vehicle}', [AdminModerationController::class, 'updateVehicle'])->name('vehicles.update');
 });
-
-Route::post('/api/payments/mpesa/stk', [MpesaPaymentController::class, 'stk'])
-    ->middleware(['auth', 'account.access:TRAVELER,OPERATOR,VEHICLE_OWNER', 'throttle:payments'])
-    ->name('payments.mpesa.stk');
