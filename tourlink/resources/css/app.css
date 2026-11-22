@@ -1487,8 +1487,9 @@ input, select, textarea { font-weight: 400; }
 .site-header__tagline, .site-header--floating .site-header__tagline { color: var(--tourlink-secondary); }
 .site-header__brand-icon { border-color: #CFE3F5; color: var(--tourlink-primary); background: #F3F9FE; box-shadow: none; }
 .site-header__nav a, .site-header--floating .site-header__nav a { color: #374151; }
-.site-header__nav a:hover, .site-header__nav a:focus-visible, .site-header__nav a.is-active { color: var(--tourlink-primary-text); background: #F3F9FE; border-color: #CFE3F5; }
-.site-header__account-link:hover, .site-header__account-link:focus-visible, .site-header__login:hover, .site-header__login:focus-visible { color: var(--tourlink-primary-text); background: #F3F9FE; }
+.site-header__nav a.is-active { color: var(--tourlink-primary-text); background: #F3F9FE; border-color: #CFE3F5; }
+.site-header__nav a:hover, .site-header__nav a:focus-visible { color: #D83B69; background: #FFF1F5; border-color: #F4C5D3; }
+.site-header__account-link:hover, .site-header__account-link:focus-visible, .site-header__login:hover, .site-header__login:focus-visible { color: #D83B69; background: #FFF1F5; }
 .site-header__join, .site-header--floating .site-header__join, .home-primary-button, .home-native-search button, .home-search-row button { border-color: var(--tourlink-primary-hover); color: #fff; background: var(--tourlink-primary-hover); box-shadow: var(--shadow-sm); }
 .site-header__join:hover, .site-header--floating .site-header__join:hover, .home-primary-button:hover, .home-native-search button:hover { background: #0C0638; box-shadow: var(--shadow-md); }
 .site-header__mobile > summary, .site-header__mobile-app-menu, .site-header__mobile-app-action { border-color: var(--tourlink-border); color: var(--tourlink-text); background: #fff; }
