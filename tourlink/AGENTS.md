@@ -44,6 +44,10 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - Be concise in your explanations - focus on what's important rather than explaining obvious details.
 
+## VS Code
+
+- After editing a file, open it in VS Code at the edited lines with `code --goto "<file>:<line>"`.
+
 === boost rules ===
 
 # Laravel Boost
