@@ -47,6 +47,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## VS Code
 
 - After editing a file, open it in VS Code at the edited lines with `code --goto "<file>:<line>"`.
+- After every modification, commit and push the changes to `origin/main`.
 
 === boost rules ===
 
